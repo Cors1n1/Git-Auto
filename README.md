@@ -101,3 +101,8 @@ Distribuído sob a licença MIT.
 - Implementado sistema de temas personalizados (Dracula, Nord, Matrix, Cyberpunk e Light/Dark).
 - Adicionada seletor de tema e cor de destaque no menu de configurações com persistência via .env.
 - Refinado processamento de nomes de projetos com sanitização de caracteres especiais e acentos.
+
+### 🔄 Atualização (08/06/2026)
+- Implementado auto-instalador de dependências em `release.py`.
+- Removido arquivo `requirements.txt` em favor da instalação dinâmica.
+- Atualizado `.gitignore` para remover rastreio de arquivos JSON.

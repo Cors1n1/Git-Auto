@@ -2,8 +2,6 @@
 .env
 .env.*
 !.env.example
-history.json
-.json
 
 # IDEs
 .vscode/

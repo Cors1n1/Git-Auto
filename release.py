@@ -1,5 +1,32 @@
 import os
+import sys
 import subprocess
+
+def _ensure_dependencies():
+    try:
+        import customtkinter
+        import google.generativeai
+        import dotenv
+        import requests
+        import pystray
+        import PIL
+    except ImportError:
+        import tkinter as tk
+        root = tk.Tk()
+        root.title("Git Auto - Configuração Inicial")
+        root.geometry("380x150")
+        root.eval('tk::PlaceWindow . center')
+        tk.Label(root, text="Instalando dependências necessárias...\nIsso só acontece na primeira vez.\n\nPor favor, aguarde alguns instantes...", font=("Segoe UI", 11)).pack(expand=True)
+        root.update()
+        
+        deps = ["customtkinter", "google-generativeai", "python-dotenv", "requests", "pystray", "Pillow"]
+        subprocess.run([sys.executable, "-m", "pip", "install"] + deps, capture_output=True)
+        root.destroy()
+        
+        os.execv(sys.executable, ['python'] + sys.argv)
+
+_ensure_dependencies()
+
 import requests
 import threading
 import json
