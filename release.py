@@ -385,6 +385,237 @@ class NewProjectDialog(ctk.CTkToplevel):
         }
         self.destroy()
 
+class ProjectReadmeDialog(ctk.CTkToplevel):
+    def __init__(self, parent, project_path):
+        super().__init__(parent)
+        self.title("Visão Geral do Projeto")
+        self.geometry("800x600")
+        self.transient(parent)
+        self.grab_set()
+        
+        self.configure(fg_color=C["bg"])
+        
+        lbl_title = ctk.CTkLabel(self, text=f"📦 {os.path.basename(project_path)}", font=ctk.CTkFont("Segoe UI", 20, "bold"), text_color=C["text"])
+        lbl_title.pack(pady=(20, 10), padx=20, anchor="w")
+
+        self.textbox = ctk.CTkTextbox(self, font=ctk.CTkFont("Consolas", 13), fg_color=C["card"], text_color=C["text"], border_color=C["card_border"], border_width=1, corner_radius=10, wrap="word")
+        self.textbox.pack(fill="both", expand=True, padx=20, pady=(0, 20))
+
+        content = self._get_or_generate_readme(project_path)
+        self.textbox.insert("0.0", content)
+        self.textbox.configure(state="disabled")
+
+        ctk.CTkButton(self, text="Entendido!", height=40, font=ctk.CTkFont("Segoe UI", 13, "bold"), fg_color=C["blue"], hover_color=C["blue_dark"], command=self.destroy).pack(pady=(0, 20), padx=20)
+
+    def _get_or_generate_readme(self, path):
+        # Tenta encontrar um README real
+        for name in ["README.md", "README.txt", "readme.md", "Readme.md"]:
+            p = os.path.join(path, name)
+            if os.path.exists(p):
+                try:
+                    with open(p, "r", encoding="utf-8") as f:
+                        content = f.read()
+                        return f"--- 📄 {name} encontrado ---\n\n{content}"
+                except: pass
+        
+        # Se não houver, gera um passo-a-passo baseado na análise da pasta
+        files = os.listdir(path) if os.path.exists(path) else []
+        summary = "Nenhum arquivo README encontrado no repositório.\n\n"
+        summary += "--- 🤖 ANÁLISE AUTOMÁTICA DO PROJETO ---\n"
+        
+        if "requirements.txt" in files or "setup.py" in files or "Pipfile" in files or "release.py" in files or any(f.endswith(".py") for f in files):
+            summary += "\n🐍 PROJETO PYTHON DETECTADO.\n\n"
+            summary += "Passo a passo genérico para rodar:\n"
+            summary += "1. Abra o terminal na pasta do projeto.\n"
+            summary += "2. Crie um ambiente virtual (recomendado):\n"
+            summary += "   python -m venv venv\n"
+            summary += "3. Ative o ambiente:\n"
+            summary += "   Windows: venv\\Scripts\\activate\n"
+            summary += "   Linux/Mac: source venv/bin/activate\n"
+            if "requirements.txt" in files:
+                summary += "4. Instale as dependências:\n"
+                summary += "   pip install -r requirements.txt\n"
+            summary += "5. Execute o script principal (ex: python main.py)\n"
+        elif "package.json" in files:
+            summary += "\n📦 PROJETO NODE.JS / JAVASCRIPT DETECTADO.\n\n"
+            summary += "Passo a passo genérico para rodar:\n"
+            summary += "1. Abra o terminal na pasta do projeto.\n"
+            summary += "2. Instale as dependências:\n"
+            summary += "   npm install   (ou yarn install)\n"
+            summary += "3. Inicie o projeto:\n"
+            summary += "   npm start     (ou npm run dev)\n"
+        elif "pom.xml" in files or "build.gradle" in files:
+            summary += "\n☕ PROJETO JAVA DETECTADO.\n\n"
+            summary += "Passo a passo genérico para compilar/rodar:\n"
+            if "pom.xml" in files:
+                summary += "Este projeto usa Maven. Execute:\n"
+                summary += "mvn clean install\n"
+            else:
+                summary += "Este projeto usa Gradle. Execute:\n"
+                summary += "gradle build\n"
+        else:
+            summary += "\n🔍 PROJETO GENÉRICO.\n\n"
+            summary += "Não foi possível identificar um ecossistema específico.\n"
+            summary += "Explore os arquivos para entender a estrutura e localizar o arquivo principal.\n"
+        
+        return summary
+
+
+class CloneProjectView(ctk.CTkFrame):
+    def __init__(self, parent, app):
+        super().__init__(parent, fg_color="transparent")
+        self.app = app
+
+        # Título Elegante
+        hdr = ctk.CTkFrame(self, fg_color="transparent")
+        hdr.pack(fill="x", padx=40, pady=(40, 20))
+        ctk.CTkLabel(hdr, text="O que você deseja clonar?", font=ctk.CTkFont("Segoe UI", 24, "bold"), text_color=C["text"]).pack(anchor="w")
+        ctk.CTkLabel(hdr, text="Baixe projetos do GitHub diretamente para sua máquina local.", font=ctk.CTkFont("Segoe UI", 13), text_color=C["text_dim"]).pack(anchor="w")
+
+        # Botões de Seleção de Modo (API vs URL)
+        self.mode_frame = ctk.CTkFrame(self, fg_color="transparent")
+        self.mode_frame.pack(fill="x", padx=40, pady=(0, 20))
+        
+        self.btn_mode_api = ctk.CTkButton(self.mode_frame, text="Meus Repositórios (API)", height=44, font=ctk.CTkFont("Segoe UI", 13, "bold"), corner_radius=8, command=lambda: self.set_mode("api"))
+        self.btn_mode_api.pack(side="left", fill="x", expand=True, padx=(0, 10))
+
+        self.btn_mode_url = ctk.CTkButton(self.mode_frame, text="Via URL (HTTPS/SSH)", height=44, font=ctk.CTkFont("Segoe UI", 13, "bold"), corner_radius=8, command=lambda: self.set_mode("url"))
+        self.btn_mode_url.pack(side="left", fill="x", expand=True, padx=(10, 0))
+
+        # Container principal dos painéis
+        self.container = ctk.CTkFrame(self, fg_color=C["card"], corner_radius=16, border_width=1, border_color=C["card_border"])
+        self.container.pack(fill="both", expand=True, padx=40, pady=(0, 40))
+        self.container.grid_rowconfigure(0, weight=1)
+        self.container.grid_columnconfigure(0, weight=1)
+
+        self.frame_api = ctk.CTkFrame(self.container, fg_color="transparent")
+        self.frame_url = ctk.CTkFrame(self.container, fg_color="transparent")
+
+        self.selected_repo_url = None
+        self._build_api_tab(self.frame_api)
+        self._build_url_tab(self.frame_url)
+        
+        self.set_mode("api")
+
+    def set_mode(self, mode):
+        if mode == "api":
+            self.btn_mode_api.configure(fg_color=C["blue"], hover_color=C["blue_dark"], text_color="#ffffff")
+            self.btn_mode_url.configure(fg_color=C["input_bg"], hover_color=C["card_border"], text_color=C["text_dim"])
+            self.frame_url.grid_forget()
+            self.frame_api.grid(row=0, column=0, sticky="nsew", padx=30, pady=30)
+        else:
+            self.btn_mode_url.configure(fg_color=C["blue"], hover_color=C["blue_dark"], text_color="#ffffff")
+            self.btn_mode_api.configure(fg_color=C["input_bg"], hover_color=C["card_border"], text_color=C["text_dim"])
+            self.frame_api.grid_forget()
+            self.frame_url.grid(row=0, column=0, sticky="nsew", padx=30, pady=30)
+
+    def _build_url_tab(self, frame):
+        # Container centralizado para evitar muito espaço vazio
+        center_frame = ctk.CTkFrame(frame, fg_color="transparent")
+        center_frame.pack(expand=True, fill="x", padx=10)
+
+        ctk.CTkLabel(center_frame, text="URL do Repositório (HTTPS ou SSH):", font=ctk.CTkFont("Segoe UI", 12, "bold"), text_color=C["text_dim"]).pack(anchor="w", pady=(0, 5))
+        self.entry_url = ctk.CTkEntry(center_frame, height=36, font=ctk.CTkFont("Consolas", 11), fg_color=C["input_bg"], border_color=C["card_border"], text_color=C["text"])
+        self.entry_url.pack(fill="x", pady=(0, 20))
+
+        self.entry_dest_url = self._build_destination_selector(center_frame)
+        
+        ctk.CTkButton(center_frame, text="Clonar Projeto", height=40, font=ctk.CTkFont("Segoe UI", 13, "bold"), fg_color=C["blue"], hover_color=C["blue_dark"], command=self._confirm_url).pack(fill="x", pady=(10, 0))
+
+    def _build_api_tab(self, frame):
+        if not GITHUB_TOKEN:
+            ctk.CTkLabel(frame, text="GitHub Token não configurado.\n\nConfigure nas Configurações para usar este recurso.", font=ctk.CTkFont("Segoe UI", 12), text_color=C["text_dim"], justify="center").pack(expand=True)
+            return
+
+        bottom_frame = ctk.CTkFrame(frame, fg_color="transparent")
+        bottom_frame.pack(side="bottom", fill="x")
+
+        self.entry_dest_api = self._build_destination_selector(bottom_frame)
+        self.btn_confirm_api = ctk.CTkButton(bottom_frame, text="Clonar Selecionado", height=40, font=ctk.CTkFont("Segoe UI", 13, "bold"), fg_color=C["blue"], hover_color=C["blue_dark"], command=self._confirm_api)
+        self.btn_confirm_api.pack(fill="x", pady=10)
+
+        ctk.CTkLabel(frame, text="Meus Repositórios:", font=ctk.CTkFont("Segoe UI", 12, "bold"), text_color=C["text_dim"]).pack(anchor="w", pady=(5, 5))
+        
+        self.repo_listbox = ctk.CTkScrollableFrame(frame, fg_color=C["input_bg"])
+        self.repo_listbox.pack(fill="both", expand=True, pady=(0, 10))
+        
+        threading.Thread(target=self._load_repos, daemon=True).start()
+
+    def _build_destination_selector(self, parent):
+        container = ctk.CTkFrame(parent, fg_color="transparent")
+        container.pack(fill="x", pady=(0, 15))
+        
+        ctk.CTkLabel(container, text="Pasta de Destino Local:", font=ctk.CTkFont("Segoe UI", 12, "bold"), text_color=C["text_dim"]).pack(anchor="w", pady=(0, 5))
+        
+        dest_frame = ctk.CTkFrame(container, fg_color="transparent")
+        dest_frame.pack(fill="x")
+        entry_dest = ctk.CTkEntry(dest_frame, height=36, font=ctk.CTkFont("Consolas", 11), fg_color=C["input_bg"], border_color=C["card_border"], text_color=C["text"])
+        entry_dest.pack(side="left", fill="x", expand=True, padx=(0, 10))
+        entry_dest.insert(0, os.path.expanduser("~/Desktop"))
+        ctk.CTkButton(dest_frame, text="...", width=40, height=36, fg_color=C["card_border"], hover_color=C["blue"], text_color=C["text"], command=lambda e=entry_dest: self._browse(e)).pack(side="left")
+        return entry_dest
+
+    def _browse(self, entry):
+        d = filedialog.askdirectory(title="Selecione a pasta destino")
+        if d:
+            entry.delete(0, "end")
+            entry.insert(0, d)
+
+    def _load_repos(self):
+        headers = {"Authorization": f"token {GITHUB_TOKEN}", "Accept": "application/vnd.github.v3+json"}
+        try:
+            resp = requests.get(f"https://api.github.com/user/repos?sort=updated&per_page=100", headers=headers, timeout=5)
+            if resp.status_code == 200:
+                repos = resp.json()
+                self.after(0, lambda: self._populate_repos(repos))
+            else:
+                self.after(0, lambda: self._show_error("Falha ao carregar da API."))
+        except Exception:
+            self.after(0, lambda: self._show_error("Erro de conexão com o GitHub."))
+
+    def _show_error(self, msg):
+        for w in self.repo_listbox.winfo_children():
+            w.destroy()
+        ctk.CTkLabel(self.repo_listbox, text=msg, text_color=C["red"]).pack(pady=10)
+
+    def _populate_repos(self, repos):
+        for w in self.repo_listbox.winfo_children():
+            w.destroy()
+        if not repos:
+            ctk.CTkLabel(self.repo_listbox, text="Nenhum repositório encontrado.", text_color=C["muted"]).pack(pady=10)
+            return
+            
+        self.repo_buttons = []
+        for r in repos:
+            btn = ctk.CTkButton(self.repo_listbox, text=f"📦 {r['full_name']}", anchor="w", fg_color="transparent", hover_color=C["card_border"], text_color=C["text"], command=lambda url=r['clone_url']: self._select_repo(url))
+            btn.pack(fill="x", pady=2)
+            btn._my_url = r['clone_url']
+            self.repo_buttons.append(btn)
+
+    def _select_repo(self, url):
+        self.selected_repo_url = url
+        for b in self.repo_buttons:
+            if b._my_url == url:
+                b.configure(fg_color=C["blue_dark"], text_color="#ffffff")
+            else:
+                b.configure(fg_color="transparent", text_color=C["text"])
+        # Apenas remove a linha de state="normal" que agora é redundante
+
+    def _confirm_url(self):
+        url = self.entry_url.get().strip()
+        dest = self.entry_dest_url.get().strip()
+        if not url or not dest:
+            messagebox.showwarning("Aviso", "Preencha a URL e a pasta de destino.")
+            return
+        self.app.start_clone_process({"url": url, "dest": dest})
+
+    def _confirm_api(self):
+        dest = self.entry_dest_api.get().strip()
+        if not self.selected_repo_url or not dest:
+            messagebox.showwarning("Aviso", "Selecione um repositório e a pasta destino.")
+            return
+        self.app.start_clone_process({"url": self.selected_repo_url, "dest": dest})
+
 
 # ── Diálogo de Histórico de Commits/Pushes ──────────────────────────────────────────
 class ProjectHistoryDialog(ctk.CTkToplevel):
@@ -805,23 +1036,50 @@ class App(ctk.CTk):
         self.history_frame.grid(row=4, column=0, sticky="nsew",
                                 padx=10, pady=(52, 10))
 
+
         # Configurações
         self.btn_settings = ctk.CTkButton(
             self.sidebar, text="⚙  Configurações", height=36,
             font=ctk.CTkFont("Segoe UI", 12, "bold"),
             fg_color="transparent", hover_color=C["card_border"], text_color=C["text_dim"],
             command=self.open_settings)
-        self.btn_settings.grid(row=5, column=0, sticky="ew", padx=20, pady=(10, 20))
+        self.btn_settings.grid(row=6, column=0, sticky="ew", padx=20, pady=(10, 20))
 
     # ── ÁREA PRINCIPAL ────────────────────────────────────────────────────────
     def _build_main(self):
         self.main_frame = ctk.CTkFrame(self, fg_color="transparent")
         self.main_frame.grid(row=0, column=1, sticky="nsew", padx=28, pady=28)
-        self.main_frame.grid_rowconfigure(2, weight=1)
+        self.main_frame.grid_rowconfigure(1, weight=1)
         self.main_frame.grid_columnconfigure(0, weight=1)
 
+        # Barra de Navegação Superior Customizada
+        self.nav_frame = ctk.CTkFrame(self.main_frame, fg_color="transparent")
+        self.nav_frame.grid(row=0, column=0, sticky="ew", pady=(0, 20))
+        
+        self.btn_nav_push = ctk.CTkButton(self.nav_frame, text="📤 Gerenciar Repositório", font=ctk.CTkFont("Segoe UI", 14, "bold"), height=42, fg_color=C["blue"], hover_color=C["blue_dark"], text_color="#ffffff", corner_radius=10, command=lambda: self.switch_main_view("push"))
+        self.btn_nav_push.pack(side="left", padx=(0, 10))
+
+        self.btn_nav_clone = ctk.CTkButton(self.nav_frame, text="⬇️ Central de Clonagem", font=ctk.CTkFont("Segoe UI", 14, "bold"), height=42, fg_color=C["card"], hover_color=C["card_border"], text_color=C["text_dim"], corner_radius=10, command=lambda: self.switch_main_view("clone"))
+        self.btn_nav_clone.pack(side="left")
+
+        # Container de Conteúdo
+        self.content_frame = ctk.CTkFrame(self.main_frame, fg_color="transparent")
+        self.content_frame.grid(row=1, column=0, sticky="nsew")
+        self.content_frame.grid_rowconfigure(0, weight=1)
+        self.content_frame.grid_columnconfigure(0, weight=1)
+
+        self.tab_push = ctk.CTkFrame(self.content_frame, fg_color="transparent")
+        self.tab_push.grid(row=0, column=0, sticky="nsew")
+        self.tab_push.grid_rowconfigure(2, weight=1)
+        self.tab_push.grid_columnconfigure(0, weight=1)
+        
+        self.tab_clone = ctk.CTkFrame(self.content_frame, fg_color="transparent")
+        
+        self.clone_view = CloneProjectView(self.tab_clone, self)
+        self.clone_view.pack(fill="both", expand=True)
+
         # ── 1. Workspace card ─────────────────────────────────────────────────
-        ws = ctk.CTkFrame(self.main_frame, fg_color=C["card"],
+        ws = ctk.CTkFrame(self.tab_push, fg_color=C["card"],
                           corner_radius=16, border_width=1,
                           border_color=C["card_border"])
         ws.grid(row=0, column=0, sticky="ew", pady=(0, 18))
@@ -848,7 +1106,7 @@ class App(ctk.CTk):
         self.btn_browse.grid(row=1, column=2, padx=(0, 20), pady=(0, 18))
 
         # ── 2. Action cards ───────────────────────────────────────────────────
-        self.actions_frame = ctk.CTkFrame(self.main_frame, fg_color="transparent")
+        self.actions_frame = ctk.CTkFrame(self.tab_push, fg_color="transparent")
         self.actions_frame.grid(row=1, column=0, sticky="ew", pady=(0, 18))
         self.actions_frame.grid_columnconfigure((0, 1), weight=1)
 
@@ -905,7 +1163,7 @@ class App(ctk.CTk):
                           padx=20, pady=(14, 18))
 
         # ── 3. Tabs (Console e Histórico) ─────────────────────────────────────
-        self.tabs = ctk.CTkTabview(self.main_frame, fg_color=C["card"],
+        self.tabs = ctk.CTkTabview(self.tab_push, fg_color=C["card"],
                                    corner_radius=16, border_width=1,
                                    border_color=C["card_border"],
                                    text_color=C["text_dim"],
@@ -1544,6 +1802,59 @@ Distribuído sob a licença MIT.
                 self.log("[SYS] Operação cancelada pelo usuário.", "info")
         finally:
             self.set_processing_state(False)
+
+    def start_clone_process(self, opts: dict):
+        self.set_processing_state(True)
+        threading.Thread(target=self.clone_repo, args=(opts,), daemon=True).start()
+
+    def clone_repo(self, opts: dict):
+        url = opts["url"]
+        dest = opts["dest"]
+        try:
+            repo_name = url.rstrip("/").split("/")[-1]
+            if repo_name.endswith(".git"):
+                repo_name = repo_name[:-4]
+                
+            self.log(f"[SYS] Iniciando clonagem de {repo_name}...", "info")
+            os.makedirs(dest, exist_ok=True)
+            os.chdir(dest)
+            
+            cmd = f'git clone "{url}"'
+            proc = subprocess.run(cmd, shell=True, capture_output=True, text=True)
+            
+            if proc.returncode == 0:
+                self.log(f"[GIT] Clonado com sucesso para: {dest}", "success")
+                final_path = os.path.join(dest, repo_name)
+                self.after(0, lambda p=final_path: self._autoload_cloned_project(p))
+            else:
+                self.log(f"[ERRO] Falha ao clonar: {proc.stderr}", "error")
+        except Exception as e:
+            self.log(f"[ERRO] Exceção na clonagem: {e}", "error")
+        finally:
+            self.after(0, lambda: self.set_processing_state(False))
+
+    def _autoload_cloned_project(self, path):
+        if os.path.exists(path):
+            self.entry_folder.delete(0, "end")
+            self.entry_folder.insert(0, path)
+            self.log(f"[SYS] Projeto '{os.path.basename(path)}' carregado no workspace.", "info")
+            self.save_to_history(path)
+            self.switch_main_view("push")
+            
+            # Exibe o resumo ou README
+            ProjectReadmeDialog(self, path)
+
+    def switch_main_view(self, view):
+        if view == "push":
+            self.btn_nav_push.configure(fg_color=C["blue"], hover_color=C["blue_dark"], text_color="#ffffff")
+            self.btn_nav_clone.configure(fg_color=C["card"], hover_color=C["card_border"], text_color=C["text_dim"])
+            self.tab_clone.grid_forget()
+            self.tab_push.grid(row=0, column=0, sticky="nsew")
+        else:
+            self.btn_nav_clone.configure(fg_color=C["blue"], hover_color=C["blue_dark"], text_color="#ffffff")
+            self.btn_nav_push.configure(fg_color=C["card"], hover_color=C["card_border"], text_color=C["text_dim"])
+            self.tab_push.grid_forget()
+            self.tab_clone.grid(row=0, column=0, sticky="nsew")
 
     def start_new_project_thread(self):
         dialog = NewProjectDialog(self)
