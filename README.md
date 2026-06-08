@@ -116,3 +116,7 @@ Distribuído sob a licença MIT.
 - Implementada interface "Central de Clonagem" com suporte a via URL e API do GitHub.
 - Adicionada funcionalidade de leitura automática de README ou sugestão de setup após o clone.
 - Adicionado sistema de navegação por abas (Gerenciar Repositório vs. Clonagem) na interface principal.
+
+### 🔄 Atualização (08/06/2026)
+- Ajustado o grid layout do main_frame para corrigir o posicionamento do container.
+- Atualizado o registro de histórico com o timestamp da última execução.
