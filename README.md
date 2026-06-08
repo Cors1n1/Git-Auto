@@ -128,3 +128,8 @@ Distribuído sob a licença MIT.
 ### 🔄 Atualização (08/06/2026)
 - Implementada interface visual para revisão e edição manual de mensagens de commit via IA.
 - Adicionada integração de confirmação de commit com pré-visualização no fluxo de automação.
+
+### 🔄 Atualização (08/06/2026)
+- Implementado gerador visual de `.gitignore` com suporte a múltiplos templates tecnológicos.
+- Adicionada integração na interface para seleção e criação personalizada de arquivos de exclusão.
+- Atualizada a estrutura de ignorados padrão para maior abrangência de ambientes e SOs.

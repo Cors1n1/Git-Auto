@@ -1,32 +1,113 @@
-# Ambiente
+# Ambiente / SO
 .env
 .env.*
 !.env.example
+.DS_Store
+Thumbs.db
+desktop.ini
 
 # IDEs
 .vscode/
 .idea/
 
-# SO
-.DS_Store
-Thumbs.db
-desktop.ini
-
 # Python
 __pycache__/
-*.pyc
-*.pyd
-*.pyo
-
-# Virtualenvs
+*.py[cod]
+*$py.class
 venv/
 .venv/
 env/
 .env/
-
-# Build
-*.log
 build/
 dist/
-*.egg
 *.egg-info/
+*.log
+
+# Node
+node_modules/
+npm-debug.log
+yarn-error.log
+build/
+dist/
+coverage/
+
+# React / Next.js
+node_modules/
+.pnp
+.pnp.js
+coverage/
+build/
+.next/
+out/
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Java
+*.class
+*.log
+*.jar
+*.war
+*.nar
+*.ear
+*.zip
+*.tar.gz
+*.rar
+# Maven/Gradle
+target/
+build/
+.gradle/
+
+# C++
+*.o
+*.obj
+*.exe
+*.dll
+*.so
+*.dylib
+*.out
+*.app
+# CMake
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+Makefile
+bin/
+build/
+
+# Godot
+.godot/
+*.translation
+export_presets.cfg
+
+# Unity
+[Ll]ibrary/
+[Tt]emp/
+[Oo]bj/
+[Bb]uild/
+[Bb]uilds/
+[Ll]ogs/
+[Uu]ser[Ss]ettings/
+*.csproj
+*.unityproj
+*.sln
+*.suo
+*.tmp
+*.user
+*.userprefs
+*.pidb
+*.booproj
+*.svd
+*.pdb
+*.mdb
+*.opendb
+*.VC.db
+.consulo/
+*.ds_store
+
+# Generic
+build/
+dist/
+*.log
+tmp/

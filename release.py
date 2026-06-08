@@ -385,6 +385,43 @@ class NewProjectDialog(ctk.CTkToplevel):
         }
         self.destroy()
 
+class GitignoreDialog(ctk.CTkToplevel):
+    def __init__(self, parent):
+        super().__init__(parent)
+        self.title("Gerador de .gitignore")
+        self.geometry("400x450")
+        self.transient(parent)
+        self.grab_set()
+        
+        self.configure(fg_color=C["bg"])
+        
+        ctk.CTkLabel(self, text="🛡️ Gerar .gitignore", font=ctk.CTkFont("Segoe UI", 18, "bold"), text_color=C["text"]).pack(pady=(20, 5))
+        ctk.CTkLabel(self, text="Selecione as tecnologias do seu projeto:", font=ctk.CTkFont("Segoe UI", 12), text_color=C["text_dim"]).pack(pady=(0, 10))
+        
+        self.scroll = ctk.CTkScrollableFrame(self, fg_color=C["input_bg"], border_width=1, border_color=C["card_border"])
+        self.scroll.pack(fill="both", expand=True, padx=30, pady=10)
+        
+        templates = ["Python", "Node.js", "React/Next.js", "Java", "C++", "Godot", "Unity", "Generico"]
+        self.checkboxes = {}
+        
+        for t in templates:
+            var = ctk.IntVar(value=1 if t == "Python" else 0)
+            cb = ctk.CTkCheckBox(self.scroll, text=t, variable=var, font=ctk.CTkFont("Segoe UI", 13), text_color=C["text"], fg_color=C["blue"], hover_color=C["blue_dark"])
+            cb.pack(anchor="w", padx=10, pady=8)
+            self.checkboxes[t] = var
+        
+        self.result = None
+        
+        btns = ctk.CTkFrame(self, fg_color="transparent")
+        btns.pack(pady=20)
+        
+        ctk.CTkButton(btns, text="Cancelar", width=100, fg_color=C["card_border"], hover_color=C["red_dark"], command=self.destroy).pack(side="left", padx=10)
+        ctk.CTkButton(btns, text="Gerar Arquivo", width=120, font=ctk.CTkFont("Segoe UI", 12, "bold"), fg_color=C["blue"], hover_color=C["blue_dark"], command=self._confirm).pack(side="left", padx=10)
+        
+    def _confirm(self):
+        self.result = [t for t, var in self.checkboxes.items() if var.get() == 1]
+        self.destroy()
+
 class ProjectReadmeDialog(ctk.CTkToplevel):
     def __init__(self, parent, project_path):
         super().__init__(parent)
@@ -1110,6 +1147,17 @@ class App(ctk.CTk):
             command=self.browse_folder)
         self.btn_browse.grid(row=1, column=2, padx=(0, 20), pady=(0, 18))
 
+        ws_actions = ctk.CTkFrame(ws, fg_color="transparent")
+        ws_actions.grid(row=2, column=0, columnspan=3, sticky="ew", padx=20, pady=(0, 16))
+        
+        self.btn_gitignore = ctk.CTkButton(
+            ws_actions, text="🛡️ Gerar .gitignore Inteligente", width=180, height=30,
+            font=ctk.CTkFont("Segoe UI", 11, "bold"),
+            fg_color="transparent", hover_color=C["card_border"], text_color=C["blue"],
+            border_width=1, border_color=C["card_border"],
+            command=self.open_gitignore_generator)
+        self.btn_gitignore.pack(side="left")
+
         # ── 2. Action cards ───────────────────────────────────────────────────
         self.actions_frame = ctk.CTkFrame(self.tab_push, fg_color="transparent")
         self.actions_frame.grid(row=1, column=0, sticky="ew", pady=(0, 18))
@@ -1491,42 +1539,50 @@ class App(ctk.CTk):
 
     def ensure_gitignore(self):
         if not os.path.exists(".gitignore"):
-            conteudo = """# Ambiente
-.env
-.env.*
-!.env.example
+            self.generate_specific_gitignore(["Generico"], silent=True)
 
-# IDEs
-.vscode/
-.idea/
+    def open_gitignore_generator(self):
+        dialog = GitignoreDialog(self)
+        self.wait_window(dialog)
+        if dialog.result:
+            self.generate_specific_gitignore(dialog.result)
 
-# SO
-.DS_Store
-Thumbs.db
-desktop.ini
-
-# Python
-__pycache__/
-*.pyc
-*.pyd
-*.pyo
-
-# Virtualenvs
-venv/
-.venv/
-env/
-.env/
-
-# Build
-*.log
-build/
-dist/
-*.egg
-*.egg-info/
-"""
-            with open(".gitignore", "w", encoding="utf-8") as f:
-                f.write(conteudo)
-            self.log("[SYS] .gitignore gerado.", "info")
+    def generate_specific_gitignore(self, template_names, silent=False):
+        base_ignores = "# Ambiente / SO\n.env\n.env.*\n!.env.example\n.DS_Store\nThumbs.db\ndesktop.ini\n\n# IDEs\n.vscode/\n.idea/\n\n"
+        
+        templates = {
+            "Python": "# Python\n__pycache__/\n*.py[cod]\n*$py.class\nvenv/\n.venv/\nenv/\n.env/\nbuild/\ndist/\n*.egg-info/\n*.log\n",
+            "Node.js": "# Node\nnode_modules/\nnpm-debug.log\nyarn-error.log\nbuild/\ndist/\ncoverage/\n",
+            "Java": "# Java\n*.class\n*.log\n*.jar\n*.war\n*.nar\n*.ear\n*.zip\n*.tar.gz\n*.rar\n# Maven/Gradle\ntarget/\nbuild/\n.gradle/\n",
+            "C++": "# C++\n*.o\n*.obj\n*.exe\n*.dll\n*.so\n*.dylib\n*.out\n*.app\n# CMake\nCMakeCache.txt\nCMakeFiles/\ncmake_install.cmake\nMakefile\nbin/\nbuild/\n",
+            "React/Next.js": "# React / Next.js\nnode_modules/\n.pnp\n.pnp.js\ncoverage/\nbuild/\n.next/\nout/\n.env.local\n.env.development.local\n.env.test.local\n.env.production.local\n",
+            "Godot": "# Godot\n.godot/\n*.translation\nexport_presets.cfg\n",
+            "Unity": "# Unity\n[Ll]ibrary/\n[Tt]emp/\n[Oo]bj/\n[Bb]uild/\n[Bb]uilds/\n[Ll]ogs/\n[Uu]ser[Ss]ettings/\n*.csproj\n*.unityproj\n*.sln\n*.suo\n*.tmp\n*.user\n*.userprefs\n*.pidb\n*.booproj\n*.svd\n*.pdb\n*.mdb\n*.opendb\n*.VC.db\n.consulo/\n*.ds_store\n",
+            "Generico": "# Generic\nbuild/\ndist/\n*.log\ntmp/\n"
+        }
+        
+        selected_content = "\n".join(templates.get(t, "") for t in template_names)
+        if not selected_content.strip():
+            selected_content = templates["Generico"]
+            
+        content = base_ignores + selected_content
+        
+        path = self.entry_folder.get()
+        if not path or not os.path.exists(path):
+            if not silent: self.log("[ERRO] Diretório inválido para gerar .gitignore.", "error")
+            return
+            
+        git_ignore_path = os.path.join(path, ".gitignore")
+        
+        try:
+            with open(git_ignore_path, "w", encoding="utf-8") as f:
+                f.write(content)
+            if not silent: 
+                names_str = ", ".join(template_names)
+                self.log(f"[SYS] .gitignore ({names_str}) gerado com sucesso.", "success")
+        except Exception as e:
+            if not silent: 
+                self.log(f"[ERRO] Falha ao criar .gitignore: {e}", "error")
 
     def get_code_changes(self):
         self.ensure_gitignore()
