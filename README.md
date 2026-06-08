@@ -75,3 +75,9 @@ Contribuições são bem-vindas! Sinta-se à vontade para abrir uma *issue* ou e
 ## Licença
 
 Distribuído sob a licença MIT.
+
+### 🔄 Atualização (08/06/2026)
+- Implementado sistema de visualização expandível no histórico de projetos, exibindo metadados do commit (hash, autor, mensagem) e um log detalhado de arquivos alterados (`git show --name-status`).
+- Refatorado o fluxo de commit para utilizar mensagens dinâmicas geradas pela IA, eliminando mensagens estáticas em favor de resumos contextuais das mudanças realizadas.
+- Ajustada a persistência de mensagens de commit através de arquivo temporário (`.git/AUTO_MSG`) para garantir a integridade dos caracteres especiais durante a execução dos comandos git.
+- Otimizada a integração entre os métodos de geração de README e o workflow de deploy, garantindo que o resumo da IA seja devidamente propagado para a mensagem do commit.

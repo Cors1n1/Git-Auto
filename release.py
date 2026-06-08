@@ -649,7 +649,7 @@ class App(ctk.CTk):
             ctk.CTkLabel(self.project_history_scroll, text="Repositório Git não inicializado.", text_color=C["muted"]).pack(pady=40)
             return
             
-        cmd = f'git -C "{path}" log --remotes --format="%ad" --date=format:"%d/%m/%Y %H:%M"'
+        cmd = f'git -C "{path}" log --remotes --format="%H|%ad|%an|%s" --date=format:"%d/%m/%Y %H:%M"'
         try:
             res = subprocess.run(cmd, shell=True, capture_output=True, text=True, encoding="utf-8", errors="replace")
             lines = [l for l in res.stdout.strip().splitlines() if l.strip()]
@@ -662,17 +662,45 @@ class App(ctk.CTk):
             
         folder_name = os.path.basename(path)
         
-        for date in lines:
-            card = ctk.CTkFrame(self.project_history_scroll, fg_color="transparent")
-            card.pack(fill="x", pady=2)
+        for line in lines:
+            parts = line.split("|", 3)
+            if len(parts) < 4: continue
+            c_hash, date, author, msg = parts
             
-            btn_text = f"✓   {folder_name}   •   {date}   (Sucesso)"
+            container = ctk.CTkFrame(self.project_history_scroll, fg_color=C["card"], corner_radius=6, border_width=1, border_color=C["card_border"])
+            container.pack(fill="x", pady=4)
             
-            btn = ctk.CTkButton(card, text=btn_text, anchor="w", height=34,
-                                fg_color=C["input_bg"], hover_color=C["card_border"],
+            details_frame = ctk.CTkFrame(container, fg_color="transparent")
+            
+            def toggle_details(df=details_frame, h=c_hash, p=path, a=author, m=msg):
+                if df.winfo_ismapped():
+                    df.pack_forget()
+                else:
+                    if not df.winfo_children():
+                        ctk.CTkLabel(df, text=f"Hash: {h[:7]}   |   Autor: {a}", font=ctk.CTkFont("Consolas", 10), text_color=C["text_dim"]).pack(anchor="w", padx=14, pady=(8, 0))
+                        ctk.CTkLabel(df, text=f"Mensagem: {m}", font=ctk.CTkFont("Segoe UI", 12, slant="italic"), text_color=C["text"]).pack(anchor="w", padx=14, pady=(2, 8))
+                        
+                        cmd_stat = f'git -C "{p}" show --name-status --format="%B%n--- Arquivos Alterados ---" {h}'
+                        try:
+                            stat_res = subprocess.run(cmd_stat, shell=True, capture_output=True, text=True, encoding="utf-8", errors="replace")
+                            stats = stat_res.stdout.strip()
+                            if stats:
+                                box = ctk.CTkTextbox(df, height=120, font=ctk.CTkFont("Consolas", 11), fg_color=C["console_bg"], text_color=C["text_dim"], border_width=1, border_color=C["card_border"])
+                                box.pack(fill="x", padx=14, pady=(0, 14))
+                                box.insert("1.0", stats)
+                                box.configure(state="disabled")
+                        except Exception:
+                            pass
+                    df.pack(fill="x", expand=True)
+            
+            btn_text = f"✓   {folder_name}   •   {date}   (Clique para expandir)"
+            
+            btn = ctk.CTkButton(container, text=btn_text, anchor="w", height=38,
+                                fg_color="transparent", hover_color=C["input_bg"],
                                 text_color=C["green"],
-                                font=ctk.CTkFont("Segoe UI", 12, "bold"))
-            btn.pack(side="left", fill="x", expand=True, padx=4)
+                                font=ctk.CTkFont("Segoe UI", 12, "bold"),
+                                command=toggle_details)
+            btn.pack(side="top", fill="x")
 
     def save_to_history(self, current_path, branch="master", status="ok"):
         history = load_history()
@@ -858,32 +886,32 @@ Retorne APENAS o markdown dessa nova seção, sem blocos (```markdown).
                     
                 if is_append:
                     if "Histórico de Atualizações" not in current_readme:
-                        return current_readme.rstrip() + "\n\n## 📋 Histórico de Atualizações\n\n" + content.strip()
-                    return current_readme.rstrip() + "\n\n" + content.strip()
+                        return current_readme.rstrip() + "\n\n## 📋 Histórico de Atualizações\n\n" + content.strip(), content.strip()
+                    return current_readme.rstrip() + "\n\n" + content.strip(), content.strip()
                 
-                return content.strip()
+                return content.strip(), "Initial commit via Git Auto"
 
             except google_exceptions.ResourceExhausted as e:
                 err = str(e)
                 if "PerDay" in err or "per_day" in err.lower():
                     self.log("⚠ Cota diária de IA esgotada. Usando fallback local…", "warn")
                     self.log("  Adicione billing em https://ai.dev/rate-limit para remover o limite.", "debug")
-                    return None
+                    return None, None
                 wait = retry_delays[attempt] if attempt < len(retry_delays) else 120
                 self.log(f"[IA] Rate-limit. Tentativa {attempt+1}/4 — aguardando {wait}s…", "warn")
                 if attempt < 3:
                     time.sleep(wait)
                 else:
                     self.log("Limite persistente. Usando fallback local.", "warn")
-                    return None
+                    return None, None
 
             except google_exceptions.GoogleAPIError as e:
                 self.log(f"[IA] Erro API: {type(e).__name__} — {e}", "error")
-                return None
+                return None, None
             except Exception as e:
                 self.log(f"[IA] Erro inesperado: {type(e).__name__} — {e}", "error")
-                return None
-        return None
+                return None, None
+        return None, None
 
     def generate_readme_fallback(self):
         self.log("[SYS] Gerando README a partir da estrutura local…", "info")
@@ -970,13 +998,23 @@ Contribuições são bem-vindas! Abra uma *issue* ou envie um *pull request*.
 Distribuído sob a licença MIT.
 """
         self.log("[SYS] README local gerado com sucesso.", "info")
-        return readme
+        return readme, "Commit automático via Git Auto (Fallback)"
 
     # ── WORKFLOW ──────────────────────────────────────────────────────────────
-    def execute_workflow(self, project_path):
+    def execute_workflow(self, project_path, commit_message=None):
         self.run_command("git add README.md")
-        self.run_command('git commit -m "docs: atualiza documentação via IA [skip ci]"',
-                         check=False)
+        
+        if not commit_message:
+            commit_message = "docs: atualiza documentação via IA [skip ci]"
+            
+        msg_file = os.path.join(project_path, ".git", "AUTO_MSG")
+        with open(msg_file, "w", encoding="utf-8") as f:
+            f.write(commit_message)
+            
+        self.run_command(f'git commit -F ".git/AUTO_MSG"', check=False)
+        if os.path.exists(msg_file):
+            os.remove(msg_file)
+            
         branch = self.run_command("git branch --show-current") or "master"
         self.log(f"[GIT] Push → branch '{branch}'…", "info")
         try:
@@ -1051,7 +1089,9 @@ Distribuído sob a licença MIT.
                 self.log("[AVISO] Nenhuma alteração detectada.", "warn")
                 return
 
-            new_readme = self.generate_readme(diff) or self.generate_readme_fallback()
+            new_readme, ai_summary = self.generate_readme(diff)
+            if not new_readme:
+                new_readme, ai_summary = self.generate_readme_fallback()
             if not new_readme:
                 self.log("[ERRO] Não foi possível gerar README. Abortando.", "error")
                 return
@@ -1062,7 +1102,7 @@ Distribuído sob a licença MIT.
                 with open("README.md", "w", encoding="utf-8") as f:
                     f.write(new_readme + "\n")
                 self.log("[SYS] README.md salvo.", "info")
-                self.execute_workflow(path)
+                self.execute_workflow(path, commit_message=ai_summary)
             else:
                 self.log("[SYS] Operação cancelada pelo usuário.", "info")
         finally:
@@ -1113,7 +1153,9 @@ Distribuído sob a licença MIT.
                 return
 
             diff = self.get_code_changes()
-            new_readme = self.generate_readme(diff) or self.generate_readme_fallback()
+            new_readme, ai_summary = self.generate_readme(diff)
+            if not new_readme:
+                new_readme, ai_summary = self.generate_readme_fallback()
             if not new_readme:
                 self.log("[ERRO] Não foi possível gerar README. Abortando.", "error")
                 return
@@ -1123,7 +1165,7 @@ Distribuído sob a licença MIT.
                                             "Deseja fazer o upload dos arquivos agora?"):
                 with open("README.md", "w", encoding="utf-8") as f:
                     f.write(new_readme + "\n")
-                self.execute_workflow(path)
+                self.execute_workflow(path, commit_message=ai_summary)
             else:
                 self.log("[SYS] Upload cancelado pelo usuário.", "info")
         finally:
