@@ -428,12 +428,12 @@ class App(ctk.CTk):
         self.btn_browse.grid(row=1, column=2, padx=(0, 20), pady=(0, 18))
 
         # ── 2. Action cards ───────────────────────────────────────────────────
-        acts = ctk.CTkFrame(self.main_frame, fg_color="transparent")
-        acts.grid(row=1, column=0, sticky="ew", pady=(0, 18))
-        acts.grid_columnconfigure((0, 1), weight=1)
+        self.actions_frame = ctk.CTkFrame(self.main_frame, fg_color="transparent")
+        self.actions_frame.grid(row=1, column=0, sticky="ew", pady=(0, 18))
+        self.actions_frame.grid_columnconfigure((0, 1), weight=1)
 
         # Card — Atualizar
-        cu = ctk.CTkFrame(acts, fg_color=C["card"], corner_radius=12,
+        cu = ctk.CTkFrame(self.actions_frame, fg_color=C["card"], corner_radius=12,
                           border_width=1, border_color="#1e3a5f")
         cu.grid(row=0, column=0, sticky="nsew", padx=(0, 10))
         cu.grid_columnconfigure(0, weight=1)
@@ -459,7 +459,7 @@ class App(ctk.CTk):
                              padx=20, pady=(14, 18))
 
         # Card — Novo Projeto
-        cn = ctk.CTkFrame(acts, fg_color=C["card"], corner_radius=12,
+        cn = ctk.CTkFrame(self.actions_frame, fg_color=C["card"], corner_radius=12,
                           border_width=1, border_color="#1a3d2b")
         cn.grid(row=0, column=1, sticky="nsew", padx=(10, 0))
         cn.grid_columnconfigure(0, weight=1)
@@ -484,19 +484,29 @@ class App(ctk.CTk):
         self.btn_new.grid(row=1, column=0, sticky="ew",
                           padx=20, pady=(14, 18))
 
-        # ── 3. Console ────────────────────────────────────────────────────────
-        con_outer = ctk.CTkFrame(self.main_frame, fg_color=C["card"],
-                                 corner_radius=12, border_width=1,
-                                 border_color=C["card_border"])
-        con_outer.grid(row=2, column=0, sticky="nsew")
-        con_outer.grid_rowconfigure(1, weight=1)
-        con_outer.grid_columnconfigure(0, weight=1)
-
-        con_hdr = ctk.CTkFrame(con_outer, fg_color="transparent")
-        con_hdr.grid(row=0, column=0, sticky="ew", padx=20, pady=(14, 4))
+        # ── 3. Tabs (Console e Histórico) ─────────────────────────────────────
+        self.tabs = ctk.CTkTabview(self.main_frame, fg_color=C["card"],
+                                   corner_radius=12, border_width=1,
+                                   border_color=C["card_border"],
+                                   text_color=C["text_dim"],
+                                   segmented_button_selected_color=C["blue_dark"],
+                                   segmented_button_selected_hover_color=C["blue"],
+                                   segmented_button_unselected_color=C["input_bg"],
+                                   segmented_button_unselected_hover_color=C["card_border"])
+        self.tabs.grid(row=2, column=0, sticky="nsew")
+        
+        self.tabs.add("Log de Execução")
+        self.tabs.add("Histórico de Pushes (Local)")
+        
+        tab_log = self.tabs.tab("Log de Execução")
+        tab_log.grid_rowconfigure(1, weight=1)
+        tab_log.grid_columnconfigure(0, weight=1)
+        
+        con_hdr = ctk.CTkFrame(tab_log, fg_color="transparent")
+        con_hdr.grid(row=0, column=0, sticky="ew", padx=10, pady=(10, 4))
         con_hdr.grid_columnconfigure(0, weight=1)
 
-        ctk.CTkLabel(con_hdr, text=">_  Log de Execução",
+        ctk.CTkLabel(con_hdr, text=">_ Saída de Comando",
                      font=ctk.CTkFont("Segoe UI", 13, "bold"),
                      text_color=C["text"]).grid(row=0, column=0, sticky="w")
 
@@ -510,13 +520,21 @@ class App(ctk.CTk):
         self.btn_clear_log.grid(row=0, column=1, sticky="e")
 
         self.console = ctk.CTkTextbox(
-            con_outer,
+            tab_log,
             font=ctk.CTkFont("Consolas", 12),
             fg_color=C["console_bg"],
             text_color=C["console_fg"],
             wrap="word", corner_radius=0)
         self.console.grid(row=1, column=0, sticky="nsew",
-                          padx=16, pady=(4, 16))
+                          padx=10, pady=(4, 10))
+                          
+        # Aba Histórico
+        tab_hist = self.tabs.tab("Histórico de Pushes (Local)")
+        tab_hist.grid_rowconfigure(0, weight=1)
+        tab_hist.grid_columnconfigure(0, weight=1)
+        
+        self.project_history_scroll = ctk.CTkScrollableFrame(tab_hist, fg_color="transparent")
+        self.project_history_scroll.grid(row=0, column=0, sticky="nsew", padx=10, pady=10)
 
     # ── SYSTEM TRAY ───────────────────────────────────────────────────────────
     def create_image(self):
@@ -620,6 +638,41 @@ class App(ctk.CTk):
         self.entry_folder.delete(0, "end")
         self.entry_folder.insert(0, path)
         self.log(f"[INFO] Diretório carregado: {path}", "info")
+        self.load_project_commits(path)
+
+    def load_project_commits(self, path):
+        self.tabs.set("Histórico de Pushes (Local)")
+        for w in self.project_history_scroll.winfo_children():
+            w.destroy()
+            
+        if not os.path.isdir(os.path.join(path, ".git")):
+            ctk.CTkLabel(self.project_history_scroll, text="Repositório Git não inicializado.", text_color=C["muted"]).pack(pady=40)
+            return
+            
+        cmd = f'git -C "{path}" log --remotes --format="%ad" --date=format:"%d/%m/%Y %H:%M"'
+        try:
+            res = subprocess.run(cmd, shell=True, capture_output=True, text=True, encoding="utf-8", errors="replace")
+            lines = [l for l in res.stdout.strip().splitlines() if l.strip()]
+        except Exception:
+            lines = []
+            
+        if not lines:
+            ctk.CTkLabel(self.project_history_scroll, text="Nenhum push efetuado neste repositório ainda.", text_color=C["muted"]).pack(pady=40)
+            return
+            
+        folder_name = os.path.basename(path)
+        
+        for date in lines:
+            card = ctk.CTkFrame(self.project_history_scroll, fg_color="transparent")
+            card.pack(fill="x", pady=2)
+            
+            btn_text = f"✓   {folder_name}   •   {date}   (Sucesso)"
+            
+            btn = ctk.CTkButton(card, text=btn_text, anchor="w", height=34,
+                                fg_color=C["input_bg"], hover_color=C["card_border"],
+                                text_color=C["green"],
+                                font=ctk.CTkFont("Segoe UI", 12, "bold"))
+            btn.pack(side="left", fill="x", expand=True, padx=4)
 
     def save_to_history(self, current_path, branch="master", status="ok"):
         history = load_history()
@@ -694,6 +747,7 @@ class App(ctk.CTk):
             self.entry_folder.delete(0, "end")
             self.entry_folder.insert(0, folder)
             self.log(f"[INFO] Pasta selecionada: {folder}", "info")
+            self.load_project_commits(folder)
 
     # ── GIT HELPERS ───────────────────────────────────────────────────────────
     def run_command(self, command, check=True):
@@ -914,7 +968,47 @@ Distribuído sob a licença MIT.
             self.save_to_history(project_path, branch=branch, status="erro")
             return False
 
-    # ── THREADS ───────────────────────────────────────────────────────────────
+    # ── THREADS E CONFIRMAÇÕES INLINE ─────────────────────────────────────────
+    def ask_inline_confirmation(self, title, message):
+        """Pausa a thread atual e mostra um banner de confirmação na UI principal."""
+        self._confirm_result = None
+        self._confirm_event = threading.Event()
+        self.after(0, self._show_inline_confirmation, title, message)
+        self._confirm_event.wait()
+        return self._confirm_result
+
+    def _show_inline_confirmation(self, title, message):
+        # Esconde os cards de ação temporariamente
+        self.actions_frame.grid_forget()
+        
+        # Cria o painel de confirmação integrado
+        self.confirm_frame = ctk.CTkFrame(self.main_frame, fg_color=C["warn_bg"], corner_radius=12, border_width=1, border_color=C["orange"])
+        self.confirm_frame.grid(row=1, column=0, sticky="ew", pady=(0, 18))
+        self.confirm_frame.grid_columnconfigure(0, weight=1)
+        
+        ctk.CTkLabel(self.confirm_frame, text=title, font=ctk.CTkFont("Segoe UI", 16, "bold"), text_color=C["orange"]).pack(pady=(15, 5))
+        ctk.CTkLabel(self.confirm_frame, text=message, font=ctk.CTkFont("Segoe UI", 13), text_color=C["text"]).pack(pady=(0, 20))
+        
+        btns = ctk.CTkFrame(self.confirm_frame, fg_color="transparent")
+        btns.pack(pady=(0, 15))
+        
+        ctk.CTkButton(btns, text="Cancelar", width=110, height=36,
+                      font=ctk.CTkFont("Segoe UI", 12, "bold"),
+                      fg_color=C["card_border"], hover_color=C["red_dark"], text_color=C["text"],
+                      command=lambda: self._resolve_confirmation(False)).pack(side="left", padx=10)
+                      
+        ctk.CTkButton(btns, text="Confirmar ✓", width=110, height=36,
+                      font=ctk.CTkFont("Segoe UI", 12, "bold"),
+                      fg_color=C["green_dark"], hover_color=C["green"], text_color="white",
+                      command=lambda: self._resolve_confirmation(True)).pack(side="left", padx=10)
+
+    def _resolve_confirmation(self, result):
+        self.confirm_frame.destroy()
+        # Restaura os cards de ação originais
+        self.actions_frame.grid(row=1, column=0, sticky="ew", pady=(0, 18))
+        self._confirm_result = result
+        self._confirm_event.set()
+
     def start_update_thread(self):
         self.set_processing_state(True)
         threading.Thread(target=self.update_existing_project, daemon=True).start()
@@ -937,9 +1031,9 @@ Distribuído sob a licença MIT.
                 self.log("[ERRO] Não foi possível gerar README. Abortando.", "error")
                 return
 
-            if messagebox.askyesno("Confirmar",
-                                   "Documentação gerada com sucesso.\n"
-                                   "Salvar README.md, comitar e fazer push?"):
+            if self.ask_inline_confirmation("⚠️ Confirmar Ação",
+                                            "Documentação gerada com sucesso.\n"
+                                            "Salvar README.md, comitar e fazer push remoto agora?"):
                 with open("README.md", "w", encoding="utf-8") as f:
                     f.write(new_readme + "\n")
                 self.log("[SYS] README.md salvo.", "info")
@@ -999,9 +1093,9 @@ Distribuído sob a licença MIT.
                 self.log("[ERRO] Não foi possível gerar README. Abortando.", "error")
                 return
 
-            if messagebox.askyesno("Finalizar Setup",
-                                   f"Repositório '{repo_name}' criado.\n"
-                                   "Fazer upload para o GitHub agora?"):
+            if self.ask_inline_confirmation("🚀 Finalizar Setup",
+                                            f"O repositório '{repo_name}' foi criado no GitHub!\n"
+                                            "Deseja fazer o upload dos arquivos agora?"):
                 with open("README.md", "w", encoding="utf-8") as f:
                     f.write(new_readme + "\n")
                 self.execute_workflow(path)

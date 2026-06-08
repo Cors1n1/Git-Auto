@@ -14,8 +14,9 @@ O **git_auto** é uma ferramenta de automação desenvolvida em Python que integ
 
 - **Criação Assistida:** Criação de novos repositórios locais e remotos (GitHub) com um clique.
 - **Documentação Automática:** Gera ou atualiza o `README.md` baseando-se nas mudanças reais do código (*git diff*).
-- **Rastreabilidade:** Histórico persistente de execuções com log detalhado de status.
-- **Workflow Integrado:** Automação de `add`, `commit` (com mensagens sugeridas) e `push`.
+- **Interface de Abas:** Navegação integrada entre console de logs e histórico de pushes locais.
+- **Rastreabilidade:** Histórico persistente e visualização de logs de commits remotos.
+- **Workflow Integrado:** Automação de `add`, `commit` (com mensagens sugeridas) e `push` com confirmações in-line na UI.
 - **System Tray:** Suporte para minimização na bandeja do sistema para monitoramento contínuo.
 
 ## Estrutura do Projeto
@@ -25,7 +26,7 @@ O **git_auto** é uma ferramenta de automação desenvolvida em Python que integ
 ├── .env              # Variáveis de ambiente (API keys e tokens)
 ├── .gitignore        # Definição de arquivos ignorados pelo Git
 ├── history.json      # Registro de logs de execução e status dos repositórios
-├── release.py        # Script principal com a lógica da GUI e integração Git/IA
+├── release.py        # Script principal com a lógica da GUI, threads e integração Git/IA
 └── requirements.txt  # Dependências do projeto
 ```
 
@@ -61,12 +62,12 @@ Pillow==9.4.0
    python release.py
    ```
 
-## Funcionalidades Recentes
+## Funcionalidades Recentes (v1.2)
 
-- **Integração com GitHub API:** Automatização da criação de repositórios remotos.
-- **Melhorias de UI:** Adição de cartões de ação, console de logs com cores e status de processamento (Spinner/ProgressBar).
-- **Fallback IA:** Implementação de gerador de README local caso a cota da API seja excedida.
-- **Gerenciamento de Logs:** Adição do `history.json` para persistência de status de sincronização por projeto.
+- **Abas de Navegação:** Substituição do console único por um sistema de abas (Logs vs. Histórico de Pushes).
+- **Histórico de Pushes:** Nova funcionalidade de leitura e listagem automática de logs remotos (`git log --remotes`) integrada à interface.
+- **Confirmadores In-line:** Substituição de janelas modais nativas por painéis de confirmação integrados à UI, melhorando a experiência de fluxo.
+- **Otimização de UI:** Refatoração da estrutura de frames para maior responsividade e organização dinâmica de elementos.
 
 ## Contribuição
 
