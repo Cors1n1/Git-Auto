@@ -589,46 +589,46 @@ class App(ctk.CTk):
             display_path = path if len(path) <= 32 else f"…{path[-29:]}"
             exists       = os.path.isdir(path)
 
-            # Card Premium do Histórico
-            card = ctk.CTkFrame(self.history_frame, fg_color="#181b21",
-                                corner_radius=8, border_width=1, border_color="#2b2e38")
-            card.pack(fill="x", pady=6, padx=2)
-            card.grid_columnconfigure(1, weight=1)
+            # Card Premium do Histórico (Vertical)
+            card = ctk.CTkFrame(self.history_frame, fg_color="#1a1d24",
+                                corner_radius=10, border_width=1, border_color="#2b2e38")
+            card.pack(fill="x", pady=6, padx=4)
             
             icon_color = "#2ecc71" if status == "ok" else "#e74c3c"
             
-            # Barra lateral colorida (Indicador de Status)
-            status_bar = ctk.CTkFrame(card, fg_color=icon_color, width=4, corner_radius=4)
-            status_bar.grid(row=0, column=0, sticky="ns", pady=8, padx=(6, 0))
+            # Linha superior: Ícone, Nome e Fechar
+            top_row = ctk.CTkFrame(card, fg_color="transparent")
+            top_row.pack(fill="x", padx=12, pady=(12, 0))
             
-            # Informações principais
-            info_frame = ctk.CTkFrame(card, fg_color="transparent")
-            info_frame.grid(row=0, column=1, sticky="w", padx=12, pady=12)
+            ctk.CTkLabel(top_row, text="●", font=ctk.CTkFont(size=14), text_color=icon_color).pack(side="left", padx=(0, 8))
+            ctk.CTkLabel(top_row, text=folder_name, 
+                         font=ctk.CTkFont("Segoe UI", 14, "bold"), 
+                         text_color="#f8fafc").pack(side="left")
             
-            ctk.CTkLabel(info_frame, text=folder_name, 
-                         font=ctk.CTkFont("Segoe UI", 13, "bold"), 
-                         text_color="#e2e8f0").pack(anchor="w")
-                         
-            status_text = "Sincronizado" if status == "ok" else "Erro no último push"
-            ctk.CTkLabel(info_frame, text=f"{date}  •  {status_text}", 
-                         font=ctk.CTkFont("Segoe UI", 10), 
-                         text_color=icon_color if status != "ok" else "#94a3b8").pack(anchor="w", pady=(2, 0))
-
-            # Ações rápidas
-            actions = ctk.CTkFrame(card, fg_color="transparent")
-            actions.grid(row=0, column=2, sticky="e", padx=(0, 10))
-            
-            ctk.CTkButton(actions, text="Abrir", width=60, height=28,
-                          font=ctk.CTkFont("Segoe UI", 11, "bold"),
-                          fg_color="#2563eb", hover_color="#3b82f6", text_color="white",
-                          corner_radius=6,
-                          command=lambda p=path: self.set_folder_from_history(p)).pack(side="left", padx=(0, 5))
-                          
-            ctk.CTkButton(actions, text="✕", width=28, height=28,
+            ctk.CTkButton(top_row, text="✕", width=24, height=24,
                           font=ctk.CTkFont("Segoe UI", 12, "bold"),
-                          fg_color="transparent", hover_color="#c0392b", text_color="#94a3b8",
+                          fg_color="transparent", hover_color="#3f3f46", text_color="#64748b",
+                          corner_radius=4,
+                          command=lambda p=path: self.remove_from_history(p)).pack(side="right")
+                          
+            # Meio: Data e Status
+            mid_row = ctk.CTkFrame(card, fg_color="transparent")
+            mid_row.pack(fill="x", padx=12, pady=(4, 12))
+            
+            status_text = "Sincronizado" if status == "ok" else "Falhou"
+            ctk.CTkLabel(mid_row, text=f"🕐 {date}   •   {status_text}", 
+                         font=ctk.CTkFont("Segoe UI", 11), 
+                         text_color=icon_color if status != "ok" else "#94a3b8").pack(side="left", padx=(20, 0))
+                         
+            # Fundo: Botão Abrir
+            bot_row = ctk.CTkFrame(card, fg_color="transparent")
+            bot_row.pack(fill="x", padx=12, pady=(0, 12))
+            
+            ctk.CTkButton(bot_row, text="Abrir Detalhes do Projeto  →", height=32,
+                          font=ctk.CTkFont("Segoe UI", 12, "bold"),
+                          fg_color="#2563eb", hover_color="#1d4ed8", text_color="white",
                           corner_radius=6,
-                          command=lambda p=path: self.remove_from_history(p)).pack(side="left")
+                          command=lambda p=path: self.set_folder_from_history(p)).pack(fill="x")
 
     def open_project_history(self, path):
         self.set_folder_from_history(path)
@@ -811,18 +811,35 @@ dist/
 
     # ── IA / FALLBACK ─────────────────────────────────────────────────────────
     def generate_readme(self, diff):
-        self.log("[IA] Analisando código e gerando README…", "info")
+        self.log("[IA] Analisando código para gerar documentação…", "info")
         current_readme = ""
         if os.path.exists("README.md"):
             with open("README.md", "r", encoding="utf-8") as f:
                 current_readme = f.read()
 
-        prompt = f"""Você é um desenvolvedor back-end sênior. Baseado neste git diff, crie ou
-atualize o README.md do projeto. Se o README atual estiver vazio, crie do zero.
-Retorne APENAS o markdown final, sem blocos (```markdown).
+        today = datetime.datetime.now().strftime("%d/%m/%Y")
+        is_append = False
+        
+        if not current_readme.strip():
+            # README não existe ou está vazio: cria do zero
+            prompt = f"""Você é um desenvolvedor sênior. Crie um README.md curto e objetivo para este novo projeto, baseado no git diff inicial abaixo.
+Retorne APENAS o markdown final, sem blocos de código (```markdown).
 
---- README ATUAL ---
-{current_readme}
+--- GIT DIFF ---
+{diff}
+"""
+        else:
+            # README já existe: apenas adiciona log de alterações
+            is_append = True
+            prompt = f"""Você é um desenvolvedor sênior.
+Abaixo está o GIT DIFF com as mais recentes modificações de código do projeto.
+Para economizar processamento, NÃO reescreva o README inteiro. Escreva APENAS uma seção de Changelog resumindo o que há de novo, usando exatamente o seguinte formato:
+
+### 🔄 Atualização ({today})
+- Resumo técnico da alteração 1...
+- Resumo técnico da alteração 2...
+
+Retorne APENAS o markdown dessa nova seção, sem blocos (```markdown).
 
 --- GIT DIFF ---
 {diff}
@@ -834,9 +851,17 @@ Retorne APENAS o markdown final, sem blocos (```markdown).
                 content  = response.text.strip()
                 if content.startswith("```markdown"):
                     content = content.replace("```markdown", "", 1)
+                if content.startswith("```"):
+                    content = content.replace("```", "", 1)
                 if content.endswith("```"):
                     content = content[::-1].replace("```"[::-1], "", 1)[::-1]
-                return content
+                    
+                if is_append:
+                    if "Histórico de Atualizações" not in current_readme:
+                        return current_readme.rstrip() + "\n\n## 📋 Histórico de Atualizações\n\n" + content.strip()
+                    return current_readme.rstrip() + "\n\n" + content.strip()
+                
+                return content.strip()
 
             except google_exceptions.ResourceExhausted as e:
                 err = str(e)

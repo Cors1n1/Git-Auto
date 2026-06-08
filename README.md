@@ -13,7 +13,7 @@ O **git_auto** é uma ferramenta de automação desenvolvida em Python que integ
 ## Funcionalidades
 
 - **Criação Assistida:** Criação de novos repositórios locais e remotos (GitHub) com um clique.
-- **Documentação Automática:** Gera ou atualiza o `README.md` baseando-se nas mudanças reais do código (*git diff*).
+- **Documentação Automática:** Gera ou atualiza o `README.md` baseando-se nas mudanças reais do código, suportando criação inicial ou adição incremental de logs de atualização.
 - **Interface de Abas:** Navegação integrada entre console de logs e histórico de pushes locais.
 - **Rastreabilidade:** Histórico persistente e visualização de logs de commits remotos.
 - **Workflow Integrado:** Automação de `add`, `commit` (com mensagens sugeridas) e `push` com confirmações in-line na UI.
@@ -56,18 +56,17 @@ Pillow==9.4.0
    - `GITHUB_USERNAME`: Seu nome de usuário no GitHub.
 
 3. **Execução:**
-   Certifique-se de que todas as dependências estão instaladas e execute o script:
    ```bash
    pip install -r requirements.txt
    python release.py
    ```
 
-## Funcionalidades Recentes (v1.2)
+## 📋 Histórico de Atualizações
 
-- **Abas de Navegação:** Substituição do console único por um sistema de abas (Logs vs. Histórico de Pushes).
-- **Histórico de Pushes:** Nova funcionalidade de leitura e listagem automática de logs remotos (`git log --remotes`) integrada à interface.
-- **Confirmadores In-line:** Substituição de janelas modais nativas por painéis de confirmação integrados à UI, melhorando a experiência de fluxo.
-- **Otimização de UI:** Refatoração da estrutura de frames para maior responsividade e organização dinâmica de elementos.
+### 🔄 Atualização (22/05/2024)
+- Refatoração do design dos cards de histórico: mudança para layout vertical com separação clara de blocos (Header, Status e Ação).
+- Inclusão de botão de remoção rápida na interface de histórico.
+- Otimização do fluxo da IA para documentação: o sistema agora diferencia a criação de um README do zero da adição de logs de alterações (*Changelog*), evitando redundância e processamento desnecessário ao atualizar a documentação.
 
 ## Contribuição
 
