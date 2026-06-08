@@ -81,3 +81,8 @@ Distribuído sob a licença MIT.
 - Refatorado o fluxo de commit para utilizar mensagens dinâmicas geradas pela IA, eliminando mensagens estáticas em favor de resumos contextuais das mudanças realizadas.
 - Ajustada a persistência de mensagens de commit através de arquivo temporário (`.git/AUTO_MSG`) para garantir a integridade dos caracteres especiais durante a execução dos comandos git.
 - Otimizada a integração entre os métodos de geração de README e o workflow de deploy, garantindo que o resumo da IA seja devidamente propagado para a mensagem do commit.
+
+### 🔄 Atualização (08/06/2026)
+- Refatorada exibição de detalhes dos commits para separar mensagem e lista de arquivos.
+- Implementado CTkTextbox dinâmico para melhor legibilidade das mensagens de commit.
+- Otimizado o parsing dos comandos Git via delimitador customizado.

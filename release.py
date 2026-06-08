@@ -672,22 +672,36 @@ class App(ctk.CTk):
             
             details_frame = ctk.CTkFrame(container, fg_color="transparent")
             
-            def toggle_details(df=details_frame, h=c_hash, p=path, a=author, m=msg):
+            def toggle_details(df=details_frame, h=c_hash, p=path, a=author):
                 if df.winfo_ismapped():
                     df.pack_forget()
                 else:
                     if not df.winfo_children():
-                        ctk.CTkLabel(df, text=f"Hash: {h[:7]}   |   Autor: {a}", font=ctk.CTkFont("Consolas", 10), text_color=C["text_dim"]).pack(anchor="w", padx=14, pady=(8, 0))
-                        ctk.CTkLabel(df, text=f"Mensagem: {m}", font=ctk.CTkFont("Segoe UI", 12, slant="italic"), text_color=C["text"]).pack(anchor="w", padx=14, pady=(2, 8))
+                        ctk.CTkLabel(df, text=f"Hash: {h[:7]}   |   Autor: {a}", font=ctk.CTkFont("Consolas", 10), text_color=C["text_dim"]).pack(anchor="w", padx=14, pady=(8, 6))
                         
-                        cmd_stat = f'git -C "{p}" show --name-status --format="%B%n--- Arquivos Alterados ---" {h}'
+                        cmd_stat = f'git -C "{p}" show --name-status --format="%B|||SPLIT|||" {h}'
                         try:
                             stat_res = subprocess.run(cmd_stat, shell=True, capture_output=True, text=True, encoding="utf-8", errors="replace")
-                            stats = stat_res.stdout.strip()
-                            if stats:
-                                box = ctk.CTkTextbox(df, height=120, font=ctk.CTkFont("Consolas", 11), fg_color=C["console_bg"], text_color=C["text_dim"], border_width=1, border_color=C["card_border"])
+                            out = stat_res.stdout.strip()
+                            if "|||SPLIT|||" in out:
+                                msg_part, files_part = out.split("|||SPLIT|||", 1)
+                            else:
+                                msg_part, files_part = out, ""
+                                
+                            msg_part = msg_part.strip()
+                            files_part = files_part.strip()
+                            
+                            if msg_part:
+                                msg_box = ctk.CTkTextbox(df, height=80, font=ctk.CTkFont("Segoe UI", 13), fg_color="transparent", text_color=C["text"], border_width=0)
+                                msg_box.pack(fill="x", padx=10, pady=(0, 4))
+                                msg_box.insert("1.0", msg_part)
+                                msg_box.configure(state="disabled")
+                                
+                            if files_part:
+                                ctk.CTkLabel(df, text="Arquivos Alterados:", font=ctk.CTkFont("Segoe UI", 11, "bold"), text_color=C["text_dim"]).pack(anchor="w", padx=14, pady=(2, 2))
+                                box = ctk.CTkTextbox(df, height=70, font=ctk.CTkFont("Consolas", 11), fg_color=C["console_bg"], text_color=C["text_dim"], border_width=1, border_color=C["card_border"], corner_radius=6)
                                 box.pack(fill="x", padx=14, pady=(0, 14))
-                                box.insert("1.0", stats)
+                                box.insert("1.0", files_part)
                                 box.configure(state="disabled")
                         except Exception:
                             pass
@@ -861,11 +875,12 @@ Retorne APENAS o markdown final, sem blocos de código (```markdown).
             is_append = True
             prompt = f"""Você é um desenvolvedor sênior.
 Abaixo está o GIT DIFF com as mais recentes modificações de código do projeto.
-Para economizar processamento, NÃO reescreva o README inteiro. Escreva APENAS uma seção de Changelog resumindo o que há de novo, usando exatamente o seguinte formato:
+Para garantir uma leitura extremamente rápida no histórico visual, NÃO reescreva o README inteiro. 
+Escreva APENAS uma seção de Changelog EXTREMAMENTE RESUMIDA E DIRETA (máximo de 3 tópicos, com apenas 1 linha curta cada), usando o seguinte formato estrito:
 
 ### 🔄 Atualização ({today})
-- Resumo técnico da alteração 1...
-- Resumo técnico da alteração 2...
+- [Resumo direto da ação 1]
+- [Resumo direto da ação 2]
 
 Retorne APENAS o markdown dessa nova seção, sem blocos (```markdown).
 
