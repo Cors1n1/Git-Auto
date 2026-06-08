@@ -91,3 +91,8 @@ Distribuído sob a licença MIT.
 - Implementada interface para gerenciamento de credenciais (.env) dentro da aplicação.
 - Adicionada janela de configurações com suporte a edição e salvamento de chaves via UI.
 - Otimizada a integração com o GitHub para inclusão automática de autenticação nas URLs remotas.
+
+### 🔄 Atualização (08/06/2026)
+- Removida interrupção forçada na inicialização por falta de credenciais.
+- Implementado prompt automático de configuração inicial via interface.
+- Otimizada a inicialização da API do Gemini.

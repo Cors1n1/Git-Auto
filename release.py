@@ -21,14 +21,8 @@ GITHUB_USERNAME = os.getenv("GITHUB_USERNAME", "")
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "")
 HISTORY_FILE = os.path.join(script_dir, "history.json")
 
-if not GEMINI_API_KEY or not GITHUB_TOKEN or not GITHUB_USERNAME:
-    import tkinter as _tk
-    _root = _tk.Tk(); _root.withdraw()
-    messagebox.showerror("Configuração incompleta",
-        "Verifique se GEMINI_API_KEY, GITHUB_TOKEN e GITHUB_USERNAME\nestão definidos no arquivo .env")
-    exit(1)
-
-genai.configure(api_key=GEMINI_API_KEY)
+if GEMINI_API_KEY:
+    genai.configure(api_key=GEMINI_API_KEY)
 model = genai.GenerativeModel('gemini-3.1-flash-lite')
 
 ctk.set_appearance_mode("dark")
@@ -383,6 +377,13 @@ class App(ctk.CTk):
 
         self.load_history_ui()
         self.log("Sistema inicializado. Interface pronta.", "info")
+        
+        if not GEMINI_API_KEY or not GITHUB_TOKEN or not GITHUB_USERNAME:
+            self.after(500, self.prompt_first_setup)
+            
+    def prompt_first_setup(self):
+        messagebox.showinfo("Bem-vindo ao Git Auto", "Parece que é a sua primeira vez aqui (ou faltam credenciais)!\n\nPor favor, insira o seu Username, Token do GitHub e Chave do Gemini para habilitar todas as funções.")
+        self.open_settings()
 
     # ── SIDEBAR ───────────────────────────────────────────────────────────────
     def _build_sidebar(self):
