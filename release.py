@@ -603,6 +603,11 @@ class CloneProjectView(ctk.CTkFrame):
 
     def _confirm_url(self):
         url = self.entry_url.get().strip()
+        
+        # Limpa âncoras e parâmetros caso a URL tenha sido copiada do navegador com seções do README
+        if "#" in url:
+            url = url.split("#")[0]
+            
         dest = self.entry_dest_url.get().strip()
         if not url or not dest:
             messagebox.showwarning("Aviso", "Preencha a URL e a pasta de destino.")

@@ -120,3 +120,7 @@ Distribuído sob a licença MIT.
 ### 🔄 Atualização (08/06/2026)
 - Ajustado o grid layout do main_frame para corrigir o posicionamento do container.
 - Atualizado o registro de histórico com o timestamp da última execução.
+
+### 🔄 Atualização (08/06/2026)
+- Implementada sanitização de URL para remover âncoras e parâmetros de consulta.
+- Atualizado registro de histórico de execução no arquivo de logs.
