@@ -41,6 +41,7 @@ import customtkinter as ctk
 from tkinter import filedialog, messagebox
 import pystray
 from PIL import Image, ImageDraw
+import ctypes
 
 script_dir = os.path.dirname(os.path.abspath(__file__))
 load_dotenv(os.path.join(script_dir, ".env"), override=True)
@@ -61,6 +62,23 @@ ctk.set_default_color_theme("blue")
 
 # ── Paleta de cores centralizada ──────────────────────────────────────────────
 C = {}
+
+def set_title_bar_color(window, bg_hex, text_hex=None):
+    if os.name != 'nt':
+        return
+    try:
+        hwnd = ctypes.windll.user32.GetParent(window.winfo_id())
+        bg_hex = bg_hex.lstrip('#')
+        r, g, b = int(bg_hex[0:2], 16), int(bg_hex[2:4], 16), int(bg_hex[4:6], 16)
+        bg_colorref = 0x00000000 | (b << 16) | (g << 8) | r
+        ctypes.windll.dwmapi.DwmSetWindowAttribute(hwnd, 35, ctypes.byref(ctypes.c_int(bg_colorref)), ctypes.sizeof(ctypes.c_int))
+        if text_hex:
+            text_hex = text_hex.lstrip('#')
+            tr, tg, tb = int(text_hex[0:2], 16), int(text_hex[2:4], 16), int(text_hex[4:6], 16)
+            text_colorref = 0x00000000 | (tb << 16) | (tg << 8) | tr
+            ctypes.windll.dwmapi.DwmSetWindowAttribute(hwnd, 36, ctypes.byref(ctypes.c_int(text_colorref)), ctypes.sizeof(ctypes.c_int))
+    except Exception:
+        pass
 
 def update_palette(app_theme, app_color):
     global C
@@ -177,6 +195,50 @@ def update_palette(app_theme, app_color):
             "console_bg":  "#0f001c",
             "console_fg":  "#fcee0a",
         })
+    elif app_theme == "Tokyo Night":
+        C.update({
+            "bg":          "#1a1b26",
+            "sidebar":     "#16161e",
+            "card":        "#24283b",
+            "card_border": "#414868",
+            "input_bg":    "#1a1b26",
+            "green":       "#9ece6a",
+            "green_dark":  "#73daca",
+            "blue":        "#7aa2f7",
+            "blue_dark":   "#2ac3de",
+            "orange":      "#e0af68",
+            "red":         "#f7768e",
+            "red_dark":    "#db4b4b",
+            "muted":       "#565f89",
+            "text":        "#c0caf5",
+            "text_dim":    "#a9b1d6",
+            "success_bg":  "#1f2a24",
+            "warn_bg":     "#292518",
+            "console_bg":  "#1a1b26",
+            "console_fg":  "#7dcfff",
+        })
+    elif app_theme == "Catppuccin":
+        C.update({
+            "bg":          "#1e1e2e",
+            "sidebar":     "#181825",
+            "card":        "#313244",
+            "card_border": "#45475a",
+            "input_bg":    "#11111b",
+            "green":       "#a6e3a1",
+            "green_dark":  "#94e2d5",
+            "blue":        "#89b4fa",
+            "blue_dark":   "#89dceb",
+            "orange":      "#fab387",
+            "red":         "#f38ba8",
+            "red_dark":    "#eba0ac",
+            "muted":       "#585b70",
+            "text":        "#cdd6f4",
+            "text_dim":    "#bac2de",
+            "success_bg":  "#1f292e",
+            "warn_bg":     "#2e222a",
+            "console_bg":  "#1e1e2e",
+            "console_fg":  "#f5c2e7",
+        })
     else: # Dark Default
         C.update({
             "bg":          "#0f1117",
@@ -240,6 +302,7 @@ class NewProjectDialog(ctk.CTkToplevel):
         self.attributes("-topmost", True)
         self.grab_set()
         self.configure(fg_color=C["bg"])
+        self.after(200, lambda: set_title_bar_color(self, C["bg"], C["text"]))
 
         # Cabeçalho
         hdr = ctk.CTkFrame(self, fg_color=C["card"], corner_radius=0, height=60)
@@ -470,6 +533,53 @@ class ProjectHistoryDialog(ctk.CTkToplevel):
             text=f"{len(lines)} commits  │  {pushed_count} enviados ao remote")
 
 
+class HelpDialog(ctk.CTkToplevel):
+    def __init__(self, master, topic):
+        super().__init__(master)
+        self.title("Ajuda de Configuração")
+        self.geometry("450x380")
+        self.attributes("-topmost", True)
+        self.resizable(False, False)
+        self.grab_set()
+        self.configure(fg_color=C["bg"])
+        self.after(200, lambda: set_title_bar_color(self, C["bg"], C["text"]))
+        
+        frame = ctk.CTkFrame(self, fg_color="transparent")
+        frame.pack(fill="both", expand=True, padx=20, pady=20)
+        
+        if topic == "github_token":
+            title = "Como obter o GitHub Token?"
+            text = (
+                "1. Acesse o GitHub no navegador e faça login.\n"
+                "2. Vá em Settings > Developer settings > Personal access tokens > Tokens (classic).\n"
+                "3. Clique em 'Generate new token (classic)'.\n"
+                "4. Dê um nome (ex: Git Auto), defina a validade e marque a caixinha 'repo' (Full control of private repositories).\n"
+                "5. Clique em 'Generate token' no fim da página.\n"
+                "6. Copie o token gerado (começa com ghp_...) e cole aqui."
+            )
+        elif topic == "gemini_key":
+            title = "Como obter a Gemini API Key?"
+            text = (
+                "1. Acesse https://aistudio.google.com/ e faça login com sua conta Google.\n"
+                "2. No menu superior, clique em 'Get API key'.\n"
+                "3. Clique no botão azul 'Create API key'.\n"
+                "4. Copie a chave gerada e cole aqui.\n\n"
+                "A chave é gratuita e permite que a Inteligência Artificial gere os nomes dos commits automaticamente para você."
+            )
+        else:
+            title = "Ajuda"
+            text = ""
+
+        ctk.CTkLabel(frame, text=title, font=ctk.CTkFont("Segoe UI", 16, "bold"), text_color=C["text"]).pack(anchor="w", pady=(0, 15))
+        
+        textbox = ctk.CTkTextbox(frame, font=ctk.CTkFont("Segoe UI", 12), fg_color=C["input_bg"], text_color=C["text"], wrap="word")
+        textbox.pack(fill="both", expand=True)
+        textbox.insert("0.0", text)
+        textbox.configure(state="disabled")
+        
+        ctk.CTkButton(frame, text="Entendi", height=32, font=ctk.CTkFont("Segoe UI", 12, "bold"), fg_color=C["blue"], hover_color=C["blue_dark"], command=self.destroy).pack(fill="x", pady=(15, 0))
+
+
 class SettingsDialog(ctk.CTkToplevel):
     def __init__(self, master):
         super().__init__(master)
@@ -477,7 +587,9 @@ class SettingsDialog(ctk.CTkToplevel):
         self.geometry("450x520")
         self.attributes("-topmost", True)
         self.resizable(False, False)
+        self.grab_set()
         self.configure(fg_color=C["bg"])
+        self.after(200, lambda: set_title_bar_color(self, C["bg"], C["text"]))
         
         self.grid_rowconfigure(0, weight=1)
         self.grid_columnconfigure(0, weight=1)
@@ -487,19 +599,28 @@ class SettingsDialog(ctk.CTkToplevel):
         
         ctk.CTkLabel(frame, text="Credenciais (Salvas localmente no .env)", font=ctk.CTkFont("Segoe UI", 16, "bold"), text_color=C["text"]).pack(anchor="w", pady=(0, 15))
         
-        ctk.CTkLabel(frame, text="GitHub Username (Para Push Automático):", font=ctk.CTkFont("Segoe UI", 12), text_color=C["text_dim"]).pack(anchor="w")
+        def create_field_header(parent, label_text, help_topic=None):
+            h_frame = ctk.CTkFrame(parent, fg_color="transparent")
+            h_frame.pack(fill="x", pady=(0, 4))
+            ctk.CTkLabel(h_frame, text=label_text, font=ctk.CTkFont("Segoe UI", 12, "bold"), text_color=C["text_dim"]).pack(side="left")
+            if help_topic:
+                ctk.CTkButton(h_frame, text="?", width=20, height=20, corner_radius=10, 
+                              fg_color=C["card_border"], hover_color=C["blue"], text_color=C["text"], 
+                              command=lambda t=help_topic: HelpDialog(self, t)).pack(side="left", padx=10)
+
+        create_field_header(frame, "GitHub Username")
         self.entry_user = ctk.CTkEntry(frame, height=36, font=ctk.CTkFont("Consolas", 11), fg_color=C["input_bg"], border_color=C["card_border"], text_color=C["text"])
-        self.entry_user.pack(fill="x", pady=(4, 15))
+        self.entry_user.pack(fill="x", pady=(0, 15))
         self.entry_user.insert(0, GITHUB_USERNAME)
 
-        ctk.CTkLabel(frame, text="GitHub Token (Opcional para push local):", font=ctk.CTkFont("Segoe UI", 12), text_color=C["text_dim"]).pack(anchor="w")
-        self.entry_github = ctk.CTkEntry(frame, height=36, font=ctk.CTkFont("Consolas", 11), fg_color=C["input_bg"], border_color=C["card_border"], text_color=C["text"])
-        self.entry_github.pack(fill="x", pady=(4, 15))
+        create_field_header(frame, "GitHub Token", "github_token")
+        self.entry_github = ctk.CTkEntry(frame, height=36, font=ctk.CTkFont("Consolas", 11), fg_color=C["input_bg"], border_color=C["card_border"], text_color=C["text"], show="*")
+        self.entry_github.pack(fill="x", pady=(0, 15))
         self.entry_github.insert(0, GITHUB_TOKEN)
         
-        ctk.CTkLabel(frame, text="Gemini API Key (Para Resumos Automáticos):", font=ctk.CTkFont("Segoe UI", 12), text_color=C["text_dim"]).pack(anchor="w")
-        self.entry_gemini = ctk.CTkEntry(frame, height=36, font=ctk.CTkFont("Consolas", 11), fg_color=C["input_bg"], border_color=C["card_border"], text_color=C["text"])
-        self.entry_gemini.pack(fill="x", pady=(4, 20))
+        create_field_header(frame, "Gemini API Key", "gemini_key")
+        self.entry_gemini = ctk.CTkEntry(frame, height=36, font=ctk.CTkFont("Consolas", 11), fg_color=C["input_bg"], border_color=C["card_border"], text_color=C["text"], show="*")
+        self.entry_gemini.pack(fill="x", pady=(0, 20))
         self.entry_gemini.insert(0, GEMINI_API_KEY)
         
         ctk.CTkFrame(frame, height=1, fg_color=C["card_border"]).pack(fill="x", pady=(5, 15))
@@ -510,7 +631,7 @@ class SettingsDialog(ctk.CTkToplevel):
         theme_frame.pack(fill="x", pady=(0, 20))
         
         ctk.CTkLabel(theme_frame, text="Tema Base:", font=ctk.CTkFont("Segoe UI", 12), text_color=C["text_dim"]).pack(side="left", padx=(0, 10))
-        self.opt_theme = ctk.CTkOptionMenu(theme_frame, values=["Dark", "Light", "Dracula", "Nord", "Matrix", "Cyberpunk"], fg_color=C["input_bg"], button_color=C["card_border"], text_color=C["text"], text_color_disabled=C["text"])
+        self.opt_theme = ctk.CTkOptionMenu(theme_frame, values=["Dark", "Light", "Dracula", "Nord", "Matrix", "Cyberpunk", "Tokyo Night", "Catppuccin"], fg_color=C["input_bg"], button_color=C["card_border"], text_color=C["text"], text_color_disabled=C["text"])
         self.opt_theme.pack(side="left", fill="x", expand=True, padx=(0, 15))
         self.opt_theme.set(APP_THEME)
         
@@ -568,12 +689,17 @@ class App(ctk.CTk):
         self.geometry("1180x740")
         self.minsize(900, 600)
         self.configure(fg_color=C["bg"])
+        self.after(200, lambda: set_title_bar_color(self, C["bg"], C["text"]))
         self.grid_rowconfigure(0, weight=1)
         self.grid_columnconfigure(1, weight=1)
         self.protocol("WM_DELETE_WINDOW", self.hide_to_tray)
 
         self._build_sidebar()
         self._build_main()
+
+        # Linha Premium Superior
+        self.top_line = ctk.CTkFrame(self, height=3, fg_color=C["blue"], corner_radius=0)
+        self.top_line.place(relx=0, rely=0, relwidth=1)
 
         self.load_history_ui()
         self.log("Sistema inicializado. Interface pronta.", "info")
@@ -588,10 +714,18 @@ class App(ctk.CTk):
             self.sidebar.destroy()
         if hasattr(self, 'main_frame'):
             self.main_frame.destroy()
+        if hasattr(self, 'top_line'):
+            self.top_line.destroy()
             
         self.configure(fg_color=C["bg"])
+        set_title_bar_color(self, C["bg"], C["text"])
+            
         self._build_sidebar()
         self._build_main()
+        
+        # Recria a Linha Premium
+        self.top_line = ctk.CTkFrame(self, height=3, fg_color=C["blue"], corner_radius=0)
+        self.top_line.place(relx=0, rely=0, relwidth=1)
         
         self.entry_folder.delete(0, "end")
         self.entry_folder.insert(0, current_path)
@@ -688,7 +822,7 @@ class App(ctk.CTk):
 
         # ── 1. Workspace card ─────────────────────────────────────────────────
         ws = ctk.CTkFrame(self.main_frame, fg_color=C["card"],
-                          corner_radius=12, border_width=1,
+                          corner_radius=16, border_width=1,
                           border_color=C["card_border"])
         ws.grid(row=0, column=0, sticky="ew", pady=(0, 18))
         ws.grid_columnconfigure(1, weight=1)
@@ -719,7 +853,7 @@ class App(ctk.CTk):
         self.actions_frame.grid_columnconfigure((0, 1), weight=1)
 
         # Card — Atualizar
-        cu = ctk.CTkFrame(self.actions_frame, fg_color=C["card"], corner_radius=12,
+        cu = ctk.CTkFrame(self.actions_frame, fg_color=C["card"], corner_radius=16,
                           border_width=1, border_color=C["blue_dark"])
         cu.grid(row=0, column=0, sticky="nsew", padx=(0, 10))
         cu.grid_columnconfigure(0, weight=1)
@@ -745,7 +879,7 @@ class App(ctk.CTk):
                              padx=20, pady=(14, 18))
 
         # Card — Novo Projeto
-        cn = ctk.CTkFrame(self.actions_frame, fg_color=C["card"], corner_radius=12,
+        cn = ctk.CTkFrame(self.actions_frame, fg_color=C["card"], corner_radius=16,
                           border_width=1, border_color=C["green_dark"])
         cn.grid(row=0, column=1, sticky="nsew", padx=(10, 0))
         cn.grid_columnconfigure(0, weight=1)
@@ -772,7 +906,7 @@ class App(ctk.CTk):
 
         # ── 3. Tabs (Console e Histórico) ─────────────────────────────────────
         self.tabs = ctk.CTkTabview(self.main_frame, fg_color=C["card"],
-                                   corner_radius=12, border_width=1,
+                                   corner_radius=16, border_width=1,
                                    border_color=C["card_border"],
                                    text_color=C["text_dim"],
                                    segmented_button_selected_color=C["blue_dark"],

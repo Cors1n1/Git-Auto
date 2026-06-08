@@ -106,3 +106,8 @@ Distribuído sob a licença MIT.
 - Implementado auto-instalador de dependências em `release.py`.
 - Removido arquivo `requirements.txt` em favor da instalação dinâmica.
 - Atualizado `.gitignore` para remover rastreio de arquivos JSON.
+
+### 🔄 Atualização (08/06/2026)
+- Adicionados temas "Tokyo Night" e "Catppuccin" com suporte a personalização da barra de título.
+- Implementado sistema de ajuda com tutoriais integrados para configurações de API e GitHub.
+- Refinamento visual da interface com novos cantos arredondados e linha de destaque superior.
