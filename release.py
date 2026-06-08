@@ -14,21 +14,21 @@ import pystray
 from PIL import Image, ImageDraw
 
 script_dir = os.path.dirname(os.path.abspath(__file__))
-load_dotenv(os.path.join(script_dir, ".env"))
+load_dotenv(os.path.join(script_dir, ".env"), override=True)
 
-API_KEY     = os.getenv("GEMINI_API_KEY")
-GITHUB_TOKEN = os.getenv("GITHUB_TOKEN")
-GITHUB_USER  = os.getenv("GITHUB_USERNAME")
+GITHUB_TOKEN = os.getenv("GITHUB_TOKEN", "")
+GITHUB_USERNAME = os.getenv("GITHUB_USERNAME", "")
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "")
 HISTORY_FILE = os.path.join(script_dir, "history.json")
 
-if not API_KEY or not GITHUB_TOKEN or not GITHUB_USER:
+if not GEMINI_API_KEY or not GITHUB_TOKEN or not GITHUB_USERNAME:
     import tkinter as _tk
     _root = _tk.Tk(); _root.withdraw()
     messagebox.showerror("Configuração incompleta",
         "Verifique se GEMINI_API_KEY, GITHUB_TOKEN e GITHUB_USERNAME\nestão definidos no arquivo .env")
     exit(1)
 
-genai.configure(api_key=API_KEY)
+genai.configure(api_key=GEMINI_API_KEY)
 model = genai.GenerativeModel('gemini-3.1-flash-lite')
 
 ctk.set_appearance_mode("dark")
@@ -306,6 +306,67 @@ class ProjectHistoryDialog(ctk.CTkToplevel):
             text=f"{len(lines)} commits  │  {pushed_count} enviados ao remote")
 
 
+class SettingsDialog(ctk.CTkToplevel):
+    def __init__(self, master):
+        super().__init__(master)
+        self.title("Configurações do Git Auto")
+        self.geometry("450x420")
+        self.attributes("-topmost", True)
+        self.resizable(False, False)
+        self.configure(fg_color=C["bg"])
+        
+        self.grid_rowconfigure(0, weight=1)
+        self.grid_columnconfigure(0, weight=1)
+        
+        frame = ctk.CTkFrame(self, fg_color="transparent")
+        frame.pack(fill="both", expand=True, padx=20, pady=20)
+        
+        ctk.CTkLabel(frame, text="Credenciais (Salvas localmente no .env)", font=ctk.CTkFont("Segoe UI", 16, "bold"), text_color=C["text"]).pack(anchor="w", pady=(0, 15))
+        
+        ctk.CTkLabel(frame, text="GitHub Username (Para Push Automático):", font=ctk.CTkFont("Segoe UI", 12), text_color=C["text_dim"]).pack(anchor="w")
+        self.entry_user = ctk.CTkEntry(frame, height=36, font=ctk.CTkFont("Consolas", 11), fg_color=C["input_bg"], border_color=C["card_border"], text_color=C["text"])
+        self.entry_user.pack(fill="x", pady=(4, 15))
+        self.entry_user.insert(0, os.getenv("GITHUB_USERNAME", ""))
+
+        ctk.CTkLabel(frame, text="GitHub Token (Opcional para push local):", font=ctk.CTkFont("Segoe UI", 12), text_color=C["text_dim"]).pack(anchor="w")
+        self.entry_github = ctk.CTkEntry(frame, height=36, font=ctk.CTkFont("Consolas", 11), fg_color=C["input_bg"], border_color=C["card_border"], text_color=C["text"])
+        self.entry_github.pack(fill="x", pady=(4, 15))
+        self.entry_github.insert(0, os.getenv("GITHUB_TOKEN", ""))
+        
+        ctk.CTkLabel(frame, text="Gemini API Key (Para Resumos Automáticos):", font=ctk.CTkFont("Segoe UI", 12), text_color=C["text_dim"]).pack(anchor="w")
+        self.entry_gemini = ctk.CTkEntry(frame, height=36, font=ctk.CTkFont("Consolas", 11), fg_color=C["input_bg"], border_color=C["card_border"], text_color=C["text"])
+        self.entry_gemini.pack(fill="x", pady=(4, 20))
+        self.entry_gemini.insert(0, os.getenv("GEMINI_API_KEY", ""))
+        
+        ctk.CTkButton(frame, text="Salvar Credenciais  ✓", height=36, font=ctk.CTkFont("Segoe UI", 12, "bold"), fg_color=C["blue"], hover_color=C["blue_dark"], command=self.save).pack(fill="x")
+        
+    def save(self):
+        gh_user = self.entry_user.get().strip()
+        gh_tok = self.entry_github.get().strip()
+        gem_key = self.entry_gemini.get().strip()
+        
+        with open(".env", "w", encoding="utf-8") as f:
+            f.write(f'GITHUB_TOKEN="{gh_tok}"\n')
+            f.write(f'GITHUB_USERNAME="{gh_user}"\n')
+            f.write(f'GEMINI_API_KEY="{gem_key}"\n')
+            
+        os.environ["GITHUB_TOKEN"] = gh_tok
+        os.environ["GITHUB_USERNAME"] = gh_user
+        os.environ["GEMINI_API_KEY"] = gem_key
+        
+        global GITHUB_TOKEN, GITHUB_USERNAME, GEMINI_API_KEY
+        GITHUB_TOKEN = gh_tok
+        GITHUB_USERNAME = gh_user
+        GEMINI_API_KEY = gem_key
+        
+        if gem_key:
+            genai.configure(api_key=gem_key)
+            
+        if hasattr(self.master, "log"):
+            self.master.log("[SYS] Configurações salvas e aplicadas com sucesso.", "success")
+            
+        self.destroy()
+
 class App(ctk.CTk):
     def __init__(self):
         super().__init__()
@@ -392,6 +453,14 @@ class App(ctk.CTk):
             scrollbar_button_hover_color=C["text_dim"])
         self.history_frame.grid(row=4, column=0, sticky="nsew",
                                 padx=10, pady=(52, 10))
+
+        # Configurações
+        self.btn_settings = ctk.CTkButton(
+            self.sidebar, text="⚙  Configurações", height=36,
+            font=ctk.CTkFont("Segoe UI", 12, "bold"),
+            fg_color="transparent", hover_color=C["card_border"], text_color=C["text_dim"],
+            command=self.open_settings)
+        self.btn_settings.grid(row=5, column=0, sticky="ew", padx=20, pady=(10, 20))
 
     # ── ÁREA PRINCIPAL ────────────────────────────────────────────────────────
     def _build_main(self):
@@ -632,7 +701,9 @@ class App(ctk.CTk):
 
     def open_project_history(self, path):
         self.set_folder_from_history(path)
-        dialog = ProjectHistoryDialog(self, path)
+
+    def open_settings(self):
+        SettingsDialog(self)
 
     def set_folder_from_history(self, path):
         self.entry_folder.delete(0, "end")
@@ -1153,7 +1224,10 @@ Distribuído sob a licença MIT.
 
             if resp.status_code == 201:
                 remote_url = resp.json()["clone_url"]
-                self.log(f"[GITHUB] Repositório criado: {remote_url}", "success")
+                if GITHUB_USERNAME and GITHUB_TOKEN:
+                    remote_url = remote_url.replace("https://github.com", f"https://{GITHUB_USERNAME}:{GITHUB_TOKEN}@github.com")
+                
+                self.log(f"[GITHUB] Repositório criado: {resp.json()['clone_url']}", "success")
                 existing = self.run_command("git remote", check=False)
                 if "origin" in existing.split():
                     self.run_command("git remote remove origin", check=False)

@@ -86,3 +86,8 @@ Distribuído sob a licença MIT.
 - Refatorada exibição de detalhes dos commits para separar mensagem e lista de arquivos.
 - Implementado CTkTextbox dinâmico para melhor legibilidade das mensagens de commit.
 - Otimizado o parsing dos comandos Git via delimitador customizado.
+
+### 🔄 Atualização (08/06/2026)
+- Implementada interface para gerenciamento de credenciais (.env) dentro da aplicação.
+- Adicionada janela de configurações com suporte a edição e salvamento de chaves via UI.
+- Otimizada a integração com o GitHub para inclusão automática de autenticação nas URLs remotas.
