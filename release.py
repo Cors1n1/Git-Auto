@@ -5,6 +5,8 @@ import threading
 import json
 import time
 import datetime
+import unicodedata
+import re
 import google.generativeai as genai
 from google.api_core import exceptions as google_exceptions
 from dotenv import load_dotenv
@@ -16,6 +18,8 @@ from PIL import Image, ImageDraw
 script_dir = os.path.dirname(os.path.abspath(__file__))
 load_dotenv(os.path.join(script_dir, ".env"), override=True)
 
+APP_THEME = os.getenv("APP_THEME", "Dark")
+APP_COLOR = os.getenv("APP_COLOR", "Azul")
 GITHUB_TOKEN = os.getenv("GITHUB_TOKEN", "")
 GITHUB_USERNAME = os.getenv("GITHUB_USERNAME", "")
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "")
@@ -25,31 +29,164 @@ if GEMINI_API_KEY:
     genai.configure(api_key=GEMINI_API_KEY)
 model = genai.GenerativeModel('gemini-3.1-flash-lite')
 
-ctk.set_appearance_mode("dark")
+ctk.set_appearance_mode(APP_THEME)
 ctk.set_default_color_theme("blue")
 
 # ── Paleta de cores centralizada ──────────────────────────────────────────────
-C = {
-    "bg":          "#0f1117",
-    "sidebar":     "#13151c",
-    "card":        "#1a1d27",
-    "card_border": "#252836",
-    "input_bg":    "#1e2130",
-    "green":       "#2ecc71",
-    "green_dark":  "#27ae60",
-    "blue":        "#3b82f6",
-    "blue_dark":   "#2563eb",
-    "orange":      "#f39c12",
-    "red":         "#e74c3c",
-    "red_dark":    "#c0392b",
-    "muted":       "#4b5563",
-    "text":        "#e2e8f0",
-    "text_dim":    "#94a3b8",
-    "success_bg":  "#0d2818",
-    "warn_bg":     "#2c1a04",
-    "console_bg":  "#080b10",
-    "console_fg":  "#a3e635",
-}
+C = {}
+
+def update_palette(app_theme, app_color):
+    global C
+    if app_theme == "Light": ctk.set_appearance_mode("light")
+    else: ctk.set_appearance_mode("dark")
+    
+    if app_theme == "Light":
+        C.update({
+            "bg":          "#f8fafc",
+            "sidebar":     "#f1f5f9",
+            "card":        "#ffffff",
+            "card_border": "#e2e8f0",
+            "input_bg":    "#f8fafc",
+            "green":       "#10b981",
+            "green_dark":  "#059669",
+            "blue":        "#3b82f6",
+            "blue_dark":   "#2563eb",
+            "orange":      "#f59e0b",
+            "red":         "#ef4444",
+            "red_dark":    "#dc2626",
+            "muted":       "#94a3b8",
+            "text":        "#0f172a",
+            "text_dim":    "#475569",
+            "success_bg":  "#dcfce7",
+            "warn_bg":     "#fef3c7",
+            "console_bg":  "#1e293b",
+            "console_fg":  "#a3e635",
+        })
+    elif app_theme == "Dracula":
+        C.update({
+            "bg":          "#282a36",
+            "sidebar":     "#21222c",
+            "card":        "#44475a",
+            "card_border": "#6272a4",
+            "input_bg":    "#1e1f29",
+            "green":       "#50fa7b",
+            "green_dark":  "#42cc65",
+            "blue":        "#bd93f9", 
+            "blue_dark":   "#9d64f5",
+            "orange":      "#ffb86c",
+            "red":         "#ff5555",
+            "red_dark":    "#cc3c3c",
+            "muted":       "#6272a4",
+            "text":        "#f8f8f2",
+            "text_dim":    "#bfbfbf",
+            "success_bg":  "#0a2916",
+            "warn_bg":     "#2b2b1a",
+            "console_bg":  "#1e1f29",
+            "console_fg":  "#f8f8f2",
+        })
+    elif app_theme == "Nord":
+        C.update({
+            "bg":          "#2e3440",
+            "sidebar":     "#3b4252",
+            "card":        "#434c5e",
+            "card_border": "#4c566a",
+            "input_bg":    "#2e3440",
+            "green":       "#a3be8c",
+            "green_dark":  "#8ca677",
+            "blue":        "#88c0d0",
+            "blue_dark":   "#5e81ac",
+            "orange":      "#d08770",
+            "red":         "#bf616a",
+            "red_dark":    "#a05159",
+            "muted":       "#4c566a",
+            "text":        "#eceff4",
+            "text_dim":    "#d8dee9",
+            "success_bg":  "#273024",
+            "warn_bg":     "#322824",
+            "console_bg":  "#2e3440",
+            "console_fg":  "#a3be8c",
+        })
+    elif app_theme == "Matrix":
+        C.update({
+            "bg":          "#000000",
+            "sidebar":     "#050505",
+            "card":        "#0a0a0a",
+            "card_border": "#00ff41",
+            "input_bg":    "#000000",
+            "green":       "#00ff41",
+            "green_dark":  "#008f11",
+            "blue":        "#00ff41",
+            "blue_dark":   "#008f11",
+            "orange":      "#f39c12",
+            "red":         "#ff0000",
+            "red_dark":    "#8f0000",
+            "muted":       "#003b00",
+            "text":        "#00ff41",
+            "text_dim":    "#008f11",
+            "success_bg":  "#001100",
+            "warn_bg":     "#111100",
+            "console_bg":  "#000000",
+            "console_fg":  "#00ff41",
+        })
+    elif app_theme == "Cyberpunk":
+        C.update({
+            "bg":          "#0f001c",
+            "sidebar":     "#1b0033",
+            "card":        "#2e0057",
+            "card_border": "#fcee0a",
+            "input_bg":    "#0f001c",
+            "green":       "#05d9e8",
+            "green_dark":  "#0398a3",
+            "blue":        "#fcee0a",
+            "blue_dark":   "#b5aa00",
+            "orange":      "#ff003c",
+            "red":         "#ff003c",
+            "red_dark":    "#a30026",
+            "muted":       "#6800c2",
+            "text":        "#fcee0a",
+            "text_dim":    "#05d9e8",
+            "success_bg":  "#002026",
+            "warn_bg":     "#260000",
+            "console_bg":  "#0f001c",
+            "console_fg":  "#fcee0a",
+        })
+    else: # Dark Default
+        C.update({
+            "bg":          "#0f1117",
+            "sidebar":     "#13151c",
+            "card":        "#1a1d27",
+            "card_border": "#252836",
+            "input_bg":    "#1e2130",
+            "green":       "#2ecc71",
+            "green_dark":  "#27ae60",
+            "blue":        "#3b82f6",
+            "blue_dark":   "#2563eb",
+            "orange":      "#f39c12",
+            "red":         "#e74c3c",
+            "red_dark":    "#c0392b",
+            "muted":       "#4b5563",
+            "text":        "#e2e8f0",
+            "text_dim":    "#94a3b8",
+            "success_bg":  "#0d2818",
+            "warn_bg":     "#2c1a04",
+            "console_bg":  "#080b10",
+            "console_fg":  "#a3e635",
+        })
+
+    # A Cor de destaque manual só funciona nos temas Padrões (Light/Dark).
+    # Temas específicos (Dracula, Nord, Cyberpunk) possuem paletas travadas e perfeitamente calibradas
+    # para não quebrar o visual da estética.
+    if app_theme in ["Dark", "Light"]:
+        if app_color == "Verde":
+            C["blue"], C["blue_dark"] = C["green"], C["green_dark"]
+        elif app_color == "Laranja":
+            C["blue"], C["blue_dark"] = C["orange"], "#d68910"
+        elif app_color == "Vermelho":
+            C["blue"], C["blue_dark"] = C["red"], C["red_dark"]
+        elif app_color == "Roxo":
+            C["blue"], C["blue_dark"] = "#8b5cf6", "#7c3aed"
+
+update_palette(APP_THEME, APP_COLOR)
 
 def load_history() -> list:
     if os.path.exists(HISTORY_FILE):
@@ -141,10 +278,16 @@ class NewProjectDialog(ctk.CTkToplevel):
         self.entry_name.focus()
 
     def _confirm(self):
-        name = self.entry_name.get().strip().replace(" ", "-")
-        if not name:
+        raw_name = self.entry_name.get().strip()
+        if not raw_name:
             self.entry_name.configure(border_color=C["red"])
             return
+            
+        # Limpa o nome: remove acentos, troca espaços por hífens, e remove caracteres inválidos
+        name = unicodedata.normalize('NFKD', raw_name).encode('ASCII', 'ignore').decode('ASCII')
+        name = re.sub(r'[^a-zA-Z0-9_\-\.]', '-', name)
+        name = re.sub(r'-+', '-', name).strip('-').lower()
+        
         self.result = {
             "name": name,
             "description": self.entry_desc.get().strip(),
@@ -304,7 +447,7 @@ class SettingsDialog(ctk.CTkToplevel):
     def __init__(self, master):
         super().__init__(master)
         self.title("Configurações do Git Auto")
-        self.geometry("450x420")
+        self.geometry("450x520")
         self.attributes("-topmost", True)
         self.resizable(False, False)
         self.configure(fg_color=C["bg"])
@@ -320,26 +463,47 @@ class SettingsDialog(ctk.CTkToplevel):
         ctk.CTkLabel(frame, text="GitHub Username (Para Push Automático):", font=ctk.CTkFont("Segoe UI", 12), text_color=C["text_dim"]).pack(anchor="w")
         self.entry_user = ctk.CTkEntry(frame, height=36, font=ctk.CTkFont("Consolas", 11), fg_color=C["input_bg"], border_color=C["card_border"], text_color=C["text"])
         self.entry_user.pack(fill="x", pady=(4, 15))
-        self.entry_user.insert(0, os.getenv("GITHUB_USERNAME", ""))
+        self.entry_user.insert(0, GITHUB_USERNAME)
 
         ctk.CTkLabel(frame, text="GitHub Token (Opcional para push local):", font=ctk.CTkFont("Segoe UI", 12), text_color=C["text_dim"]).pack(anchor="w")
         self.entry_github = ctk.CTkEntry(frame, height=36, font=ctk.CTkFont("Consolas", 11), fg_color=C["input_bg"], border_color=C["card_border"], text_color=C["text"])
         self.entry_github.pack(fill="x", pady=(4, 15))
-        self.entry_github.insert(0, os.getenv("GITHUB_TOKEN", ""))
+        self.entry_github.insert(0, GITHUB_TOKEN)
         
         ctk.CTkLabel(frame, text="Gemini API Key (Para Resumos Automáticos):", font=ctk.CTkFont("Segoe UI", 12), text_color=C["text_dim"]).pack(anchor="w")
         self.entry_gemini = ctk.CTkEntry(frame, height=36, font=ctk.CTkFont("Consolas", 11), fg_color=C["input_bg"], border_color=C["card_border"], text_color=C["text"])
         self.entry_gemini.pack(fill="x", pady=(4, 20))
-        self.entry_gemini.insert(0, os.getenv("GEMINI_API_KEY", ""))
+        self.entry_gemini.insert(0, GEMINI_API_KEY)
         
-        ctk.CTkButton(frame, text="Salvar Credenciais  ✓", height=36, font=ctk.CTkFont("Segoe UI", 12, "bold"), fg_color=C["blue"], hover_color=C["blue_dark"], command=self.save).pack(fill="x")
+        ctk.CTkFrame(frame, height=1, fg_color=C["card_border"]).pack(fill="x", pady=(5, 15))
+        
+        ctk.CTkLabel(frame, text="Aparência Visual", font=ctk.CTkFont("Segoe UI", 16, "bold"), text_color=C["text"]).pack(anchor="w", pady=(0, 10))
+        
+        theme_frame = ctk.CTkFrame(frame, fg_color="transparent")
+        theme_frame.pack(fill="x", pady=(0, 20))
+        
+        ctk.CTkLabel(theme_frame, text="Tema Base:", font=ctk.CTkFont("Segoe UI", 12), text_color=C["text_dim"]).pack(side="left", padx=(0, 10))
+        self.opt_theme = ctk.CTkOptionMenu(theme_frame, values=["Dark", "Light", "Dracula", "Nord", "Matrix", "Cyberpunk"], fg_color=C["input_bg"], button_color=C["card_border"], text_color=C["text"], text_color_disabled=C["text"])
+        self.opt_theme.pack(side="left", fill="x", expand=True, padx=(0, 15))
+        self.opt_theme.set(APP_THEME)
+        
+        ctk.CTkLabel(theme_frame, text="Destaque:", font=ctk.CTkFont("Segoe UI", 12), text_color=C["text_dim"]).pack(side="left", padx=(0, 10))
+        self.opt_color = ctk.CTkOptionMenu(theme_frame, values=["Azul", "Verde", "Laranja", "Roxo", "Vermelho"], fg_color=C["input_bg"], button_color=C["card_border"], text_color=C["text"], text_color_disabled=C["text"])
+        self.opt_color.pack(side="left", fill="x", expand=True)
+        self.opt_color.set(APP_COLOR)
+        
+        ctk.CTkButton(frame, text="Salvar Credenciais e Tema  ✓", height=36, font=ctk.CTkFont("Segoe UI", 12, "bold"), fg_color=C["blue"], hover_color=C["blue_dark"], command=self.save).pack(fill="x")
         
     def save(self):
         gh_user = self.entry_user.get().strip()
         gh_tok = self.entry_github.get().strip()
         gem_key = self.entry_gemini.get().strip()
+        app_theme = self.opt_theme.get()
+        app_color = self.opt_color.get()
         
         with open(".env", "w", encoding="utf-8") as f:
+            f.write(f'APP_THEME="{app_theme}"\n')
+            f.write(f'APP_COLOR="{app_color}"\n')
             f.write(f'GITHUB_TOKEN="{gh_tok}"\n')
             f.write(f'GITHUB_USERNAME="{gh_user}"\n')
             f.write(f'GEMINI_API_KEY="{gem_key}"\n')
@@ -347,8 +511,10 @@ class SettingsDialog(ctk.CTkToplevel):
         os.environ["GITHUB_TOKEN"] = gh_tok
         os.environ["GITHUB_USERNAME"] = gh_user
         os.environ["GEMINI_API_KEY"] = gem_key
+        os.environ["APP_THEME"] = app_theme
+        os.environ["APP_COLOR"] = app_color
         
-        global GITHUB_TOKEN, GITHUB_USERNAME, GEMINI_API_KEY
+        global GITHUB_TOKEN, GITHUB_USERNAME, GEMINI_API_KEY, APP_THEME, APP_COLOR
         GITHUB_TOKEN = gh_tok
         GITHUB_USERNAME = gh_user
         GEMINI_API_KEY = gem_key
@@ -357,7 +523,14 @@ class SettingsDialog(ctk.CTkToplevel):
             genai.configure(api_key=gem_key)
             
         if hasattr(self.master, "log"):
-            self.master.log("[SYS] Configurações salvas e aplicadas com sucesso.", "success")
+            self.master.log("[SYS] Configurações salvas e aplicadas.", "success")
+            
+        if app_theme != APP_THEME or app_color != APP_COLOR:
+            APP_THEME = app_theme
+            APP_COLOR = app_color
+            update_palette(app_theme, app_color)
+            if hasattr(self.master, "apply_theme"):
+                self.master.apply_theme()
             
         self.destroy()
 
@@ -380,6 +553,22 @@ class App(ctk.CTk):
         
         if not GEMINI_API_KEY or not GITHUB_TOKEN or not GITHUB_USERNAME:
             self.after(500, self.prompt_first_setup)
+            
+    def apply_theme(self):
+        current_path = self.entry_folder.get() if hasattr(self, 'entry_folder') and self.entry_folder.winfo_exists() else os.getcwd()
+        
+        if hasattr(self, 'sidebar'):
+            self.sidebar.destroy()
+        if hasattr(self, 'main_frame'):
+            self.main_frame.destroy()
+            
+        self.configure(fg_color=C["bg"])
+        self._build_sidebar()
+        self._build_main()
+        
+        self.entry_folder.delete(0, "end")
+        self.entry_folder.insert(0, current_path)
+        self.load_history_ui()
             
     def prompt_first_setup(self):
         messagebox.showinfo("Bem-vindo ao Git Auto", "Parece que é a sua primeira vez aqui (ou faltam credenciais)!\n\nPor favor, insira o seu Username, Token do GitHub e Chave do Gemini para habilitar todas as funções.")
@@ -504,7 +693,7 @@ class App(ctk.CTk):
 
         # Card — Atualizar
         cu = ctk.CTkFrame(self.actions_frame, fg_color=C["card"], corner_radius=12,
-                          border_width=1, border_color="#1e3a5f")
+                          border_width=1, border_color=C["blue_dark"])
         cu.grid(row=0, column=0, sticky="nsew", padx=(0, 10))
         cu.grid_columnconfigure(0, weight=1)
 
@@ -530,7 +719,7 @@ class App(ctk.CTk):
 
         # Card — Novo Projeto
         cn = ctk.CTkFrame(self.actions_frame, fg_color=C["card"], corner_radius=12,
-                          border_width=1, border_color="#1a3d2b")
+                          border_width=1, border_color=C["green_dark"])
         cn.grid(row=0, column=1, sticky="nsew", padx=(10, 0))
         cn.grid_columnconfigure(0, weight=1)
 
@@ -660,11 +849,11 @@ class App(ctk.CTk):
             exists       = os.path.isdir(path)
 
             # Card Premium do Histórico (Vertical)
-            card = ctk.CTkFrame(self.history_frame, fg_color="#1a1d24",
-                                corner_radius=10, border_width=1, border_color="#2b2e38")
+            card = ctk.CTkFrame(self.history_frame, fg_color=C["card"],
+                                corner_radius=10, border_width=1, border_color=C["card_border"])
             card.pack(fill="x", pady=6, padx=4)
             
-            icon_color = "#2ecc71" if status == "ok" else "#e74c3c"
+            icon_color = C["green"] if status == "ok" else C["red"]
             
             # Linha superior: Ícone, Nome e Fechar
             top_row = ctk.CTkFrame(card, fg_color="transparent")
@@ -673,11 +862,11 @@ class App(ctk.CTk):
             ctk.CTkLabel(top_row, text="●", font=ctk.CTkFont(size=14), text_color=icon_color).pack(side="left", padx=(0, 8))
             ctk.CTkLabel(top_row, text=folder_name, 
                          font=ctk.CTkFont("Segoe UI", 14, "bold"), 
-                         text_color="#f8fafc").pack(side="left")
+                         text_color=C["text"]).pack(side="left")
             
             ctk.CTkButton(top_row, text="✕", width=24, height=24,
                           font=ctk.CTkFont("Segoe UI", 12, "bold"),
-                          fg_color="transparent", hover_color="#3f3f46", text_color="#64748b",
+                          fg_color="transparent", hover_color=C["card_border"], text_color=C["text_dim"],
                           corner_radius=4,
                           command=lambda p=path: self.remove_from_history(p)).pack(side="right")
                           
@@ -688,7 +877,7 @@ class App(ctk.CTk):
             status_text = "Sincronizado" if status == "ok" else "Falhou"
             ctk.CTkLabel(mid_row, text=f"🕐 {date}   •   {status_text}", 
                          font=ctk.CTkFont("Segoe UI", 11), 
-                         text_color=icon_color if status != "ok" else "#94a3b8").pack(side="left", padx=(20, 0))
+                         text_color=icon_color if status != "ok" else C["text_dim"]).pack(side="left", padx=(20, 0))
                          
             # Fundo: Botão Abrir
             bot_row = ctk.CTkFrame(card, fg_color="transparent")
@@ -696,7 +885,7 @@ class App(ctk.CTk):
             
             ctk.CTkButton(bot_row, text="Abrir Detalhes do Projeto  →", height=32,
                           font=ctk.CTkFont("Segoe UI", 12, "bold"),
-                          fg_color="#2563eb", hover_color="#1d4ed8", text_color="white",
+                          fg_color=C["blue"], hover_color=C["blue_dark"], text_color="#ffffff",
                           corner_radius=6,
                           command=lambda p=path: self.set_folder_from_history(p)).pack(fill="x")
 

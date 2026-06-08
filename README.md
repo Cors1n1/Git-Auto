@@ -96,3 +96,8 @@ Distribuído sob a licença MIT.
 - Removida interrupção forçada na inicialização por falta de credenciais.
 - Implementado prompt automático de configuração inicial via interface.
 - Otimizada a inicialização da API do Gemini.
+
+### 🔄 Atualização (08/06/2026)
+- Implementado sistema de temas personalizados (Dracula, Nord, Matrix, Cyberpunk e Light/Dark).
+- Adicionada seletor de tema e cor de destaque no menu de configurações com persistência via .env.
+- Refinado processamento de nomes de projetos com sanitização de caracteres especiais e acentos.
