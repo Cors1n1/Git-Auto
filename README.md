@@ -124,3 +124,7 @@ Distribuído sob a licença MIT.
 ### 🔄 Atualização (08/06/2026)
 - Implementada sanitização de URL para remover âncoras e parâmetros de consulta.
 - Atualizado registro de histórico de execução no arquivo de logs.
+
+### 🔄 Atualização (08/06/2026)
+- Implementada interface visual para revisão e edição manual de mensagens de commit via IA.
+- Adicionada integração de confirmação de commit com pré-visualização no fluxo de automação.

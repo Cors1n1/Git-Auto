@@ -1772,6 +1772,50 @@ Distribuído sob a licença MIT.
         self._confirm_result = result
         self._confirm_event.set()
 
+    def ask_inline_commit_preview(self, suggested_commit, title="📝 Revisão do Commit"):
+        """Pausa a thread atual e mostra um banner para edição da mensagem de commit."""
+        self._preview_result = None
+        self._preview_event = threading.Event()
+        self.after(0, self._show_inline_commit_preview, title, suggested_commit)
+        self._preview_event.wait()
+        return self._preview_result
+
+    def _show_inline_commit_preview(self, title, suggested_commit):
+        # Esconde os cards de ação temporariamente
+        self.actions_frame.grid_forget()
+        
+        # Cria o painel de confirmação integrado
+        self.preview_frame = ctk.CTkFrame(self.main_frame, fg_color=C["card"], corner_radius=12, border_width=1, border_color=C["blue"])
+        self.preview_frame.grid(row=1, column=0, sticky="ew", pady=(0, 18))
+        self.preview_frame.grid_columnconfigure(0, weight=1)
+        
+        ctk.CTkLabel(self.preview_frame, text=title, font=ctk.CTkFont("Segoe UI", 16, "bold"), text_color=C["blue"]).pack(pady=(15, 5))
+        ctk.CTkLabel(self.preview_frame, text="A IA sugeriu a mensagem abaixo. Edite se desejar antes de enviar:", font=ctk.CTkFont("Segoe UI", 13), text_color=C["text"]).pack(pady=(0, 10))
+        
+        self.commit_textbox = ctk.CTkTextbox(self.preview_frame, height=80, font=ctk.CTkFont("Consolas", 13), fg_color=C["input_bg"], border_color=C["card_border"], border_width=1, text_color=C["text"])
+        self.commit_textbox.pack(fill="x", padx=20, pady=(0, 15))
+        self.commit_textbox.insert("0.0", suggested_commit)
+        
+        btns = ctk.CTkFrame(self.preview_frame, fg_color="transparent")
+        btns.pack(pady=(0, 15))
+        
+        ctk.CTkButton(btns, text="Cancelar", width=110, height=36,
+                      font=ctk.CTkFont("Segoe UI", 12, "bold"),
+                      fg_color=C["card_border"], hover_color=C["red_dark"], text_color=C["text"],
+                      command=lambda: self._resolve_preview(None)).pack(side="left", padx=10)
+                      
+        ctk.CTkButton(btns, text="Confirmar Push 🚀", width=150, height=36,
+                      font=ctk.CTkFont("Segoe UI", 12, "bold"),
+                      fg_color=C["green_dark"], hover_color=C["green"], text_color="white",
+                      command=lambda: self._resolve_preview(self.commit_textbox.get("0.0", "end").strip())).pack(side="left", padx=10)
+
+    def _resolve_preview(self, result):
+        self.preview_frame.destroy()
+        # Restaura os cards de ação originais
+        self.actions_frame.grid(row=1, column=0, sticky="ew", pady=(0, 18))
+        self._preview_result = result
+        self._preview_event.set()
+
     def start_update_thread(self):
         self.set_processing_state(True)
         threading.Thread(target=self.update_existing_project, daemon=True).start()
@@ -1796,13 +1840,12 @@ Distribuído sob a licença MIT.
                 self.log("[ERRO] Não foi possível gerar README. Abortando.", "error")
                 return
 
-            if self.ask_inline_confirmation("⚠️ Confirmar Ação",
-                                            "Documentação gerada com sucesso.\n"
-                                            "Salvar README.md, comitar e fazer push remoto agora?"):
+            final_commit_msg = self.ask_inline_commit_preview(ai_summary)
+            if final_commit_msg:
                 with open("README.md", "w", encoding="utf-8") as f:
                     f.write(new_readme + "\n")
                 self.log("[SYS] README.md salvo.", "info")
-                self.execute_workflow(path, commit_message=ai_summary)
+                self.execute_workflow(path, commit_message=final_commit_msg)
             else:
                 self.log("[SYS] Operação cancelada pelo usuário.", "info")
         finally:
@@ -1916,12 +1959,11 @@ Distribuído sob a licença MIT.
                 self.log("[ERRO] Não foi possível gerar README. Abortando.", "error")
                 return
 
-            if self.ask_inline_confirmation("🚀 Finalizar Setup",
-                                            f"O repositório '{repo_name}' foi criado no GitHub!\n"
-                                            "Deseja fazer o upload dos arquivos agora?"):
+            final_commit_msg = self.ask_inline_commit_preview(ai_summary, title="🚀 Finalizar Setup")
+            if final_commit_msg:
                 with open("README.md", "w", encoding="utf-8") as f:
                     f.write(new_readme + "\n")
-                self.execute_workflow(path, commit_message=ai_summary)
+                self.execute_workflow(path, commit_message=final_commit_msg)
             else:
                 self.log("[SYS] Upload cancelado pelo usuário.", "info")
         finally:
