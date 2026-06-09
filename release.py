@@ -2447,6 +2447,10 @@ class App(ctk.CTk):
         self.top_line = ctk.CTkFrame(self, height=3, fg_color=C["blue"], corner_radius=0)
         self.top_line.place(relx=0, rely=0, relwidth=1)
 
+        try:
+            self.iconbitmap(os.path.join(DATA_DIR, "icon.ico"))
+        except: pass
+
         self.setup_tray()
 
         self.load_history_ui()
@@ -2841,8 +2845,13 @@ class App(ctk.CTk):
             pystray.MenuItem("Abrir Git Auto", self.restore_window),
             pystray.MenuItem("Sair", self.quit_app),
         )
-        self.tray_icon = pystray.Icon("Git Auto", self.create_image(),
-                                      "Git Auto em execução", menu)
+        try:
+            from PIL import Image
+            img = Image.open(os.path.join(DATA_DIR, "icon.ico"))
+        except Exception:
+            img = self.create_image()
+            
+        self.tray_icon = pystray.Icon("Git Auto", img, "Git Auto em execução", menu)
         threading.Thread(target=self.tray_icon.run, daemon=True).start()
 
     def hide_to_tray(self):
