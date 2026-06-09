@@ -156,3 +156,8 @@ Distribuído sob a licença MIT.
 ### 🔄 Atualização (08/06/2026)
 - Implementada classe `DiffViewerDialog` para visualização comparativa de alterações (side-by-side).
 - Adicionada funcionalidade de inspeção de diff via interface gráfica com scroll sincronizado.
+
+### 🔄 Atualização (08/06/2026)
+- Implementado o ReleaseManagerDialog para automação de tags e lançamentos via GitHub.
+- Integrada IA (Gemini) para geração automática de notas de versão baseadas no histórico de commits.
+- Adicionado botão de atalho "Lançar Versão" na interface principal para acesso rápido ao gerenciador.

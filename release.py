@@ -532,6 +532,157 @@ class DiffViewerDialog(ctk.CTkToplevel):
                 self.tb_right.insert("end", line + "\n")
         flush_buffers()
 
+class ReleaseManagerDialog(ctk.CTkToplevel):
+    def __init__(self, parent, repo_path):
+        super().__init__(parent)
+        self.parent_app = parent
+        self.repo_path = repo_path
+        self.title("🏆 Gerenciador de Versões (Releases)")
+        self.geometry("700x750")
+        self.transient(parent)
+        self.grab_set()
+        self.configure(fg_color=C["bg"])
+        
+        # Header
+        ctk.CTkLabel(self, text="🏆 Lançar Nova Versão", font=ctk.CTkFont("Segoe UI", 20, "bold"), text_color=C["orange"]).pack(pady=(20, 5))
+        ctk.CTkLabel(self, text="Crie um 'Patch Note' oficial e publique no GitHub.", font=ctk.CTkFont("Segoe UI", 12), text_color=C["text_dim"]).pack(pady=(0, 20))
+        
+        # Inputs
+        inputs_frame = ctk.CTkFrame(self, fg_color="transparent")
+        inputs_frame.pack(fill="x", padx=30)
+        
+        ctk.CTkLabel(inputs_frame, text="Tag da Versão (ex: v1.0.0):", font=ctk.CTkFont("Segoe UI", 12, "bold")).grid(row=0, column=0, sticky="w")
+        self.entry_tag = ctk.CTkEntry(inputs_frame, width=150, font=ctk.CTkFont("Consolas", 12), fg_color=C["input_bg"], border_color=C["card_border"])
+        self.entry_tag.grid(row=1, column=0, sticky="w", pady=(5, 15), padx=(0, 20))
+        self.entry_tag.insert(0, "v1.0.0")
+        
+        ctk.CTkLabel(inputs_frame, text="Título do Lançamento:", font=ctk.CTkFont("Segoe UI", 12, "bold")).grid(row=0, column=1, sticky="w")
+        self.entry_title = ctk.CTkEntry(inputs_frame, width=400, font=ctk.CTkFont("Segoe UI", 12), fg_color=C["input_bg"], border_color=C["card_border"])
+        self.entry_title.grid(row=1, column=1, sticky="ew", pady=(5, 15))
+        self.entry_title.insert(0, "Lançamento Oficial")
+        
+        # Generator Button
+        self.btn_gen = ctk.CTkButton(self, text="✨ Gerar Notas da Versão com IA", height=36, font=ctk.CTkFont("Segoe UI", 12, "bold"), fg_color=C["blue"], hover_color=C["blue_dark"], command=self._generate_notes)
+        self.btn_gen.pack(fill="x", padx=30, pady=(0, 15))
+        
+        # Textbox
+        ctk.CTkLabel(self, text="Notas da Versão (Markdown):", font=ctk.CTkFont("Segoe UI", 12, "bold")).pack(anchor="w", padx=30)
+        self.tb_notes = ctk.CTkTextbox(self, font=ctk.CTkFont("Consolas", 12), fg_color=C["input_bg"], text_color=C["text"], border_width=1, border_color=C["card_border"])
+        self.tb_notes.pack(fill="both", expand=True, padx=30, pady=(5, 20))
+        
+        # Bottom Buttons
+        btns = ctk.CTkFrame(self, fg_color="transparent")
+        btns.pack(pady=(0, 20))
+        
+        ctk.CTkButton(btns, text="Cancelar", width=120, height=36, fg_color=C["card_border"], hover_color=C["muted"], text_color=C["text"], command=self.destroy).pack(side="left", padx=10)
+        ctk.CTkButton(btns, text="🚀 Publicar no GitHub", width=180, height=36, font=ctk.CTkFont("Segoe UI", 12, "bold"), fg_color=C["orange"], hover_color="#d68910", text_color="#ffffff", command=self._publish).pack(side="left", padx=10)
+        
+    def _generate_notes(self):
+        self.btn_gen.configure(text="⏳ Analisando commits...", state="disabled")
+        self.update()
+        
+        import threading
+        def task():
+            try:
+                import subprocess
+                prev_tag = subprocess.run("git describe --tags --abbrev=0", shell=True, capture_output=True, text=True, cwd=self.repo_path).stdout.strip()
+                
+                cmd = f"git log {prev_tag}..HEAD --oneline" if prev_tag else "git log --oneline"
+                commits = subprocess.run(cmd, shell=True, capture_output=True, text=True, cwd=self.repo_path).stdout.strip()
+                
+                if not commits:
+                    self.parent_app.after(0, lambda: self._set_notes("Nenhum commit novo encontrado desde o último lançamento."))
+                    return
+                    
+                import google.generativeai as genai
+                prompt = f"Gere o 'Release Note' técnico em Markdown baseado nestes commits.\nProibido: usar introduções corporativas (ex: 'Prezados usuários', 'Temos o prazer de anunciar'), saudações, conclusões, gírias ou emojis.\nEstrutura EXIGIDA:\n1. Um único parágrafo direto ao ponto explicando qual foi o foco principal desta versão e as principais funcionalidades construídas.\n2. Um cabeçalho 'Resumo de Alterações' seguido de uma lista em bullet points com as modificações técnicas.\n\nCommits:\n{commits}"
+                
+                model = genai.GenerativeModel("gemini-2.5-flash")
+                resp = model.generate_content(prompt)
+                
+                self.parent_app.after(0, lambda: self._set_notes(resp.text))
+            except Exception as e:
+                error_msg = str(e)
+                self.parent_app.after(0, lambda msg=error_msg: self._set_notes(f"Erro ao gerar notas: {msg}"))
+            finally:
+                self.parent_app.after(0, lambda: self.btn_gen.configure(text="✨ Gerar Notas da Versão com IA", state="normal"))
+                
+        threading.Thread(target=task, daemon=True).start()
+        
+    def _set_notes(self, text):
+        self.tb_notes.delete("1.0", "end")
+        self.tb_notes.insert("end", text)
+        
+    def _publish(self):
+        tag = self.entry_tag.get().strip()
+        title = self.entry_title.get().strip()
+        body = self.tb_notes.get("1.0", "end").strip()
+        
+        if not tag or not title:
+            from tkinter import messagebox
+            messagebox.showerror("Erro", "Tag e Título são obrigatórios!")
+            return
+            
+        import threading
+        def task():
+            try:
+                import subprocess
+                import requests
+                import os
+                import json
+                
+                self.parent_app.log(f"[SYS] Criando tag local {tag}...", "info")
+                subprocess.run(f'git tag -a {tag} -m "{title}"', shell=True, check=True, cwd=self.repo_path)
+                
+                self.parent_app.log(f"[SYS] Enviando tag {tag} para o repositório remoto...", "info")
+                subprocess.run(f'git push origin {tag}', shell=True, check=True, cwd=self.repo_path)
+                
+                remote_url = subprocess.run("git config --get remote.origin.url", shell=True, capture_output=True, text=True, cwd=self.repo_path).stdout.strip()
+                if not remote_url:
+                    self.parent_app.log("[ERRO] Repositório remoto não encontrado. O release local foi criado.", "error")
+                    return
+                    
+                if "github.com" not in remote_url:
+                    self.parent_app.log("[SYS] O remote não é GitHub. O release local foi criado.", "warn")
+                    return
+                    
+                parts = remote_url.replace(".git", "").split("/")
+                if remote_url.startswith("git@"):
+                    parts = remote_url.split(":")[-1].replace(".git", "").split("/")
+                    
+                owner, repo = parts[-2], parts[-1]
+                
+                token = os.environ.get("GITHUB_TOKEN", "")
+                if not token:
+                    try:
+                        with open(os.path.join(os.path.dirname(__file__), "history.json"), "r", encoding="utf-8") as f:
+                            data = json.load(f)
+                            token = data.get("github_token", "")
+                    except:
+                        pass
+                        
+                if not token:
+                    self.parent_app.log("[ERRO] Token do GitHub não encontrado. Tag enviada, mas Release não publicado na aba Releases.", "error")
+                    return
+                    
+                self.parent_app.log(f"[SYS] Publicando release na aba Releases do GitHub...", "info")
+                headers = {"Authorization": f"token {token}", "Accept": "application/vnd.github.v3+json"}
+                payload = {"tag_name": tag, "name": title, "body": body, "draft": False, "prerelease": False}
+                
+                response = requests.post(f"https://api.github.com/repos/{owner}/{repo}/releases", json=payload, headers=headers)
+                if response.status_code == 201:
+                    url = response.json().get("html_url")
+                    self.parent_app.log(f"🏆 Lançamento {tag} publicado com sucesso! Link: {url}", "success")
+                else:
+                    self.parent_app.log(f"[ERRO] Falha na API do GitHub: {response.status_code} - {response.text}", "error")
+                    
+            except Exception as e:
+                self.parent_app.log(f"[ERRO] Falha ao publicar: {str(e)}", "error")
+            finally:
+                self.parent_app.after(0, self.destroy)
+                
+        threading.Thread(target=task, daemon=True).start()
+
 class GitignoreDialog(ctk.CTkToplevel):
     def __init__(self, parent):
         super().__init__(parent)
@@ -1604,6 +1755,14 @@ class App(ctk.CTk):
             command=self.discard_changes)
         self.btn_time_machine.pack(side="left", padx=(10, 0))
 
+        self.btn_release = ctk.CTkButton(
+            ws_actions, text="🏆 Lançar Versão", width=150, height=30,
+            font=ctk.CTkFont("Segoe UI", 11, "bold"),
+            fg_color="transparent", hover_color=C["warn_bg"], text_color=C["orange"],
+            border_width=1, border_color=C["orange"],
+            command=self.open_release_manager)
+        self.btn_release.pack(side="left", padx=(10, 0))
+
         # ── 2. Action cards ───────────────────────────────────────────────────
         self.actions_frame = ctk.CTkFrame(self.tab_push, fg_color="transparent")
         self.actions_frame.grid(row=1, column=0, sticky="ew", pady=(0, 18))
@@ -2063,6 +2222,15 @@ class App(ctk.CTk):
             os.chdir(original_cwd)
             
         dialog = DiffViewerDialog(self, diff_output)
+        self.wait_window(dialog)
+
+    def open_release_manager(self):
+        repo = self.entry_folder.get().strip()
+        if not repo or not os.path.exists(os.path.join(repo, ".git")):
+            self._show_error("Selecione um repositório Git válido primeiro.")
+            return
+        
+        dialog = ReleaseManagerDialog(self, repo)
         self.wait_window(dialog)
 
     def generate_specific_gitignore(self, template_names, silent=False):
