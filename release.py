@@ -3287,6 +3287,8 @@ Retorne APENAS o markdown final, sem blocos de código (```markdown).
             prompt = f"""Você é um desenvolvedor sênior mantenedor deste projeto.
 Abaixo está o README ATUAL, a NOVA ESTRUTURA de pastas, as DEPENDÊNCIAS e o GIT DIFF com as mais recentes modificações de código.
 
+{auto_setup_rule}
+
 SUA TAREFA É RETORNAR O README COMPLETO ATUALIZADO:
 1. Mantenha todo o histórico de atualizações antigas intacto.
 2. Atualize a seção de "Estrutura do Projeto" substituindo a antiga pela nova estrutura (pode adicionar breves comentários nos arquivos principais).
@@ -3297,7 +3299,6 @@ SUA TAREFA É RETORNAR O README COMPLETO ATUALIZADO:
 ### 🔄 Atualização ({today})
 - [Resumo direto da ação 1 baseado no DIFF]
 - [Resumo direto da ação 2 baseado no DIFF]
-{auto_setup_rule}
 
 Retorne APENAS o texto markdown do README completo final, sem a tag ```markdown em volta.
 
