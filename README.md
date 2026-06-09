@@ -143,3 +143,8 @@ Distribuído sob a licença MIT.
 - Implementado o novo módulo `BranchManagerView` para criação, exclusão e troca de branches.
 - Adicionado sistema de "Auto-Save" preventivo ao alternar entre branches via commit automático.
 - Integrada visualização do status da branch atual na barra de navegação principal da aplicação.
+
+### 🔄 Atualização (08/06/2026)
+- Implementada a feature "Máquina do Tempo" para resetar repositórios ao último commit.
+- Adicionada interface de aviso crítico para confirmação segura de descarte de alterações.
+- Migrada a branch principal de "master" para "main" no histórico de registros.

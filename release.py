@@ -386,6 +386,44 @@ class NewProjectDialog(ctk.CTkToplevel):
         }
         self.destroy()
 
+class TimeMachineDialog(ctk.CTkToplevel):
+    def __init__(self, parent, commit_info):
+        super().__init__(parent)
+        self.title("Aviso Crítico")
+        self.geometry("450x420")
+        self.transient(parent)
+        self.grab_set()
+        self.configure(fg_color=C["bg"])
+        self.result = False
+        
+        # Header
+        ctk.CTkLabel(self, text="⚠️ MÁQUINA DO TEMPO", font=ctk.CTkFont("Segoe UI", 20, "bold"), text_color=C["red"]).pack(pady=(25, 5))
+        
+        # Message
+        msg_frame = ctk.CTkFrame(self, fg_color="transparent")
+        msg_frame.pack(fill="x", padx=30, pady=10)
+        
+        warn_txt = "Isso vai APAGAR todas as alterações não salvas e arquivos recém-criados.\n\nO projeto retornará EXATAMENTE ao estado do seguinte commit:"
+        ctk.CTkLabel(msg_frame, text=warn_txt, font=ctk.CTkFont("Segoe UI", 13), text_color=C["text"], justify="center", wraplength=380).pack()
+        
+        # Commit info pill
+        pill = ctk.CTkFrame(self, fg_color=C["input_bg"], corner_radius=8, border_width=1, border_color=C["card_border"])
+        pill.pack(fill="x", padx=30, pady=15)
+        ctk.CTkLabel(pill, text=f"📌 {commit_info}", font=ctk.CTkFont("Consolas", 11), text_color=C["blue"], wraplength=360).pack(padx=15, pady=15)
+        
+        ctk.CTkLabel(self, text="Essa ação NÃO pode ser desfeita.", font=ctk.CTkFont("Segoe UI", 13, "bold"), text_color=C["red"]).pack(pady=(5, 15))
+        
+        # Buttons
+        btns = ctk.CTkFrame(self, fg_color="transparent")
+        btns.pack(pady=(10, 20))
+        
+        ctk.CTkButton(btns, text="Cancelar", width=120, height=36, font=ctk.CTkFont("Segoe UI", 12), fg_color=C["card_border"], hover_color=C["muted"], text_color=C["text"], command=self.destroy).pack(side="left", padx=10)
+        ctk.CTkButton(btns, text="💥 SIM, DESCARTAR TUDO", width=180, height=36, font=ctk.CTkFont("Segoe UI", 12, "bold"), fg_color=C["red_dark"], hover_color=C["red"], command=self._confirm).pack(side="left", padx=10)
+        
+    def _confirm(self):
+        self.result = True
+        self.destroy()
+
 class GitignoreDialog(ctk.CTkToplevel):
     def __init__(self, parent):
         super().__init__(parent)
@@ -1449,6 +1487,14 @@ class App(ctk.CTk):
             border_width=1, border_color=C["card_border"],
             command=self.open_gitignore_generator)
         self.btn_gitignore.pack(side="left")
+        
+        self.btn_time_machine = ctk.CTkButton(
+            ws_actions, text="⏪ Máquina do Tempo", width=180, height=30,
+            font=ctk.CTkFont("Segoe UI", 11, "bold"),
+            fg_color="transparent", hover_color=C["red_dark"], text_color=C["red"],
+            border_width=1, border_color=C["red"],
+            command=self.discard_changes)
+        self.btn_time_machine.pack(side="left", padx=(10, 0))
 
         # ── 2. Action cards ───────────────────────────────────────────────────
         self.actions_frame = ctk.CTkFrame(self.tab_push, fg_color="transparent")
@@ -1847,6 +1893,40 @@ class App(ctk.CTk):
         self.wait_window(dialog)
         if dialog.result:
             self.generate_specific_gitignore(dialog.result)
+
+    def discard_changes(self):
+        repo = self.entry_folder.get().strip()
+        if not repo or not os.path.exists(os.path.join(repo, ".git")):
+            self._show_error("Esta pasta não é um repositório Git válido.")
+            return
+            
+        # Obter informações do último commit
+        commit_info_text = "Nenhum commit encontrado (Estado Inicial)"
+        try:
+            log_output = self.run_command(f'git -C "{repo}" log -1 --format="%h | %s | %cd" --date=format:"%d/%m/%Y às %H:%M"', check=False)
+            if log_output and "fatal" not in log_output.lower():
+                if len(log_output) > 90:
+                    log_output = log_output[:87] + "..."
+                commit_info_text = log_output
+        except Exception:
+            pass
+            
+        dialog = TimeMachineDialog(self, commit_info_text)
+        self.wait_window(dialog)
+        
+        if dialog.result:
+            original_cwd = os.getcwd()
+            try:
+                os.chdir(repo)
+                self.log("[SYS] ⏳ Rebobinando arquivos para o último commit...", "warn")
+                self.run_command("git reset --hard", check=False)
+                self.run_command("git clean -fd", check=False)
+                self.log("[SYS] ⏪ Máquina do Tempo ativada! Todas as mudanças não salvas foram apagadas com sucesso.", "success")
+                messagebox.showinfo("Sucesso", "A máquina do tempo foi ativada.\nTodos os arquivos retornaram ao estado do último commit.")
+            except Exception as e:
+                self.log(f"[ERRO] Falha ao executar a Máquina do Tempo: {str(e)}", "error")
+            finally:
+                os.chdir(original_cwd)
 
     def generate_specific_gitignore(self, template_names, silent=False):
         base_ignores = "# Ambiente / SO\n.env\n.env.*\n!.env.example\n.DS_Store\nThumbs.db\ndesktop.ini\n\n# IDEs\n.vscode/\n.idea/\n\n"
