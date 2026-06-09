@@ -317,7 +317,7 @@ class NewProjectDialog(ctk.CTkToplevel):
         hdr = ctk.CTkFrame(self, fg_color=C["card"], corner_radius=0, height=60)
         hdr.pack(fill="x")
         hdr.pack_propagate(False)
-        ctk.CTkLabel(hdr, text="🚀  Criar Novo Repositório",
+        ctk.CTkLabel(hdr, text="Criar Novo Repositório",
                      font=ctk.CTkFont("Segoe UI", 18, "bold"),
                      text_color=C["text"]).pack(side="left", padx=20, pady=15)
 
@@ -405,7 +405,7 @@ class TimeMachineDialog(ctk.CTkToplevel):
         self.result = False
         
         # Header
-        ctk.CTkLabel(self, text="⚠️ MÁQUINA DO TEMPO", font=ctk.CTkFont("Segoe UI", 20, "bold"), text_color=C["red"]).pack(pady=(25, 5))
+        ctk.CTkLabel(self, text="MÁQUINA DO TEMPO", font=ctk.CTkFont("Segoe UI", 20, "bold"), text_color=C["red"]).pack(pady=(25, 5))
         
         # Message
         msg_frame = ctk.CTkFrame(self, fg_color="transparent")
@@ -435,7 +435,7 @@ class TimeMachineDialog(ctk.CTkToplevel):
 class DiffViewerDialog(ctk.CTkToplevel):
     def __init__(self, parent, diff_text):
         super().__init__(parent)
-        self.title("🔍 Lente de Aumento - Diff Lado a Lado")
+        self.title("Diff Lado a Lado")
         self.geometry("1200x700")
         self.transient(parent)
         self.grab_set()
@@ -463,8 +463,8 @@ class DiffViewerDialog(ctk.CTkToplevel):
         titles.grid_columnconfigure(0, weight=1)
         titles.grid_columnconfigure(1, weight=1)
         
-        ctk.CTkLabel(titles, text="🔴 Código Original (Remoções)", font=ctk.CTkFont("Segoe UI", 12, "bold"), text_color=C["red"]).grid(row=0, column=0)
-        ctk.CTkLabel(titles, text="🟢 Novo Código (Adições)", font=ctk.CTkFont("Segoe UI", 12, "bold"), text_color=C["green"]).grid(row=0, column=1)
+        ctk.CTkLabel(titles, text="Código Original", font=ctk.CTkFont("Segoe UI", 12, "bold"), text_color=C["red"]).grid(row=0, column=0)
+        ctk.CTkLabel(titles, text="Novo Código", font=ctk.CTkFont("Segoe UI", 12, "bold"), text_color=C["green"]).grid(row=0, column=1)
         
         # Textboxes container
         container = ctk.CTkFrame(self, fg_color="transparent")
@@ -598,7 +598,7 @@ class ReleaseManagerDialog(ctk.CTkToplevel):
         super().__init__(parent)
         self.parent_app = parent
         self.repo_path = repo_path
-        self.title("🏆 Gerenciador de Versões (Releases)")
+        self.title("Versões (Releases)")
         self.geometry("700x750")
         self.transient(parent)
         self.grab_set()
@@ -606,7 +606,7 @@ class ReleaseManagerDialog(ctk.CTkToplevel):
         self.after(200, lambda: self.winfo_exists() and set_title_bar_color(self, C["bg"], C["text"]))
         
         # Header
-        ctk.CTkLabel(self, text="🏆 Lançar Nova Versão", font=ctk.CTkFont("Segoe UI", 20, "bold"), text_color=C["orange"]).pack(pady=(20, 5))
+        ctk.CTkLabel(self, text="Lançar Versão", font=ctk.CTkFont("Segoe UI", 20, "bold"), text_color=C["orange"]).pack(pady=(20, 5))
         ctk.CTkLabel(self, text="Crie um 'Patch Note' oficial e publique no GitHub.", font=ctk.CTkFont("Segoe UI", 12), text_color=C["text_dim"]).pack(pady=(0, 20))
         
         # Inputs
@@ -624,7 +624,7 @@ class ReleaseManagerDialog(ctk.CTkToplevel):
         self.entry_title.insert(0, "Lançamento Oficial")
         
         # Generator Button
-        self.btn_gen = ctk.CTkButton(self, text="✨ Gerar Notas da Versão com IA", height=36, font=ctk.CTkFont("Segoe UI", 12, "bold"), fg_color=C["blue"], hover_color=C["blue_dark"], command=self._generate_notes)
+        self.btn_gen = ctk.CTkButton(self, text="Gerar Notas com IA", height=36, font=ctk.CTkFont("Segoe UI", 12, "bold"), fg_color=C["blue"], hover_color=C["blue_dark"], command=self._generate_notes)
         self.btn_gen.pack(fill="x", padx=30, pady=(0, 5))
         
         self.progress_ai = ctk.CTkProgressBar(self, mode="indeterminate", fg_color=C["input_bg"], progress_color=C["orange"], height=4)
@@ -642,10 +642,10 @@ class ReleaseManagerDialog(ctk.CTkToplevel):
         btns.pack(pady=(0, 20))
         
         ctk.CTkButton(btns, text="Cancelar", width=120, height=36, fg_color=C["card_border"], hover_color=C["muted"], text_color=C["text"], command=self.destroy).pack(side="left", padx=10)
-        ctk.CTkButton(btns, text="🚀 Publicar no GitHub", width=180, height=36, font=ctk.CTkFont("Segoe UI", 12, "bold"), fg_color=C["orange"], hover_color="#d68910", text_color="#ffffff", command=self._publish).pack(side="left", padx=10)
+        ctk.CTkButton(btns, text="Publicar no GitHub", width=180, height=36, font=ctk.CTkFont("Segoe UI", 12, "bold"), fg_color=C["orange"], hover_color="#d68910", text_color="#ffffff", command=self._publish).pack(side="left", padx=10)
         
     def _generate_notes(self):
-        self.btn_gen.configure(text="✨ A Inteligência Artificial está escrevendo...", state="disabled")
+        self.btn_gen.configure(text="Gerando...", state="disabled")
         self.progress_ai.pack(fill="x", padx=30, pady=(0, 10))
         self.progress_ai.start()
         self.update()
@@ -680,7 +680,7 @@ class ReleaseManagerDialog(ctk.CTkToplevel):
                 self.parent_app.after(0, lambda msg=error_msg: self._set_notes(f"Erro ao gerar notas: {msg}"))
             finally:
                 def _reset_ui():
-                    self.btn_gen.configure(text="✨ Gerar Notas da Versão com IA", state="normal")
+                    self.btn_gen.configure(text="Gerar Notas com IA", state="normal")
                     self.progress_ai.stop()
                     self.progress_ai.pack_forget()
                 self.parent_app.after(0, _reset_ui)
@@ -774,7 +774,7 @@ class GitignoreDialog(ctk.CTkToplevel):
         
         self.configure(fg_color=C["bg"])
         
-        ctk.CTkLabel(self, text="🛡️ Gerar .gitignore", font=ctk.CTkFont("Segoe UI", 18, "bold"), text_color=C["text"]).pack(pady=(20, 5))
+        ctk.CTkLabel(self, text="Gerar .gitignore", font=ctk.CTkFont("Segoe UI", 18, "bold"), text_color=C["text"]).pack(pady=(20, 5))
         ctk.CTkLabel(self, text="Selecione as tecnologias do seu projeto:", font=ctk.CTkFont("Segoe UI", 12), text_color=C["text_dim"]).pack(pady=(0, 10))
         
         self.scroll = ctk.CTkScrollableFrame(self, fg_color=C["input_bg"], border_width=1, border_color=C["card_border"])
@@ -1054,14 +1054,14 @@ class BranchManagerView(ctk.CTkFrame):
         self.lbl_current_repo = ctk.CTkLabel(self.info_frame, text="Nenhum diretório selecionado", font=ctk.CTkFont("Consolas", 14, "bold"), text_color=C["text"])
         self.lbl_current_repo.pack(side="left", padx=20, pady=15, fill="x", expand=True, anchor="w")
         
-        btn_change_folder = ctk.CTkButton(self.info_frame, text="📂 Trocar Pasta", width=120, height=36, font=ctk.CTkFont("Segoe UI", 12, "bold"), fg_color=C["blue"], hover_color=C["blue_dark"], command=self.change_folder)
+        btn_change_folder = ctk.CTkButton(self.info_frame, text="Trocar Pasta", width=120, height=36, font=ctk.CTkFont("Segoe UI", 12, "bold"), fg_color=C["blue"], hover_color=C["blue_dark"], command=self.change_folder)
         btn_change_folder.pack(side="right", padx=20, pady=15)
         
         # New Branch Input
         new_frame = ctk.CTkFrame(self, fg_color=C["card"], corner_radius=16, border_width=1, border_color=C["card_border"])
         new_frame.grid(row=1, column=0, sticky="ew", padx=20, pady=20)
         
-        lbl_title = ctk.CTkLabel(new_frame, text="🔀 Criar Nova Branch", font=ctk.CTkFont("Segoe UI", 16, "bold"), text_color=C["text"])
+        lbl_title = ctk.CTkLabel(new_frame, text="Nova Branch", font=ctk.CTkFont("Segoe UI", 16, "bold"), text_color=C["text"])
         lbl_title.pack(anchor="w", padx=20, pady=(20, 10))
         
         input_container = ctk.CTkFrame(new_frame, fg_color="transparent")
@@ -1123,7 +1123,7 @@ class BranchManagerView(ctk.CTkFrame):
                 lbl_name.pack(side="left", padx=10, pady=12)
                 
                 if not is_current:
-                    btn_del = ctk.CTkButton(item, text="🗑️", width=30, height=30, fg_color="transparent", hover_color=C["red_dark"], command=lambda name=b_name: self.delete_branch(name))
+                    btn_del = ctk.CTkButton(item, text="Excluir", width=30, height=30, fg_color="transparent", hover_color=C["red_dark"], command=lambda name=b_name: self.delete_branch(name))
                     btn_del.pack(side="right", padx=5)
                     
                     btn_chk = ctk.CTkButton(item, text="Mudar para Branch", height=30, fg_color=C["muted"], hover_color=C["blue"], command=lambda name=b_name: self.checkout_branch(name))
@@ -1481,7 +1481,7 @@ class CollaboratorManagerDialog(ctk.CTkToplevel):
     def __init__(self, parent, app):
         super().__init__(parent)
         self.app = app
-        self.title("🤝 Painel de Colaboradores")
+        self.title("Colaboradores")
         self.geometry("500x600")
         self.resizable(False, False)
         self.transient(parent)
@@ -1715,7 +1715,7 @@ class NewIssueDialog(ctk.CTkToplevel):
         hdr = ctk.CTkFrame(self, fg_color=C["card"], corner_radius=0, height=60)
         hdr.pack(fill="x")
         hdr.pack_propagate(False)
-        ctk.CTkLabel(hdr, text=f"➕ Nova Tarefa em {repo_name}", font=ctk.CTkFont("Segoe UI", 18, "bold"), text_color=C["text"]).pack(side="left", padx=20, pady=15)
+        ctk.CTkLabel(hdr, text=f"Nova Tarefa em {repo_name}", font=ctk.CTkFont("Segoe UI", 18, "bold"), text_color=C["text"]).pack(side="left", padx=20, pady=15)
         
         frame = ctk.CTkFrame(self, fg_color="transparent")
         frame.pack(fill="both", expand=True, padx=20, pady=20)
@@ -1782,7 +1782,7 @@ class IssueDetailsDialog(ctk.CTkToplevel):
         btn_frame = ctk.CTkFrame(self, fg_color="transparent")
         btn_frame.pack(fill="x", padx=20, pady=15)
         
-        ctk.CTkButton(btn_frame, text="Dica do Gemini ✨", width=140, height=36, fg_color=C["blue"], hover_color=C["blue_dark"], command=self.ask_gemini).pack(side="left")
+        ctk.CTkButton(btn_frame, text="Dica do Gemini", width=140, height=36, fg_color=C["blue"], hover_color=C["blue_dark"], command=self.ask_gemini).pack(side="left")
         if issue_data["state"] == "open":
             ctk.CTkButton(btn_frame, text="Marcar como Concluída ✔", width=160, height=36, fg_color=C["green"], hover_color="#207a3c", command=self.close_issue).pack(side="right")
             
@@ -1806,7 +1806,7 @@ class IssueDetailsDialog(ctk.CTkToplevel):
         
     def show_ai_result(self, text):
         for w in self.ai_frame.winfo_children(): w.destroy()
-        ctk.CTkLabel(self.ai_frame, text="✨ Dica do Gemini", font=ctk.CTkFont("Segoe UI", 12, "bold"), text_color=C["blue"]).pack(anchor="w", padx=15, pady=(15, 5))
+        ctk.CTkLabel(self.ai_frame, text="Dica do Gemini", font=ctk.CTkFont("Segoe UI", 12, "bold"), text_color=C["blue"]).pack(anchor="w", padx=15, pady=(15, 5))
         ctk.CTkLabel(self.ai_frame, text=text, font=ctk.CTkFont("Segoe UI", 12), text_color=C["text"], justify="left", wraplength=480).pack(anchor="w", padx=15, pady=(0, 15))
 
     def close_issue(self):
@@ -1824,9 +1824,9 @@ class IssuesView(ctk.CTkFrame):
         hdr = ctk.CTkFrame(self, fg_color="transparent")
         hdr.pack(fill="x", padx=20, pady=(20, 10))
         
-        ctk.CTkLabel(hdr, text="📋 Gerenciador de Tarefas", font=ctk.CTkFont("Segoe UI", 24, "bold"), text_color=C["text"]).pack(side="left")
+        ctk.CTkLabel(hdr, text="Tarefas", font=ctk.CTkFont("Segoe UI", 24, "bold"), text_color=C["text"]).pack(side="left")
         
-        self.btn_new = ctk.CTkButton(hdr, text="➕ Nova Tarefa", height=32, fg_color=C["blue"], hover_color=C["blue_dark"], font=ctk.CTkFont("Segoe UI", 12, "bold"), command=self.open_new_issue)
+        self.btn_new = ctk.CTkButton(hdr, text="Nova Tarefa", height=32, fg_color=C["blue"], hover_color=C["blue_dark"], font=ctk.CTkFont("Segoe UI", 12, "bold"), command=self.open_new_issue)
         self.btn_new.pack(side="right")
         
         # Repositories dropdown
@@ -1981,7 +1981,7 @@ class DashboardView(ctk.CTkScrollableFrame):
         info_frame = ctk.CTkFrame(self.header, fg_color="transparent")
         info_frame.pack(side="left", fill="both", expand=True, pady=20)
         
-        self.btn_collab = ctk.CTkButton(self.header, text="🤝 Colaboradores", width=140, fg_color=C["blue"], hover_color=C["blue_dark"], command=self.open_collab_dialog)
+        self.btn_collab = ctk.CTkButton(self.header, text="Colaboradores", width=140, fg_color=C["blue"], hover_color=C["blue_dark"], command=self.open_collab_dialog)
         self.btn_collab.pack(side="right", padx=20, pady=20)
         
         self.lbl_name = ctk.CTkLabel(info_frame, text="Carregando Perfil...", font=ctk.CTkFont("Segoe UI", 24, "bold"), text_color=C["text"])
@@ -2447,6 +2447,8 @@ class App(ctk.CTk):
         self.top_line = ctk.CTkFrame(self, height=3, fg_color=C["blue"], corner_radius=0)
         self.top_line.place(relx=0, rely=0, relwidth=1)
 
+        self.setup_tray()
+
         self.load_history_ui()
         self.log("Sistema inicializado. Interface pronta.", "info")
         
@@ -2503,7 +2505,7 @@ class App(ctk.CTk):
 
         # Sidebar Dashboard Button
         self.btn_sidebar_dash = ctk.CTkButton(
-            self.sidebar, text="👤  Meu Perfil", height=38, 
+            self.sidebar, text="Meu Perfil", height=38, 
             font=ctk.CTkFont("Segoe UI", 13, "bold"), 
             fg_color=C["card"], hover_color=C["card_border"], 
             text_color=C["blue"], border_width=1, border_color=C["card_border"],
@@ -2553,21 +2555,25 @@ class App(ctk.CTk):
         self.history_frame.grid(row=6, column=0, sticky="nsew",
                                 padx=10, pady=(0, 10))
 
-        # Configurações
+        # Configurações e Sair (Lado a Lado)
+        bottom_frame = ctk.CTkFrame(self.sidebar, fg_color="transparent")
+        bottom_frame.grid(row=7, column=0, sticky="ew", padx=20, pady=(10, 20))
+        bottom_frame.grid_columnconfigure(0, weight=1)
+        bottom_frame.grid_columnconfigure(1, weight=1)
+
         self.btn_settings = ctk.CTkButton(
-            self.sidebar, text="⚙  Configurações", height=36,
+            bottom_frame, text="Config", height=32,
             font=ctk.CTkFont("Segoe UI", 12, "bold"),
             fg_color="transparent", hover_color=C["card_border"], text_color=C["text_dim"],
             command=self.open_settings)
-        self.btn_settings.grid(row=7, column=0, sticky="ew", padx=20, pady=(10, 0))
+        self.btn_settings.grid(row=0, column=0, sticky="ew", padx=(0, 5))
 
-        # Shutdown
         self.btn_shutdown = ctk.CTkButton(
-            self.sidebar, text="🚪  Sair e Desligar", height=36,
+            bottom_frame, text="Sair", height=32,
             font=ctk.CTkFont("Segoe UI", 12, "bold"),
             fg_color="transparent", hover_color="#8b0000", text_color="#ff4444",
             command=self.shutdown_app)
-        self.btn_shutdown.grid(row=8, column=0, sticky="ew", padx=20, pady=(10, 20))
+        self.btn_shutdown.grid(row=0, column=1, sticky="ew", padx=(5, 0))
 
     def shutdown_app(self):
         self.quit()
@@ -2597,26 +2603,26 @@ class App(ctk.CTk):
         self.nav_frame = ctk.CTkFrame(self.main_frame, fg_color="transparent")
         self.nav_frame.grid(row=0, column=0, sticky="ew", pady=(0, 20))
         
-        self.btn_nav_push = ctk.CTkButton(self.nav_frame, text="📤 Repositórios", font=ctk.CTkFont("Segoe UI", 14, "bold"), height=42, fg_color=C["blue"], hover_color=C["blue_dark"], text_color="#ffffff", corner_radius=10, command=lambda: self.switch_main_view("push"))
+        self.btn_nav_push = ctk.CTkButton(self.nav_frame, text="Repositórios", font=ctk.CTkFont("Segoe UI", 14, "bold"), height=42, fg_color=C["blue"], hover_color=C["blue_dark"], text_color="#ffffff", corner_radius=10, command=lambda: self.switch_main_view("push"))
         self.btn_nav_push.pack(side="left", padx=(0, 10))
 
-        self.btn_nav_clone = ctk.CTkButton(self.nav_frame, text="⬇️ Clonagem", font=ctk.CTkFont("Segoe UI", 14, "bold"), height=42, fg_color=C["card"], hover_color=C["card_border"], text_color=C["text_dim"], corner_radius=10, command=lambda: self.switch_main_view("clone"))
+        self.btn_nav_clone = ctk.CTkButton(self.nav_frame, text="Clonagem", font=ctk.CTkFont("Segoe UI", 14, "bold"), height=42, fg_color=C["card"], hover_color=C["card_border"], text_color=C["text_dim"], corner_radius=10, command=lambda: self.switch_main_view("clone"))
         self.btn_nav_clone.pack(side="left", padx=(0, 10))
 
         self.btn_branch = ctk.CTkButton(
-            self.nav_frame, text="🔀 Branch: --", font=ctk.CTkFont("Segoe UI", 14, "bold"), height=42, 
+            self.nav_frame, text="Branch: --", font=ctk.CTkFont("Segoe UI", 14, "bold"), height=42, 
             fg_color=C["card"], hover_color=C["card_border"], text_color=C["text_dim"], 
             corner_radius=10, command=lambda: self.switch_main_view("branch"))
         self.btn_branch.pack(side="left", padx=(0, 10))
 
         self.btn_nav_pull = ctk.CTkButton(
-            self.nav_frame, text="📥 Sincronizar", font=ctk.CTkFont("Segoe UI", 14, "bold"), height=42, 
+            self.nav_frame, text="Sincronizar", font=ctk.CTkFont("Segoe UI", 14, "bold"), height=42, 
             fg_color=C["card"], hover_color=C["card_border"], text_color=C["text_dim"], 
             corner_radius=10, command=lambda: self.switch_main_view("pull"))
         self.btn_nav_pull.pack(side="left", padx=(0, 10))
 
         self.btn_nav_issues = ctk.CTkButton(
-            self.nav_frame, text="📋 Tarefas", font=ctk.CTkFont("Segoe UI", 14, "bold"), height=42, 
+            self.nav_frame, text="Tarefas", font=ctk.CTkFont("Segoe UI", 14, "bold"), height=42, 
             fg_color=C["card"], hover_color=C["card_border"], text_color=C["text_dim"], 
             corner_radius=10, command=lambda: self.switch_main_view("issues"))
         self.btn_nav_issues.pack(side="left", padx=(0, 10))
@@ -2672,7 +2678,7 @@ class App(ctk.CTk):
                                sticky="ew", padx=20, pady=(0, 18))
 
         self.btn_browse = ctk.CTkButton(
-            ws, text="📂  Procurar", width=130, height=42,
+            ws, text="Procurar", width=130, height=42,
             font=ctk.CTkFont("Segoe UI", 13, "bold"),
             fg_color=C["muted"], hover_color=C["blue"],
             command=self.browse_folder)
@@ -2682,7 +2688,7 @@ class App(ctk.CTk):
         ws_actions.grid(row=2, column=0, columnspan=3, sticky="ew", padx=20, pady=(0, 16))
         
         self.btn_gitignore = ctk.CTkButton(
-            ws_actions, text="🛡️ Gerar .gitignore Inteligente", width=180, height=30,
+            ws_actions, text="Gerar .gitignore", width=180, height=30,
             font=ctk.CTkFont("Segoe UI", 11, "bold"),
             fg_color="transparent", hover_color=C["card_border"], text_color=C["blue"],
             border_width=1, border_color=C["card_border"],
@@ -2698,7 +2704,7 @@ class App(ctk.CTk):
         self.btn_time_machine.pack(side="left", padx=(10, 0))
 
         self.btn_release = ctk.CTkButton(
-            ws_actions, text="🏆 Lançar Versão", width=150, height=30,
+            ws_actions, text="Lançar Versão", width=150, height=30,
             font=ctk.CTkFont("Segoe UI", 11, "bold"),
             fg_color="transparent", hover_color=C["warn_bg"], text_color=C["orange"],
             border_width=1, border_color=C["orange"],
@@ -2729,7 +2735,7 @@ class App(ctk.CTk):
                      text_color=C["text_dim"]).pack(anchor="w")
 
         self.btn_diff = ctk.CTkButton(
-            cu, text="🔍 Ver Diferenças", height=30,
+            cu, text="Ver Diferenças", height=30,
             font=ctk.CTkFont("Segoe UI", 12, "bold"),
             fg_color="transparent", hover_color=C["card_border"], text_color=C["text_dim"],
             border_width=1, border_color=C["card_border"],
@@ -2829,8 +2835,8 @@ class App(ctk.CTk):
         dc.rectangle([14, 14, 50, 50], fill=(59, 130, 246))
         return img
 
-    def hide_to_tray(self):
-        self.withdraw()
+    def setup_tray(self):
+        import pystray
         menu = (
             pystray.MenuItem("Abrir Git Auto", self.restore_window),
             pystray.MenuItem("Sair", self.quit_app),
@@ -2839,13 +2845,16 @@ class App(ctk.CTk):
                                       "Git Auto em execução", menu)
         threading.Thread(target=self.tray_icon.run, daemon=True).start()
 
-    def restore_window(self, icon, item):
-        self.tray_icon.stop()
+    def hide_to_tray(self):
+        self.withdraw()
+
+    def restore_window(self, icon=None, item=None):
         self.after(0, self.deiconify)
 
-    def quit_app(self, icon, item):
-        self.tray_icon.stop()
-        self.quit()
+    def quit_app(self, icon=None, item=None):
+        if hasattr(self, 'tray_icon'):
+            self.tray_icon.stop()
+        self.shutdown_app()
 
     # ── HISTÓRICO ─────────────────────────────────────────────────────────────
     def load_history_ui(self):
@@ -2887,9 +2896,12 @@ class App(ctk.CTk):
             top_row.pack(fill="x", padx=12, pady=(12, 0))
             
             ctk.CTkLabel(top_row, text="●", font=ctk.CTkFont(size=14), text_color=icon_color).pack(side="left", padx=(0, 8))
-            ctk.CTkLabel(top_row, text=folder_name, 
-                         font=ctk.CTkFont("Segoe UI", 14, "bold"), 
-                         text_color=C["text"]).pack(side="left")
+            
+            btn_title = ctk.CTkButton(top_row, text=folder_name, 
+                                      font=ctk.CTkFont("Segoe UI", 14, "bold"), 
+                                      text_color=C["text"], fg_color="transparent", hover_color=C["card_border"],
+                                      anchor="w", command=lambda p=path: self.set_folder_from_history(p))
+            btn_title.pack(side="left", fill="x", expand=True)
             
             ctk.CTkButton(top_row, text="✕", width=24, height=24,
                           font=ctk.CTkFont("Segoe UI", 12, "bold"),
@@ -2899,22 +2911,12 @@ class App(ctk.CTk):
                           
             # Meio: Data e Status
             mid_row = ctk.CTkFrame(card, fg_color="transparent")
-            mid_row.pack(fill="x", padx=12, pady=(4, 12))
+            mid_row.pack(fill="x", padx=12, pady=(0, 12))
             
             status_text = "Sincronizado" if status == "ok" else "Falhou"
             ctk.CTkLabel(mid_row, text=f"🕐 {date}   •   {status_text}", 
                          font=ctk.CTkFont("Segoe UI", 11), 
                          text_color=icon_color if status != "ok" else C["text_dim"]).pack(side="left", padx=(20, 0))
-                         
-            # Fundo: Botão Abrir
-            bot_row = ctk.CTkFrame(card, fg_color="transparent")
-            bot_row.pack(fill="x", padx=12, pady=(0, 12))
-            
-            ctk.CTkButton(bot_row, text="Abrir Detalhes do Projeto  →", height=32,
-                          font=ctk.CTkFont("Segoe UI", 12, "bold"),
-                          fg_color=C["blue"], hover_color=C["blue_dark"], text_color="#ffffff",
-                          corner_radius=6,
-                          command=lambda p=path: self.set_folder_from_history(p)).pack(fill="x")
 
     def open_project_history(self, path):
         self.set_folder_from_history(path)
@@ -2931,7 +2933,7 @@ class App(ctk.CTk):
     def update_branch_status(self):
         repo = self.entry_folder.get().strip()
         if not os.path.exists(os.path.join(repo, ".git")):
-            self.btn_branch.configure(text="🔀 Branch: --")
+            self.btn_branch.configure(text="Branch: --")
             return
         branch = self.run_command(f'git -C "{repo}" rev-parse --abbrev-ref HEAD', check=False)
         self.btn_branch.configure(text=f"🔀 Branch: {branch}")
@@ -3548,7 +3550,7 @@ Distribuído sob a licença MIT.
                       fg_color=C["card_border"], hover_color=C["red_dark"], text_color=C["text"],
                       command=lambda: self._resolve_preview(None)).pack(side="left", padx=10)
                       
-        ctk.CTkButton(btns, text="Confirmar Push 🚀", width=150, height=36,
+        ctk.CTkButton(btns, text="Confirmar Push", width=150, height=36,
                       font=ctk.CTkFont("Segoe UI", 12, "bold"),
                       fg_color=C["green_dark"], hover_color=C["green"], text_color="white",
                       command=lambda: self._resolve_preview(self.commit_textbox.get("0.0", "end").strip())).pack(side="left", padx=10)
@@ -3650,11 +3652,11 @@ Distribuído sob a licença MIT.
         self.entry_folder_pull = ctk.CTkEntry(ws, height=42, font=ctk.CTkFont("Consolas", 12), fg_color=C["input_bg"], border_color=C["card_border"], text_color=C["text"], textvariable=self.workspace_var)
         self.entry_folder_pull.grid(row=1, column=0, columnspan=2, sticky="ew", padx=20, pady=(0, 18))
         
-        btn_browse_pull = ctk.CTkButton(ws, text="📂  Procurar", width=130, height=42, font=ctk.CTkFont("Segoe UI", 13, "bold"), fg_color=C["muted"], hover_color=C["blue"], command=self.browse_folder)
+        btn_browse_pull = ctk.CTkButton(ws, text="Procurar", width=130, height=42, font=ctk.CTkFont("Segoe UI", 13, "bold"), fg_color=C["muted"], hover_color=C["blue"], command=self.browse_folder)
         btn_browse_pull.grid(row=1, column=2, padx=(0, 20), pady=(0, 18))
         
         self.btn_action_pull = ctk.CTkButton(
-            container, text="📥 Puxar Alterações da Nuvem", width=300, height=50,
+            container, text="Puxar Alterações", width=300, height=50,
             font=ctk.CTkFont("Segoe UI", 16, "bold"),
             fg_color=C["blue"], hover_color=C["blue_dark"], text_color="#ffffff",
             command=self._pull_code)
@@ -3696,7 +3698,7 @@ Distribuído sob a licença MIT.
             except Exception as e:
                 self._log_pull(f"> [ERRO] {str(e)}")
             finally:
-                self.after(0, lambda: self.btn_action_pull.configure(state="normal", text="📥 Puxar Alterações da Nuvem"))
+                self.after(0, lambda: self.btn_action_pull.configure(state="normal", text="Puxar Alterações"))
                 
         threading.Thread(target=task, daemon=True).start()
         
