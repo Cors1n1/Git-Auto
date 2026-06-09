@@ -1696,6 +1696,271 @@ class HoverTooltip:
             self.tw.withdraw()
             self.is_visible = False
 
+class NewIssueDialog(ctk.CTkToplevel):
+    def __init__(self, parent, repo_name):
+        super().__init__(parent)
+        self.result = None
+        self.title("Nova Tarefa")
+        self.geometry("500x450")
+        self.resizable(False, False)
+        self.attributes("-topmost", True)
+        self.grab_set()
+        self.configure(fg_color=C["bg"])
+        self.after(200, lambda: self.winfo_exists() and set_title_bar_color(self, C["bg"], C["text"]))
+
+        # Header
+        hdr = ctk.CTkFrame(self, fg_color=C["card"], corner_radius=0, height=60)
+        hdr.pack(fill="x")
+        hdr.pack_propagate(False)
+        ctk.CTkLabel(hdr, text=f"➕ Nova Tarefa em {repo_name}", font=ctk.CTkFont("Segoe UI", 18, "bold"), text_color=C["text"]).pack(side="left", padx=20, pady=15)
+        
+        frame = ctk.CTkFrame(self, fg_color="transparent")
+        frame.pack(fill="both", expand=True, padx=20, pady=20)
+        
+        ctk.CTkLabel(frame, text="Título:", font=ctk.CTkFont("Segoe UI", 12, "bold"), text_color=C["text_dim"]).pack(anchor="w")
+        self.entry_title = ctk.CTkEntry(frame, height=36, font=ctk.CTkFont("Segoe UI", 12), fg_color=C["input_bg"], border_color=C["card_border"], text_color=C["text"])
+        self.entry_title.pack(fill="x", pady=(5, 15))
+        
+        ctk.CTkLabel(frame, text="Descrição:", font=ctk.CTkFont("Segoe UI", 12, "bold"), text_color=C["text_dim"]).pack(anchor="w")
+        self.txt_body = ctk.CTkTextbox(frame, height=120, font=ctk.CTkFont("Segoe UI", 12), fg_color=C["input_bg"], border_color=C["card_border"], border_width=1, text_color=C["text"])
+        self.txt_body.pack(fill="x", pady=(5, 20))
+        
+        btn_frame = ctk.CTkFrame(frame, fg_color="transparent")
+        btn_frame.pack(fill="x", side="bottom")
+        ctk.CTkButton(btn_frame, text="Cancelar", width=100, height=36, fg_color="transparent", border_width=1, border_color=C["card_border"], hover_color=C["card"], text_color=C["text"], command=self.destroy).pack(side="left")
+        ctk.CTkButton(btn_frame, text="Criar Tarefa", width=120, height=36, fg_color=C["blue"], hover_color=C["blue_dark"], command=self.confirm).pack(side="right")
+        self.entry_title.focus()
+
+    def confirm(self):
+        title = self.entry_title.get().strip()
+        body = self.txt_body.get("1.0", "end").strip()
+        if not title:
+            from tkinter import messagebox
+            messagebox.showwarning("Aviso", "O título não pode estar vazio.")
+            return
+        self.result = {"title": title, "body": body}
+        self.destroy()
+
+class IssueDetailsDialog(ctk.CTkToplevel):
+    def __init__(self, parent, issue_data, close_callback):
+        super().__init__(parent)
+        self.title(f"Issue #{issue_data['number']}")
+        self.geometry("600x500")
+        self.attributes("-topmost", True)
+        self.grab_set()
+        self.configure(fg_color=C["bg"])
+        self.after(200, lambda: self.winfo_exists() and set_title_bar_color(self, C["bg"], C["text"]))
+        
+        self.issue_data = issue_data
+        self.close_callback = close_callback
+        
+        # Header
+        hdr = ctk.CTkFrame(self, fg_color=C["card"], corner_radius=0, height=70)
+        hdr.pack(fill="x")
+        hdr.pack_propagate(False)
+        
+        title_lbl = ctk.CTkLabel(hdr, text=issue_data["title"], font=ctk.CTkFont("Segoe UI", 16, "bold"), text_color=C["text"], wraplength=450)
+        title_lbl.pack(side="left", padx=20, pady=10)
+        
+        state_color = C["green"] if issue_data["state"] == "open" else C["red"]
+        ctk.CTkLabel(hdr, text=issue_data["state"].upper(), font=ctk.CTkFont("Segoe UI", 12, "bold"), text_color=state_color).pack(side="right", padx=20)
+        
+        main_frame = ctk.CTkScrollableFrame(self, fg_color="transparent")
+        main_frame.pack(fill="both", expand=True, padx=20, pady=20)
+        
+        ctk.CTkLabel(main_frame, text="Descrição", font=ctk.CTkFont("Segoe UI", 14, "bold"), text_color=C["text_dim"]).pack(anchor="w", pady=(0, 10))
+        
+        body_text = issue_data.get("body") or "*Sem descrição*"
+        lbl_body = ctk.CTkLabel(main_frame, text=body_text, font=ctk.CTkFont("Segoe UI", 12), text_color=C["text"], justify="left", wraplength=520)
+        lbl_body.pack(anchor="w", pady=(0, 20))
+        
+        self.ai_frame = ctk.CTkFrame(main_frame, fg_color=C["card"], corner_radius=8, border_width=1, border_color=C["blue"])
+        
+        btn_frame = ctk.CTkFrame(self, fg_color="transparent")
+        btn_frame.pack(fill="x", padx=20, pady=15)
+        
+        ctk.CTkButton(btn_frame, text="Dica do Gemini ✨", width=140, height=36, fg_color=C["blue"], hover_color=C["blue_dark"], command=self.ask_gemini).pack(side="left")
+        if issue_data["state"] == "open":
+            ctk.CTkButton(btn_frame, text="Marcar como Concluída ✔", width=160, height=36, fg_color=C["green"], hover_color="#207a3c", command=self.close_issue).pack(side="right")
+            
+    def ask_gemini(self):
+        self.ai_frame.pack(fill="x", pady=10)
+        for w in self.ai_frame.winfo_children(): w.destroy()
+        ctk.CTkLabel(self.ai_frame, text="Analisando com Inteligência Artificial...", font=ctk.CTkFont(slant="italic"), text_color=C["blue"]).pack(pady=15)
+        
+        def task():
+            try:
+                prompt = f"Eu tenho uma tarefa no meu projeto chamada '{self.issue_data['title']}'. A descrição é: {self.issue_data.get('body', '')}. Me dê uma dica rápida e direta de programador de como eu poderia resolver ou começar a resolver isso."
+                if not GEMINI_API_KEY:
+                    self.winfo_exists() and self.after(0, lambda: self.show_ai_result("Erro: Chave do Gemini não configurada."))
+                    return
+                resp = model.generate_content(prompt)
+                self.winfo_exists() and self.after(0, lambda: self.show_ai_result(resp.text))
+            except Exception as e:
+                self.winfo_exists() and self.after(0, lambda: self.show_ai_result("Falha na IA."))
+        import threading
+        threading.Thread(target=task, daemon=True).start()
+        
+    def show_ai_result(self, text):
+        for w in self.ai_frame.winfo_children(): w.destroy()
+        ctk.CTkLabel(self.ai_frame, text="✨ Dica do Gemini", font=ctk.CTkFont("Segoe UI", 12, "bold"), text_color=C["blue"]).pack(anchor="w", padx=15, pady=(15, 5))
+        ctk.CTkLabel(self.ai_frame, text=text, font=ctk.CTkFont("Segoe UI", 12), text_color=C["text"], justify="left", wraplength=480).pack(anchor="w", padx=15, pady=(0, 15))
+
+    def close_issue(self):
+        self.close_callback(self.issue_data["number"])
+        self.destroy()
+
+class IssuesView(ctk.CTkFrame):
+    def __init__(self, parent, app):
+        super().__init__(parent, fg_color="transparent")
+        self.app = app
+        self.current_repo = None
+        self.issues_data = []
+        
+        # Header
+        hdr = ctk.CTkFrame(self, fg_color="transparent")
+        hdr.pack(fill="x", padx=20, pady=(20, 10))
+        
+        ctk.CTkLabel(hdr, text="📋 Gerenciador de Tarefas", font=ctk.CTkFont("Segoe UI", 24, "bold"), text_color=C["text"]).pack(side="left")
+        
+        self.btn_new = ctk.CTkButton(hdr, text="➕ Nova Tarefa", height=32, fg_color=C["blue"], hover_color=C["blue_dark"], font=ctk.CTkFont("Segoe UI", 12, "bold"), command=self.open_new_issue)
+        self.btn_new.pack(side="right")
+        
+        # Repositories dropdown
+        repo_frame = ctk.CTkFrame(self, fg_color=C["card"], corner_radius=8, height=60)
+        repo_frame.pack(fill="x", padx=20, pady=10)
+        repo_frame.pack_propagate(False)
+        
+        ctk.CTkLabel(repo_frame, text="Projeto:", font=ctk.CTkFont("Segoe UI", 12, "bold"), text_color=C["text_dim"]).pack(side="left", padx=(15, 10))
+        self.repo_combo = ctk.CTkOptionMenu(repo_frame, values=["Carregando..."], width=250, fg_color=C["input_bg"], button_color=C["card_border"], command=self.load_issues_for_repo)
+        self.repo_combo.pack(side="left", pady=15)
+        
+        self.list_frame = ctk.CTkScrollableFrame(self, fg_color="transparent")
+        self.list_frame.pack(fill="both", expand=True, padx=20, pady=10)
+        
+    def load_repos(self):
+        import os, json
+        if os.path.exists(CACHE_REPOS):
+            try:
+                with open(CACHE_REPOS, "r", encoding="utf-8") as f:
+                    data = json.load(f)
+                    names = [r["name"] for r in data[:15]]
+                    if names:
+                        self.repo_combo.configure(values=names)
+                        if not self.current_repo:
+                            self.repo_combo.set(names[0])
+                            self.load_issues_for_repo(names[0])
+                    else:
+                        self.repo_combo.configure(values=["Nenhum repositório"])
+            except: pass
+
+    def load_issues_for_repo(self, repo_name):
+        self.current_repo = repo_name
+        for w in self.list_frame.winfo_children(): w.destroy()
+        ctk.CTkLabel(self.list_frame, text="Carregando tarefas...", text_color=C["text_dim"]).pack(pady=40)
+        
+        def task():
+            import requests, os
+            token = os.getenv("GITHUB_TOKEN")
+            username = os.getenv("GITHUB_USERNAME")
+            if not token or not username:
+                self.app.after(0, lambda: self.show_error("Credenciais do GitHub ausentes."))
+                return
+                
+            headers = {"Authorization": f"Bearer {token}", "Accept": "application/vnd.github+json"}
+            url = f"https://api.github.com/repos/{username}/{repo_name}/issues?state=all&per_page=20"
+            try:
+                r = requests.get(url, headers=headers)
+                if r.status_code == 200:
+                    issues = [i for i in r.json() if "pull_request" not in i]
+                    self.app.after(0, lambda: self.render_issues(issues))
+                else:
+                    self.app.after(0, lambda: self.show_error(f"Erro da API: {r.status_code}"))
+            except:
+                self.app.after(0, lambda: self.show_error("Erro de conexão."))
+        import threading
+        threading.Thread(target=task, daemon=True).start()
+
+    def render_issues(self, issues):
+        self.issues_data = issues
+        for w in self.list_frame.winfo_children(): w.destroy()
+        
+        if not issues:
+            ctk.CTkLabel(self.list_frame, text="✨ Nenhuma tarefa aberta neste projeto. Tudo limpo!", font=ctk.CTkFont("Segoe UI", 14), text_color=C["muted"]).pack(pady=60)
+            return
+            
+        for issue in issues:
+            card = ctk.CTkFrame(self.list_frame, fg_color=C["card"], corner_radius=10, border_width=1, border_color=C["card_border"])
+            card.pack(fill="x", pady=5)
+            
+            top_bar = ctk.CTkFrame(card, fg_color="transparent")
+            top_bar.pack(fill="x", padx=15, pady=(15, 5))
+            
+            state_color = C["green"] if issue["state"] == "open" else C["text_dim"]
+            ctk.CTkLabel(top_bar, text=f"#{issue['number']} - {issue['state'].upper()}", font=ctk.CTkFont("Segoe UI", 10, "bold"), text_color=state_color).pack(side="left")
+            
+            date_str = issue["created_at"].split("T")[0]
+            ctk.CTkLabel(top_bar, text=date_str, font=ctk.CTkFont("Segoe UI", 10), text_color=C["muted"]).pack(side="right")
+            
+            ctk.CTkLabel(card, text=issue["title"], font=ctk.CTkFont("Segoe UI", 14, "bold"), text_color=C["text"], justify="left", wraplength=600).pack(anchor="w", padx=15)
+            
+            body = (issue.get("body") or "")[:80] + ("..." if len(issue.get("body") or "") > 80 else "")
+            ctk.CTkLabel(card, text=body if body else "Sem descrição", font=ctk.CTkFont("Segoe UI", 12), text_color=C["text_dim"]).pack(anchor="w", padx=15, pady=(5, 15))
+            
+            btn_frame = ctk.CTkFrame(card, fg_color="transparent")
+            btn_frame.pack(fill="x", padx=15, pady=(0, 15))
+            ctk.CTkButton(btn_frame, text="Ver Detalhes", height=28, fg_color="transparent", border_width=1, border_color=C["card_border"], hover_color=C["input_bg"], text_color=C["text"], command=lambda i=issue: self.open_issue_details(i)).pack(side="left")
+
+    def show_error(self, msg):
+        for w in self.list_frame.winfo_children(): w.destroy()
+        ctk.CTkLabel(self.list_frame, text=msg, text_color=C["red"]).pack(pady=40)
+
+    def open_new_issue(self):
+        if not self.current_repo: return
+        dialog = NewIssueDialog(self, self.current_repo)
+        self.wait_window(dialog)
+        if dialog.result:
+            self.create_issue(dialog.result["title"], dialog.result["body"])
+            
+    def open_issue_details(self, issue):
+        IssueDetailsDialog(self, issue, self.close_issue)
+
+    def create_issue(self, title, body):
+        import requests, os, threading
+        token = os.getenv("GITHUB_TOKEN")
+        username = os.getenv("GITHUB_USERNAME")
+        
+        def task():
+            headers = {"Authorization": f"Bearer {token}", "Accept": "application/vnd.github+json"}
+            url = f"https://api.github.com/repos/{username}/{self.current_repo}/issues"
+            try:
+                r = requests.post(url, headers=headers, json={"title": title, "body": body})
+                if r.status_code == 201:
+                    self.app.after(0, lambda: self.app.log(f"[SYS] Tarefa '{title}' criada com sucesso!", "success"))
+                    self.app.after(0, lambda: self.load_issues_for_repo(self.current_repo))
+                else:
+                    self.app.after(0, lambda: self.app.log(f"[ERRO] Falha ao criar tarefa ({r.status_code})", "error"))
+            except:
+                pass
+        threading.Thread(target=task, daemon=True).start()
+
+    def close_issue(self, issue_number):
+        import requests, os, threading
+        token = os.getenv("GITHUB_TOKEN")
+        username = os.getenv("GITHUB_USERNAME")
+        
+        def task():
+            headers = {"Authorization": f"Bearer {token}", "Accept": "application/vnd.github+json"}
+            url = f"https://api.github.com/repos/{username}/{self.current_repo}/issues/{issue_number}"
+            try:
+                r = requests.patch(url, headers=headers, json={"state": "closed"})
+                if r.status_code == 200:
+                    self.app.after(0, lambda: self.app.log(f"[SYS] Tarefa #{issue_number} marcada como concluída!", "success"))
+                    self.app.after(0, lambda: self.load_issues_for_repo(self.current_repo))
+            except:
+                pass
+        threading.Thread(target=task, daemon=True).start()
+
 class DashboardView(ctk.CTkScrollableFrame):
     def __init__(self, parent, app):
         super().__init__(parent, fg_color="transparent")
@@ -2313,10 +2578,10 @@ class App(ctk.CTk):
         self.nav_frame = ctk.CTkFrame(self.main_frame, fg_color="transparent")
         self.nav_frame.grid(row=0, column=0, sticky="ew", pady=(0, 20))
         
-        self.btn_nav_push = ctk.CTkButton(self.nav_frame, text="📤 Gerenciar Repositório", font=ctk.CTkFont("Segoe UI", 14, "bold"), height=42, fg_color=C["blue"], hover_color=C["blue_dark"], text_color="#ffffff", corner_radius=10, command=lambda: self.switch_main_view("push"))
+        self.btn_nav_push = ctk.CTkButton(self.nav_frame, text="📤 Repositórios", font=ctk.CTkFont("Segoe UI", 14, "bold"), height=42, fg_color=C["blue"], hover_color=C["blue_dark"], text_color="#ffffff", corner_radius=10, command=lambda: self.switch_main_view("push"))
         self.btn_nav_push.pack(side="left", padx=(0, 10))
 
-        self.btn_nav_clone = ctk.CTkButton(self.nav_frame, text="⬇️ Central de Clonagem", font=ctk.CTkFont("Segoe UI", 14, "bold"), height=42, fg_color=C["card"], hover_color=C["card_border"], text_color=C["text_dim"], corner_radius=10, command=lambda: self.switch_main_view("clone"))
+        self.btn_nav_clone = ctk.CTkButton(self.nav_frame, text="⬇️ Clonagem", font=ctk.CTkFont("Segoe UI", 14, "bold"), height=42, fg_color=C["card"], hover_color=C["card_border"], text_color=C["text_dim"], corner_radius=10, command=lambda: self.switch_main_view("clone"))
         self.btn_nav_clone.pack(side="left", padx=(0, 10))
 
         self.btn_branch = ctk.CTkButton(
@@ -2326,10 +2591,16 @@ class App(ctk.CTk):
         self.btn_branch.pack(side="left", padx=(0, 10))
 
         self.btn_nav_pull = ctk.CTkButton(
-            self.nav_frame, text="📥 Sincronizar (Pull)", font=ctk.CTkFont("Segoe UI", 14, "bold"), height=42, 
+            self.nav_frame, text="📥 Sincronizar", font=ctk.CTkFont("Segoe UI", 14, "bold"), height=42, 
             fg_color=C["card"], hover_color=C["card_border"], text_color=C["text_dim"], 
             corner_radius=10, command=lambda: self.switch_main_view("pull"))
         self.btn_nav_pull.pack(side="left", padx=(0, 10))
+
+        self.btn_nav_issues = ctk.CTkButton(
+            self.nav_frame, text="📋 Tarefas", font=ctk.CTkFont("Segoe UI", 14, "bold"), height=42, 
+            fg_color=C["card"], hover_color=C["card_border"], text_color=C["text_dim"], 
+            corner_radius=10, command=lambda: self.switch_main_view("issues"))
+        self.btn_nav_issues.pack(side="left", padx=(0, 10))
 
         # Container de Conteúdo
         self.content_frame = ctk.CTkFrame(self.main_frame, fg_color="transparent")
@@ -2354,6 +2625,10 @@ class App(ctk.CTk):
         self.tab_dash = ctk.CTkFrame(self.content_frame, fg_color="transparent")
         self.dashboard_view = DashboardView(self.tab_dash, self)
         self.dashboard_view.pack(fill="both", expand=True)
+
+        self.tab_issues = ctk.CTkFrame(self.content_frame, fg_color="transparent")
+        self.issues_view = IssuesView(self.tab_issues, self)
+        self.issues_view.pack(fill="both", expand=True)
 
         self.tab_pull = ctk.CTkFrame(self.content_frame, fg_color="transparent")
         self._build_pull_tab()
@@ -3361,6 +3636,8 @@ Distribuído sob a licença MIT.
             self.btn_branch.configure(fg_color=C["card"], hover_color=C["card_border"], text_color=C["text_dim"])
         if hasattr(self, "btn_nav_pull"):
             self.btn_nav_pull.configure(fg_color=C["card"], hover_color=C["card_border"], text_color=C["text_dim"])
+        if hasattr(self, "btn_nav_issues"):
+            self.btn_nav_issues.configure(fg_color=C["card"], hover_color=C["card_border"], text_color=C["text_dim"])
         
         self.tab_push.grid_forget()
         self.tab_clone.grid_forget()
@@ -3370,6 +3647,8 @@ Distribuído sob a licença MIT.
             self.tab_dash.grid_forget()
         if hasattr(self, "tab_branch"):
             self.tab_branch.grid_forget()
+        if hasattr(self, "tab_issues"):
+            self.tab_issues.grid_forget()
 
         if view == "push":
             self.btn_nav_push.configure(fg_color=C["blue"], hover_color=C["blue_dark"], text_color="#ffffff")
@@ -3390,6 +3669,11 @@ Distribuído sob a licença MIT.
         elif view == "dashboard":
             self.tab_dash.grid(row=0, column=0, sticky="nsew")
             self.dashboard_view.load_profile()
+        elif view == "issues":
+            if hasattr(self, "btn_nav_issues"):
+                self.btn_nav_issues.configure(fg_color=C["blue"], hover_color=C["blue_dark"], text_color="#ffffff")
+            self.tab_issues.grid(row=0, column=0, sticky="nsew")
+            self.issues_view.load_repos()
 
     def start_new_project_thread(self):
         dialog = NewProjectDialog(self)
