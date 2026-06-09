@@ -1903,11 +1903,13 @@ class App(ctk.CTk):
         # Obter informações do último commit
         commit_info_text = "Nenhum commit encontrado (Estado Inicial)"
         try:
-            log_output = self.run_command(f'git -C "{repo}" log -1 --format="%h | %s | %cd" --date=format:"%d/%m/%Y às %H:%M"', check=False)
-            if log_output and "fatal" not in log_output.lower():
-                if len(log_output) > 90:
-                    log_output = log_output[:87] + "..."
-                commit_info_text = log_output
+            info_meta = self.run_command(f'git -C "{repo}" log -1 --format="%h | %cd" --date=format:"%d/%m/%Y às %H:%M"', check=False)
+            info_msg = self.run_command(f'git -C "{repo}" log -1 --format="%s"', check=False)
+            
+            if info_meta and "fatal" not in info_meta.lower():
+                if len(info_msg) > 70:
+                    info_msg = info_msg[:67] + "..."
+                commit_info_text = f"🕒 {info_meta}\n📝 {info_msg}"
         except Exception:
             pass
             

@@ -148,3 +148,7 @@ Distribuído sob a licença MIT.
 - Implementada a feature "Máquina do Tempo" para resetar repositórios ao último commit.
 - Adicionada interface de aviso crítico para confirmação segura de descarte de alterações.
 - Migrada a branch principal de "master" para "main" no histórico de registros.
+
+### 🔄 Atualização (08/06/2026)
+- Refatorada exibição das informações de commit no dashboard.
+- Adicionada separação visual entre metadados e mensagem do commit.
