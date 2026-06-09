@@ -140,6 +140,7 @@ Distribuído sob a licença MIT.
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 ### 🔄 Atualização (08/06/2026)
 - Implementado o novo módulo `BranchManagerView` para criação, exclusão e troca de branches.
 - Adicionado sistema de "Auto-Save" preventivo ao alternar entre branches via commit automático.
@@ -183,3 +184,7 @@ Isso é um teste
 >>>>>>> d9476d0108d9d407ca411a57b2a730229e85016d
 
 >>>>>>> 07bacaad284d0086cfa1560edabcc854776a76a8
+=======
+Isso é um teste
+sincronizar
+>>>>>>> 25feb85b40cc62491d6eb1c626bc7cf80f789433
