@@ -2630,6 +2630,193 @@ class App(ctk.CTk):
         if not GEMINI_API_KEY or not GITHUB_TOKEN or not GITHUB_USERNAME:
             self.after(500, self.prompt_first_setup)
             
+        # Screensaver
+        self.idle_after_id = None
+        self.screensaver_active = False
+        self.screensaver_frame = None
+        self.bind("<Any-Key>", self._reset_idle)
+        self.bind("<Any-Button>", self._reset_idle)
+        self.bind("<Motion>", self._reset_idle)
+        self._reset_idle()
+
+    def _reset_idle(self, event=None):
+        if self.screensaver_active:
+            import time
+            if hasattr(self, 'ss_start_time') and time.time() - self.ss_start_time < 0.5:
+                pass # Ignora eventos (como o ButtonRelease) logo após ativar
+            else:
+                if event and hasattr(event, 'type'):
+                    if event.type.name in ("ButtonPress", "ButtonRelease", "KeyPress", "KeyRelease"):
+                        self._hide_screensaver()
+                else:
+                    self._hide_screensaver()
+            
+        if self.idle_after_id:
+            self.after_cancel(self.idle_after_id)
+        # 15 minutos = 900000 ms
+        self.idle_after_id = self.after(900000, self.show_screensaver)
+        
+    def _hide_screensaver(self):
+        if self.screensaver_frame:
+            self.screensaver_frame.destroy()
+            self.screensaver_frame = None
+        self.screensaver_active = False
+        
+    def show_screensaver(self):
+        if self.screensaver_active: return
+        import time, random, tkinter as tk
+        self.ss_start_time = time.time()
+        self.ss_last_time = None  # Reset so it immediately draws the clock
+        self.screensaver_active = True
+        
+        self.screensaver_frame = ctk.CTkToplevel(self, fg_color="#0d1117")
+        self.screensaver_frame.overrideredirect(True)
+        
+        # Calculate exact app window size including titlebar
+        x = self.winfo_x()
+        y = self.winfo_y()
+        root_x = self.winfo_rootx()
+        root_y = self.winfo_rooty()
+        border_w = root_x - x
+        title_h = root_y - y
+        
+        total_w = self.winfo_width() + 2 * border_w
+        total_h = self.winfo_height() + title_h + border_w
+        
+        self.screensaver_frame.geometry(f"{total_w}x{total_h}+{x}+{y}")
+        self.screensaver_frame.attributes("-topmost", True)
+        
+        # Grid canvas
+        self.ss_canvas = tk.Canvas(self.screensaver_frame, bg="#0d1117", highlightthickness=0)
+        self.ss_canvas.place(relx=0, rely=0, relwidth=1, relheight=1)
+        
+        # Bind events
+        self.screensaver_frame.bind("<Any-Key>", self._reset_idle)
+        self.screensaver_frame.bind("<Any-Button>", self._reset_idle)
+        self.ss_canvas.bind("<Any-Key>", self._reset_idle)
+        self.ss_canvas.bind("<Any-Button>", self._reset_idle)
+        
+        # GitHub dark/grey palette for isometric cards
+        self.gh_colors = ["#161b22", "#21262d", "#30363d", "#010409"]
+        self.nodes = []
+        
+        # Create ~60 floating panels
+        for _ in range(60):
+            w = random.randint(40, 150)
+            h = random.randint(30, 80)
+            x = random.randint(0, 2000)
+            y = random.randint(0, 1200)
+            color = random.choice(self.gh_colors)
+            rect = self.ss_canvas.create_rectangle(x, y, x+w, y+h, fill=color, outline="#30363d", width=1)
+            # Store ID and diagonal speed
+            speed = random.uniform(0.3, 1.2)
+            self.nodes.append({"id": rect, "speed": speed})
+            
+        # Draw some faint lines connecting nodes to look like a network
+        self.lines = []
+        for _ in range(25):
+            x1, y1 = random.randint(0, 2000), random.randint(0, 1200)
+            x2, y2 = x1 + random.randint(-200, 200), y1 + random.randint(-200, 200)
+            line = self.ss_canvas.create_line(x1, y1, x2, y2, fill="#21262d", width=1)
+            speed = random.uniform(0.3, 0.8)
+            self.lines.append({"id": line, "speed": speed})
+            
+        # Draw central background box on canvas
+        self.logo_bg_id = self.ss_canvas.create_rectangle(-1000, -1000, -1000, -1000, fill="#0d1117", outline="#30363d", width=1, tags="logo")
+        
+        # Load Octocat image
+        try:
+            from PIL import Image, ImageTk, ImageOps
+            import os
+            img_path = os.path.join(os.path.dirname(__file__), "data", "octocat.png")
+            if os.path.exists(img_path):
+                pil_img = Image.open(img_path).convert("RGBA").resize((130, 130))
+                
+                # Invert colors so it matches the white circle with black octocat
+                r,g,b,a = pil_img.split()
+                rgb_img = Image.merge('RGB', (r,g,b))
+                inverted_rgb = ImageOps.invert(rgb_img)
+                pil_img = Image.merge('RGBA', inverted_rgb.split() + (a,))
+                
+                # Make it a perfect circle using an alpha mask
+                mask = Image.new("L", pil_img.size, 0)
+                from PIL import ImageDraw
+                draw = ImageDraw.Draw(mask)
+                draw.ellipse((0, 0, 130, 130), fill=255)
+                pil_img.putalpha(mask)
+                
+                self.octo_img_tk = ImageTk.PhotoImage(pil_img)
+            else:
+                self.octo_img_tk = None
+        except Exception:
+            self.octo_img_tk = None
+            
+        # Draw white circle if image fails
+        self.logo_circle_id = self.ss_canvas.create_oval(-1000, -1000, -1000, -1000, fill="#ffffff", outline="", tags="logo")
+        
+        if hasattr(self, 'octo_img_tk') and self.octo_img_tk:
+            self.logo_img_id = self.ss_canvas.create_image(-1000, -1000, image=self.octo_img_tk, anchor="center", tags="logo")
+            self.logo_text_id = None
+        else:
+            self.logo_img_id = None
+            self.logo_text_id = self.ss_canvas.create_text(-1000, -1000, text="⬡", font=("Segoe UI", 70), fill="#000000", anchor="center", tags="logo")
+            
+        self.logo_label_id = self.ss_canvas.create_text(-1000, -1000, text="G I T   A U T O", font=("Segoe UI", 24, "bold"), fill="#ffffff", anchor="center", tags="logo")
+        self.logo_time_id = self.ss_canvas.create_text(-1000, -1000, text="", font=("Segoe UI", 16), fill="#8b949e", anchor="center", tags="logo")
+        
+        self._animate_screensaver()
+        
+    def _animate_screensaver(self):
+        if not self.screensaver_active or not self.screensaver_frame or not self.screensaver_frame.winfo_exists():
+            return
+            
+        import random
+        sw = self.screensaver_frame.winfo_width()
+        sh = self.screensaver_frame.winfo_height()
+        
+        if sw > 0 and sh > 0:
+            cx, cy = sw / 2, sh / 2
+            
+            # Update logo positions
+            bw, bh = 320, 280
+            self.ss_canvas.coords(self.logo_bg_id, cx - bw/2, cy - bh/2, cx + bw/2, cy + bh/2)
+            cw, ch = 130, 130
+            self.ss_canvas.coords(self.logo_circle_id, cx - cw/2, cy - ch/2 - 30, cx + cw/2, cy + ch/2 - 30)
+            
+            if hasattr(self, 'logo_img_id') and self.logo_img_id:
+                self.ss_canvas.coords(self.logo_img_id, cx, cy - 30)
+            if hasattr(self, 'logo_text_id') and self.logo_text_id:
+                self.ss_canvas.coords(self.logo_text_id, cx, cy - 35)
+                
+            self.ss_canvas.coords(self.logo_label_id, cx, cy + 80)
+            self.ss_canvas.coords(self.logo_time_id, cx, cy + 115)
+            
+            # Update clock
+            import time
+            now = time.strftime("%H:%M")
+            if not hasattr(self, 'ss_last_time') or self.ss_last_time != now:
+                self.ss_last_time = now
+                self.ss_canvas.itemconfig(self.logo_time_id, text=now)
+            
+            # Ensure logo is always on top
+            self.ss_canvas.tag_raise("logo")
+            for item in self.nodes + self.lines:
+                # Move diagonally up-left
+                self.ss_canvas.move(item["id"], -item["speed"], -item["speed"] * 0.7)
+                coords = self.ss_canvas.coords(item["id"])
+                if coords:
+                    if len(coords) == 4: # Rectangle or line
+                        x1, y1, x2, y2 = coords
+                        # If completely off-screen top-left
+                        if x2 < 0 or y2 < 0:
+                            w = x2 - x1
+                            h = y2 - y1
+                            new_x = sw + random.randint(0, 300)
+                            new_y = sh + random.randint(0, 300)
+                            self.ss_canvas.coords(item["id"], new_x, new_y, new_x+w, new_y+h)
+                            
+        self.after(30, self._animate_screensaver)
+            
     def apply_theme(self):
         current_path = self.workspace_var.get()
         
@@ -2714,14 +2901,21 @@ class App(ctk.CTk):
                      font=ctk.CTkFont("Segoe UI", 10, "bold"),
                      text_color=C["muted"]).grid(row=0, column=0, sticky="w")
 
+        self.btn_add_project = ctk.CTkButton(
+            hist_hdr, text="+ Adicionar", width=70, height=22,
+            font=ctk.CTkFont("Segoe UI", 10, "bold"),
+            fg_color=C["card"], hover_color=C["card_border"], text_color=C["text_dim"],
+            command=self.add_local_project)
+        self.btn_add_project.grid(row=0, column=1, sticky="e", padx=(0, 5))
+
         self.btn_clear_history = ctk.CTkButton(
-            hist_hdr, text="Limpar tudo", width=80, height=22,
+            hist_hdr, text="Limpar", width=50, height=22,
             font=ctk.CTkFont("Segoe UI", 10),
             fg_color="transparent", border_width=1,
             border_color=C["card_border"],
             text_color=C["text_dim"], hover_color=C["red_dark"],
             command=self.clear_all_history)
-        self.btn_clear_history.grid(row=0, column=1, sticky="e")
+        self.btn_clear_history.grid(row=0, column=2, sticky="e")
 
         self.history_frame = ctk.CTkScrollableFrame(
             self.sidebar, fg_color="transparent",
@@ -2733,22 +2927,30 @@ class App(ctk.CTk):
         # Configurações e Sair (Lado a Lado)
         bottom_frame = ctk.CTkFrame(self.sidebar, fg_color="transparent")
         bottom_frame.grid(row=7, column=0, sticky="ew", padx=20, pady=(10, 20))
-        bottom_frame.grid_columnconfigure(0, weight=1)
+        bottom_frame.grid_columnconfigure(0, weight=0)
         bottom_frame.grid_columnconfigure(1, weight=1)
+        bottom_frame.grid_columnconfigure(2, weight=1)
+
+        self.btn_ss = ctk.CTkButton(
+            bottom_frame, text="💤", width=32, height=32,
+            font=ctk.CTkFont("Segoe UI", 14),
+            fg_color="transparent", hover_color=C["card_border"], text_color=C["text_dim"],
+            command=self.show_screensaver)
+        self.btn_ss.grid(row=0, column=0, sticky="ew", padx=(0, 5))
 
         self.btn_settings = ctk.CTkButton(
             bottom_frame, text="Config", height=32,
             font=ctk.CTkFont("Segoe UI", 12, "bold"),
             fg_color="transparent", hover_color=C["card_border"], text_color=C["text_dim"],
             command=self.open_settings)
-        self.btn_settings.grid(row=0, column=0, sticky="ew", padx=(0, 5))
+        self.btn_settings.grid(row=0, column=1, sticky="ew", padx=(0, 5))
 
         self.btn_shutdown = ctk.CTkButton(
             bottom_frame, text="Sair", height=32,
             font=ctk.CTkFont("Segoe UI", 12, "bold"),
             fg_color="transparent", hover_color="#8b0000", text_color="#ff4444",
             command=self.shutdown_app)
-        self.btn_shutdown.grid(row=0, column=1, sticky="ew", padx=(5, 0))
+        self.btn_shutdown.grid(row=0, column=2, sticky="ew")
 
     def shutdown_app(self):
         self.quit()
@@ -3227,6 +3429,16 @@ class App(ctk.CTk):
                 os.remove(HISTORY_FILE)
             self.load_history_ui()
             self.log("[SYS] Histórico limpo.", "info")
+
+    def add_local_project(self):
+        folder = filedialog.askdirectory(title="Selecione a pasta do Repositório Git")
+        if folder:
+            if not os.path.isdir(os.path.join(folder, ".git")):
+                messagebox.showwarning("Aviso", "Esta pasta não contém um repositório Git válido (.git).")
+                return
+            self.save_to_history(folder)
+            self.log(f"[SYS] Projeto local adicionado ao histórico: {folder}", "success")
+            messagebox.showinfo("Sucesso", "Projeto adicionado à barra lateral!")
 
     # ── ESTADOS / LOG ─────────────────────────────────────────────────────────
     def set_processing_state(self, active: bool):

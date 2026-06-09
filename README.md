@@ -17,17 +17,18 @@ O **git_auto** é uma ferramenta de automação desenvolvida em Python que integ
 - **Rastreabilidade:** Histórico persistente e visualização de logs de commits remotos.
 - **Workflow Integrado:** Automação de `add`, `commit` e `push` com revisão via IA.
 - **System Tray:** Suporte para minimização na bandeja do sistema para monitoramento contínuo.
+- **Proteção de Tela:** Modo ocioso com visualização de rede neural e relógio minimalista inspirado no GitHub.
 
 ## Estrutura do Projeto
 
 ```
 .
 ├── data/             # Armazenamento de caches, logs, ícones e dados locais
-├── .env              # Variáveis de ambiente e tokens de API (gerenciado via GUI)
+├── .env              # Variáveis de ambiente (gerenciado via GUI)
 ├── .gitignore        # Definição de arquivos ignorados pelo Git
 ├── Git Auto.lnk      # Atalho para execução da aplicação
 ├── README.md         # Documentação atualizada do projeto
-└── release.py        # Script principal: contém a lógica da GUI, threads e auto-configuração
+└── release.py        # Script principal: lógica da GUI, threads, screensaver e auto-configuração
 ```
 
 ## Dependências
@@ -50,10 +51,9 @@ Pillow==9.4.0
    ```
 
 2. **Execução:**
-   - Execute `release.py` diretamente para abrir a interface.
-   - Alternativamente, utilize o atalho `Git Auto.lnk` para executar a aplicação.
+   - Execute `release.py` diretamente ou utilize o atalho `Git Auto.lnk`.
 
-**Configuração Automática:** O projeto possui mecanismos de auto-instalação e auto-configuração. Ao executar o script `release.py` pela primeira vez, o sistema instalará automaticamente as dependências necessárias e solicitará os tokens de API (como o `GEMINI_API_KEY`) via interface gráfica. Não é necessário instalar bibliotecas manualmente ou editar o arquivo `.env` de forma externa.
+**Configuração Automática:** O projeto possui mecanismos de auto-instalação e auto-configuração. Ao executar o script pela primeira vez, as dependências serão instaladas automaticamente e a interface solicitará os tokens necessários. Não é necessário realizar configurações manuais.
 
 ## 📋 Histórico de Atualizações
 
@@ -99,7 +99,7 @@ Pillow==9.4.0
 
 ### 🔄 Atualização (09/06/2026)
 - Implementada prevenção de múltiplas instâncias usando Mutex e PID.
-- Adicionado `Git Auto.vbs` para execução silenciosa e script de foco automático na janela principal caso o usuário tente abrir o programa novamente.
+- Adicionado `Git Auto.vbs` para execução silenciosa e script de foco automático na janela principal.
 
 ### 🔄 Atualização (09/06/2026)
 - Substituído o script auxiliar `.vbs` por um atalho `.lnk` para melhor compatibilidade.
@@ -110,3 +110,8 @@ Pillow==9.4.0
 - Atualizado o sistema de gestão de colaboradores com novos níveis de permissão e interface de edição integrada.
 - Implementada validação de segurança na "Máquina do Tempo" exigindo confirmação nominal da pasta.
 - Adicionada funcionalidade de comentários, edição e fechamento de tarefas (issues) diretamente na interface.
+
+### 🔄 Atualização (09/06/2026)
+- Adicionado sistema de proteção de tela (screensaver) animado após 15 minutos de inatividade.
+- Adicionado suporte para adicionar projetos Git locais ao histórico via interface.
+- Refatorada a barra lateral para incluir controles de acesso rápido (add, screensaver, configuração e saída).
