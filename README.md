@@ -24,9 +24,7 @@ O **git_auto** é uma ferramenta de automação desenvolvida em Python que integ
 .
 ├── .env              # Variáveis de ambiente (API keys e tokens)
 ├── .gitignore        # Definição de arquivos ignorados pelo Git
-├── history.json      # Registro de logs de execução e status dos repositórios
-├── release.py        # Script principal com a lógica da GUI, threads e integração Git/IA
-└── requirements.txt  # Dependências do projeto
+└── release.py        # Script principal com a lógica da GUI, threads e integração Git/IA
 ```
 
 ## Dependências
