@@ -139,4 +139,4 @@ Distribuído sob a licença MIT.
 - Refatorado sistema de navegação da interface para suporte a múltiplas views (Push, Clone, Dashboard).
 
 Isso é um teste
-
+sincronizar
