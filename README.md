@@ -138,6 +138,7 @@ Distribuído sob a licença MIT.
 - Adicionada listagem dinâmica dos últimos projetos atualizados com atalho para clonagem.
 - Refatorado sistema de navegação da interface para suporte a múltiplas views (Push, Clone, Dashboard).
 
+<<<<<<< HEAD
 ### 🔄 Atualização (08/06/2026)
 - Implementado o novo módulo `BranchManagerView` para criação, exclusão e troca de branches.
 - Adicionado sistema de "Auto-Save" preventivo ao alternar entre branches via commit automático.
@@ -174,3 +175,7 @@ Distribuído sob a licença MIT.
 - Adicionado seletor de arquivos na interface de visualização de diferenças (Diff Viewer).
 - Adicionada opção de encerramento da aplicação no menu lateral.
 Isso é um teste de Sincronização!
+=======
+Isso é um teste de Sincronização!Isso é um teste de Sincronização! 2
+
+>>>>>>> 07bacaad284d0086cfa1560edabcc854776a76a8
