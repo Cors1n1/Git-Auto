@@ -3347,7 +3347,7 @@ Repositório **{project_name}**.
 ## Como Usar
 
 ```bash
-git clone https://github.com/{GITHUB_USER}/{project_name}.git
+git clone https://github.com/{os.getenv("GITHUB_USERNAME", "seu-usuario")}/{project_name}.git
 cd {project_name}
 ```
 

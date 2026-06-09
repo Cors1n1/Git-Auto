@@ -188,3 +188,6 @@ Isso é um teste de Sincronização!
 ### 🔄 Atualização (09/06/2026)
 - Removidos comentários redundantes no código da classe App.
 - Limpeza na estrutura do método _build_main para maior legibilidade.
+
+### 🔄 Atualização (09/06/2026)
+- Tornada dinâmica a URL de clone no README via variável de ambiente.
