@@ -563,7 +563,12 @@ class ReleaseManagerDialog(ctk.CTkToplevel):
         
         # Generator Button
         self.btn_gen = ctk.CTkButton(self, text="✨ Gerar Notas da Versão com IA", height=36, font=ctk.CTkFont("Segoe UI", 12, "bold"), fg_color=C["blue"], hover_color=C["blue_dark"], command=self._generate_notes)
-        self.btn_gen.pack(fill="x", padx=30, pady=(0, 15))
+        self.btn_gen.pack(fill="x", padx=30, pady=(0, 5))
+        
+        self.progress_ai = ctk.CTkProgressBar(self, mode="indeterminate", fg_color=C["input_bg"], progress_color=C["orange"], height=4)
+        self.progress_ai.set(0)
+        # We don't pack the progress bar yet.
+        ctk.CTkFrame(self, height=10, fg_color="transparent").pack() # Spacing
         
         # Textbox
         ctk.CTkLabel(self, text="Notas da Versão (Markdown):", font=ctk.CTkFont("Segoe UI", 12, "bold")).pack(anchor="w", padx=30)
@@ -578,7 +583,9 @@ class ReleaseManagerDialog(ctk.CTkToplevel):
         ctk.CTkButton(btns, text="🚀 Publicar no GitHub", width=180, height=36, font=ctk.CTkFont("Segoe UI", 12, "bold"), fg_color=C["orange"], hover_color="#d68910", text_color="#ffffff", command=self._publish).pack(side="left", padx=10)
         
     def _generate_notes(self):
-        self.btn_gen.configure(text="⏳ Analisando commits...", state="disabled")
+        self.btn_gen.configure(text="✨ A Inteligência Artificial está escrevendo...", state="disabled")
+        self.progress_ai.pack(fill="x", padx=30, pady=(0, 10))
+        self.progress_ai.start()
         self.update()
         
         import threading
@@ -610,7 +617,11 @@ class ReleaseManagerDialog(ctk.CTkToplevel):
                 error_msg = str(e)
                 self.parent_app.after(0, lambda msg=error_msg: self._set_notes(f"Erro ao gerar notas: {msg}"))
             finally:
-                self.parent_app.after(0, lambda: self.btn_gen.configure(text=" Gerar Notas da Versão com IA", state="normal"))
+                def _reset_ui():
+                    self.btn_gen.configure(text="✨ Gerar Notas da Versão com IA", state="normal")
+                    self.progress_ai.stop()
+                    self.progress_ai.pack_forget()
+                self.parent_app.after(0, _reset_ui)
                 
         threading.Thread(target=task, daemon=True).start()
         

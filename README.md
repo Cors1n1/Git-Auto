@@ -165,3 +165,7 @@ Distribuído sob a licença MIT.
 ### 🔄 Atualização (08/06/2026)
 - Atualizado motor de IA para gemini-3.5-flash.
 - Refatorada estrutura de prompt e automação de títulos para Release Notes.
+
+### 🔄 Atualização (08/06/2026)
+- Adicionada barra de progresso indeterminada na interface de geração de notas.
+- Atualizado feedback visual e estados do botão durante o processamento da IA.
