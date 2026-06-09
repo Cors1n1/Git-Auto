@@ -22,11 +22,11 @@ O **git_auto** é uma ferramenta de automação desenvolvida em Python que integ
 
 ```
 .
-├── data/             # Armazenamento de caches, logs e dados locais
+├── data/             # Armazenamento centralizado de caches, logs e dados locais
 ├── .env              # Variáveis de ambiente (API keys e tokens)
 ├── .gitignore        # Definição de arquivos ignorados pelo Git
 ├── README.md         # Documentação do projeto
-└── release.py        # Script principal com a lógica da GUI, threads e integração Git/IA
+└── release.py        # Script principal: contém a lógica da GUI, threads e o auto-instalador
 ```
 
 ## Dependências
@@ -48,16 +48,12 @@ Pillow==9.4.0
    cd git_auto
    ```
 
-2. **Configuração:**
-   Crie um arquivo `.env` na raiz do projeto com as seguintes chaves:
-   - `GEMINI_API_KEY`: Sua chave da API do Google Gemini.
-   - `GITHUB_TOKEN`: Seu Personal Access Token do GitHub.
-   - `GITHUB_USERNAME`: Seu nome de usuário no GitHub.
-
-3. **Execução:**
+2. **Execução:**
    ```bash
    python release.py
    ```
+
+**Configuração Automática:** O projeto possui mecanismos de auto-instalação e auto-configuração. Ao executar o script `release.py` pela primeira vez, o sistema instalará automaticamente as dependências necessárias e solicitará os tokens de API (como o `GEMINI_API_KEY`) via interface gráfica. Não é necessário instalar bibliotecas manualmente ou editar o arquivo `.env` de forma externa.
 
 ## 📋 Histórico de Atualizações
 
@@ -193,3 +189,10 @@ Pillow==9.4.0
 ### 🔄 Atualização (09/06/2026)
 - Refatorado sistema de geração de README para incluir a estrutura atual de arquivos do projeto.
 - Implementado gerador de árvore de arquivos com limite de profundidade para otimização de tokens da IA.
+
+### 🔄 Atualização (09/06/2026)
+- Implementado mecanismo de auto-instalação de dependências.
+- Implementada configuração automática de variáveis de ambiente via interface gráfica.
+
+IMPORTANTE: Verifique se o código possui mecanismos de auto-instalação (ex: instala dependências sozinho) ou auto-configuração (ex: pede tokens de API via interface gráfica em vez de exigir criação manual de arquivo .env).
+Se sim, nas instruções de "Como Usar" ou "Configuração", documente que a instalação/configuração é AUTOMÁTICA ao executar o script principal. NÃO peça para o usuário rodar `pip install` ou criar arquivos `.env` manualmente nesses casos.

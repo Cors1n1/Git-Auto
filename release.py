@@ -3264,10 +3264,16 @@ class App(ctk.CTk):
                     deps_content = "\n--- DEPENDÊNCIAS ATUAIS (package.json) ---\n" + json.dumps(deps, indent=2)
             except: pass
         
+        auto_setup_rule = """
+IMPORTANTE: Verifique se o código possui mecanismos de auto-instalação (ex: instala dependências sozinho) ou auto-configuração (ex: pede tokens de API via interface gráfica em vez de exigir criação manual de arquivo .env).
+Se sim, nas instruções de "Como Usar" ou "Configuração", documente que a instalação/configuração é AUTOMÁTICA ao executar o script principal. NÃO peça para o usuário rodar `pip install` ou criar arquivos `.env` manualmente nesses casos.
+"""
+
         if not current_readme.strip():
             # README não existe ou está vazio: cria do zero
             prompt = f"""Você é um desenvolvedor sênior. Crie um README.md curto e objetivo para este novo projeto, baseado no git diff inicial, na estrutura de arquivos e nas dependências abaixo.
 Retorne APENAS o markdown final, sem blocos de código (```markdown).
+{auto_setup_rule}
 
 --- ESTRUTURA DE ARQUIVOS ---
 {tree}
@@ -3291,6 +3297,7 @@ SUA TAREFA É RETORNAR O README COMPLETO ATUALIZADO:
 ### 🔄 Atualização ({today})
 - [Resumo direto da ação 1 baseado no DIFF]
 - [Resumo direto da ação 2 baseado no DIFF]
+{auto_setup_rule}
 
 Retorne APENAS o texto markdown do README completo final, sem a tag ```markdown em volta.
 
