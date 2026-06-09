@@ -434,7 +434,20 @@ class DiffViewerDialog(ctk.CTkToplevel):
         self.configure(fg_color=C["bg"])
         
         # Header
-        ctk.CTkLabel(self, text="Diferenças Não Salvas", font=ctk.CTkFont("Segoe UI", 18, "bold"), text_color=C["text"]).pack(pady=(15, 5))
+        header_frame = ctk.CTkFrame(self, fg_color="transparent")
+        header_frame.pack(fill="x", padx=20, pady=(15, 5))
+        
+        ctk.CTkLabel(header_frame, text="Diferenças Não Salvas", font=ctk.CTkFont("Segoe UI", 18, "bold"), text_color=C["text"]).pack(side="left")
+        
+        self.parse_diff_text(diff_text)
+        files = list(self.diffs_by_file.keys())
+        
+        if files:
+            self.file_selector = ctk.CTkOptionMenu(header_frame, values=files, command=self._on_file_select, width=300, font=ctk.CTkFont("Segoe UI", 12))
+            self.file_selector.pack(side="right")
+        else:
+            self.file_selector = ctk.CTkOptionMenu(header_frame, values=["Nenhum arquivo alterado"], width=300, state="disabled")
+            self.file_selector.pack(side="right")
         
         # Titles frame
         titles = ctk.CTkFrame(self, fg_color="transparent")
@@ -471,9 +484,12 @@ class DiffViewerDialog(ctk.CTkToplevel):
             # Bind sync scroll
             tb.bind("<MouseWheel>", self.sync_scroll)
         
-        self.insert_diff_side_by_side(diff_text)
-        self.tb_left.configure(state="disabled")
-        self.tb_right.configure(state="disabled")
+        if files:
+            self._on_file_select(files[0])
+        else:
+            self.insert_diff_side_by_side("")
+            self.tb_left.configure(state="disabled")
+            self.tb_right.configure(state="disabled")
         
         # Bottom bar
         btn_close = ctk.CTkButton(self, text="Fechar Lente", width=120, height=36, font=ctk.CTkFont("Segoe UI", 12, "bold"), fg_color=C["card_border"], hover_color=C["muted"], text_color=C["text"], command=self.destroy)
@@ -484,6 +500,43 @@ class DiffViewerDialog(ctk.CTkToplevel):
         self.tb_left._textbox.yview_scroll(delta, "units")
         self.tb_right._textbox.yview_scroll(delta, "units")
         return "break"
+        
+    def parse_diff_text(self, text):
+        self.diffs_by_file = {}
+        if not text.strip():
+            return
+            
+        current_file = None
+        current_lines = []
+        
+        for line in text.split('\n'):
+            if line.startswith('diff --git '):
+                if current_file:
+                    self.diffs_by_file[current_file] = '\n'.join(current_lines)
+                parts = line.split(' ')
+                if len(parts) >= 4:
+                    current_file = parts[-1][2:] if parts[-1].startswith('b/') else parts[-1]
+                else:
+                    current_file = "Desconhecido"
+                current_lines = [line]
+            else:
+                if current_file:
+                    current_lines.append(line)
+                    
+        if current_file:
+            self.diffs_by_file[current_file] = '\n'.join(current_lines)
+
+    def _on_file_select(self, filename):
+        self.tb_left.configure(state="normal")
+        self.tb_right.configure(state="normal")
+        self.tb_left.delete("1.0", "end")
+        self.tb_right.delete("1.0", "end")
+        
+        diff_text = self.diffs_by_file.get(filename, "")
+        self.insert_diff_side_by_side(diff_text)
+        
+        self.tb_left.configure(state="disabled")
+        self.tb_right.configure(state="disabled")
         
     def insert_diff_side_by_side(self, diff_text):
         if not diff_text.strip():
@@ -542,6 +595,7 @@ class ReleaseManagerDialog(ctk.CTkToplevel):
         self.transient(parent)
         self.grab_set()
         self.configure(fg_color=C["bg"])
+        self.after(200, lambda: set_title_bar_color(self, C["bg"], C["text"]))
         
         # Header
         ctk.CTkLabel(self, text="🏆 Lançar Nova Versão", font=ctk.CTkFont("Segoe UI", 20, "bold"), text_color=C["orange"]).pack(pady=(20, 5))
@@ -1566,6 +1620,8 @@ class App(ctk.CTk):
         self.grid_columnconfigure(1, weight=1)
         self.protocol("WM_DELETE_WINDOW", self.hide_to_tray)
 
+        self.workspace_var = ctk.StringVar(value=os.getcwd())
+
         self._build_sidebar()
         self._build_main()
 
@@ -1580,7 +1636,7 @@ class App(ctk.CTk):
             self.after(500, self.prompt_first_setup)
             
     def apply_theme(self):
-        current_path = self.entry_folder.get() if hasattr(self, 'entry_folder') and self.entry_folder.winfo_exists() else os.getcwd()
+        current_path = self.workspace_var.get()
         
         if hasattr(self, 'sidebar'):
             self.sidebar.destroy()
@@ -1679,7 +1735,20 @@ class App(ctk.CTk):
             font=ctk.CTkFont("Segoe UI", 12, "bold"),
             fg_color="transparent", hover_color=C["card_border"], text_color=C["text_dim"],
             command=self.open_settings)
-        self.btn_settings.grid(row=7, column=0, sticky="ew", padx=20, pady=(10, 20))
+        self.btn_settings.grid(row=7, column=0, sticky="ew", padx=20, pady=(10, 0))
+
+        # Shutdown
+        self.btn_shutdown = ctk.CTkButton(
+            self.sidebar, text="🚪  Sair e Desligar", height=36,
+            font=ctk.CTkFont("Segoe UI", 12, "bold"),
+            fg_color="transparent", hover_color="#8b0000", text_color="#ff4444",
+            command=self.shutdown_app)
+        self.btn_shutdown.grid(row=8, column=0, sticky="ew", padx=20, pady=(10, 20))
+
+    def shutdown_app(self):
+        self.quit()
+        self.destroy()
+        os._exit(0)
 
     # ── ÁREA PRINCIPAL ────────────────────────────────────────────────────────
     def _build_main(self):
@@ -1703,6 +1772,12 @@ class App(ctk.CTk):
             fg_color=C["card"], hover_color=C["card_border"], text_color=C["text_dim"], 
             corner_radius=10, command=lambda: self.switch_main_view("branch"))
         self.btn_branch.pack(side="left", padx=(0, 10))
+
+        self.btn_nav_pull = ctk.CTkButton(
+            self.nav_frame, text="📥 Sincronizar (Pull)", font=ctk.CTkFont("Segoe UI", 14, "bold"), height=42, 
+            fg_color=C["card"], hover_color=C["card_border"], text_color=C["text_dim"], 
+            corner_radius=10, command=lambda: self.switch_main_view("pull"))
+        self.btn_nav_pull.pack(side="left", padx=(0, 10))
 
         # Container de Conteúdo
         self.content_frame = ctk.CTkFrame(self.main_frame, fg_color="transparent")
@@ -1728,6 +1803,9 @@ class App(ctk.CTk):
         self.dashboard_view = DashboardView(self.tab_dash, self)
         self.dashboard_view.pack(fill="both", expand=True)
 
+        self.tab_pull = ctk.CTkFrame(self.content_frame, fg_color="transparent")
+        self._build_pull_tab()
+
         # ── 1. Workspace card ─────────────────────────────────────────────────
         ws = ctk.CTkFrame(self.tab_push, fg_color=C["card"],
                           corner_radius=16, border_width=1,
@@ -1743,8 +1821,7 @@ class App(ctk.CTk):
         self.entry_folder = ctk.CTkEntry(
             ws, height=42, font=ctk.CTkFont("Consolas", 12),
             fg_color=C["input_bg"], border_color=C["card_border"],
-            text_color=C["text"], placeholder_text="Selecione o caminho do projeto...")
-        self.entry_folder.insert(0, os.getcwd())
+            text_color=C["text"], textvariable=self.workspace_var, placeholder_text="Selecione o caminho do projeto...")
         self.entry_folder.grid(row=1, column=0, columnspan=2,
                                sticky="ew", padx=20, pady=(0, 18))
 
@@ -2160,8 +2237,7 @@ class App(ctk.CTk):
     def browse_folder(self):
         folder = filedialog.askdirectory()
         if folder:
-            self.entry_folder.delete(0, "end")
-            self.entry_folder.insert(0, folder)
+            self.workspace_var.set(folder)
             self.log(f"[INFO] Pasta selecionada: {folder}", "info")
             self.load_project_commits(folder)
 
@@ -2644,8 +2720,7 @@ Distribuído sob a licença MIT.
 
     def _autoload_cloned_project(self, path):
         if os.path.exists(path):
-            self.entry_folder.delete(0, "end")
-            self.entry_folder.insert(0, path)
+            self.workspace_var.set(path)
             self.log(f"[SYS] Projeto '{os.path.basename(path)}' carregado no workspace.", "info")
             self.save_to_history(path)
             self.switch_main_view("push")
@@ -2653,14 +2728,92 @@ Distribuído sob a licença MIT.
             # Exibe o resumo ou README
             ProjectReadmeDialog(self, path)
 
+    def _build_pull_tab(self):
+        container = ctk.CTkFrame(self.tab_pull, fg_color="transparent")
+        container.place(relx=0.5, rely=0.5, anchor="center")
+        
+        ctk.CTkLabel(container, text="Atualizar Projeto Local", font=ctk.CTkFont("Segoe UI", 28, "bold"), text_color=C["text"]).pack(pady=(0, 10))
+        ctk.CTkLabel(container, text="Puxe as últimas atualizações do GitHub para a sua máquina.\nO Auto-save irá proteger seus arquivos locais antes de baixar.", font=ctk.CTkFont("Segoe UI", 14), text_color=C["text_dim"], justify="center").pack(pady=(0, 20))
+        
+        ws = ctk.CTkFrame(container, fg_color=C["card"], corner_radius=16, border_width=1, border_color=C["card_border"])
+        ws.pack(fill="x", pady=(0, 20))
+        ws.grid_columnconfigure(1, weight=1)
+        ctk.CTkLabel(ws, text="DIRETÓRIO DO PROJETO", font=ctk.CTkFont("Segoe UI", 10, "bold"), text_color=C["muted"]).grid(row=0, column=0, columnspan=3, sticky="w", padx=20, pady=(16, 6))
+        
+        self.entry_folder_pull = ctk.CTkEntry(ws, height=42, font=ctk.CTkFont("Consolas", 12), fg_color=C["input_bg"], border_color=C["card_border"], text_color=C["text"], textvariable=self.workspace_var)
+        self.entry_folder_pull.grid(row=1, column=0, columnspan=2, sticky="ew", padx=20, pady=(0, 18))
+        
+        btn_browse_pull = ctk.CTkButton(ws, text="📂  Procurar", width=130, height=42, font=ctk.CTkFont("Segoe UI", 13, "bold"), fg_color=C["muted"], hover_color=C["blue"], command=self.browse_folder)
+        btn_browse_pull.grid(row=1, column=2, padx=(0, 20), pady=(0, 18))
+        
+        self.btn_action_pull = ctk.CTkButton(
+            container, text="📥 Puxar Alterações da Nuvem", width=300, height=50,
+            font=ctk.CTkFont("Segoe UI", 16, "bold"),
+            fg_color=C["blue"], hover_color=C["blue_dark"], text_color="#ffffff",
+            command=self._pull_code)
+        self.btn_action_pull.pack(pady=(0, 30))
+        
+        self.pull_console = ctk.CTkTextbox(container, width=600, height=200, font=ctk.CTkFont("Consolas", 12), fg_color=C["console_bg"], text_color=C["console_fg"], border_width=1, border_color=C["card_border"])
+        self.pull_console.pack()
+        self.pull_console.insert("end", "> Pronto para sincronizar...\n")
+        self.pull_console.configure(state="disabled")
+
+    def _pull_code(self):
+        path = self.entry_folder.get()
+        if not path or not os.path.isdir(os.path.join(path, ".git")):
+            self._log_pull("> [ERRO] O diretório atual não é um repositório Git válido.")
+            return
+            
+        self.btn_action_pull.configure(state="disabled", text="⏳ Sincronizando...")
+        
+        def task():
+            try:
+                # 1. Proteger: Auto-save de eventuais mudanças locais
+                self._log_pull("> [1/2] Salvando alterações locais...")
+                subprocess.run('git add .', cwd=path, shell=True, capture_output=True)
+                diff = subprocess.run('git diff --staged', cwd=path, shell=True, capture_output=True, text=True, encoding='utf-8', errors='replace').stdout
+                if diff.strip():
+                    self._log_pull("> Alterações detectadas. Criando Auto-save...")
+                    subprocess.run(['git', 'commit', '-m', f"Auto-save antes de Pull ({datetime.datetime.now().strftime('%Y-%m-%d %H:%M')})"], cwd=path, capture_output=True, encoding='utf-8', errors='replace')
+                else:
+                    self._log_pull("> Nada local pendente de salvamento.")
+                    
+                # 2. Executar Pull
+                self._log_pull("> [2/2] Baixando da nuvem (git pull)...")
+                proc = subprocess.run('git pull', cwd=path, shell=True, capture_output=True, text=True, encoding='utf-8', errors='replace')
+                
+                if proc.returncode == 0:
+                    self._log_pull("> ✅ Sucesso! Projeto atualizado.\n" + proc.stdout)
+                else:
+                    self._log_pull("> ❌ Falha no Pull:\n" + proc.stderr)
+            except Exception as e:
+                self._log_pull(f"> [ERRO] {str(e)}")
+            finally:
+                self.after(0, lambda: self.btn_action_pull.configure(state="normal", text="📥 Puxar Alterações da Nuvem"))
+                
+        threading.Thread(target=task, daemon=True).start()
+        
+    def _log_pull(self, msg):
+        self.after(0, self._insert_pull_log, msg)
+        
+    def _insert_pull_log(self, msg):
+        self.pull_console.configure(state="normal")
+        self.pull_console.insert("end", msg + "\n")
+        self.pull_console.see("end")
+        self.pull_console.configure(state="disabled")
+
     def switch_main_view(self, view):
         self.btn_nav_push.configure(fg_color=C["card"], hover_color=C["card_border"], text_color=C["text_dim"])
         self.btn_nav_clone.configure(fg_color=C["card"], hover_color=C["card_border"], text_color=C["text_dim"])
         if hasattr(self, "btn_branch"):
             self.btn_branch.configure(fg_color=C["card"], hover_color=C["card_border"], text_color=C["text_dim"])
+        if hasattr(self, "btn_nav_pull"):
+            self.btn_nav_pull.configure(fg_color=C["card"], hover_color=C["card_border"], text_color=C["text_dim"])
         
         self.tab_push.grid_forget()
         self.tab_clone.grid_forget()
+        if hasattr(self, "tab_pull"):
+            self.tab_pull.grid_forget()
         if hasattr(self, "tab_dash"):
             self.tab_dash.grid_forget()
         if hasattr(self, "tab_branch"):
@@ -2672,6 +2825,11 @@ Distribuído sob a licença MIT.
         elif view == "clone":
             self.btn_nav_clone.configure(fg_color=C["blue"], hover_color=C["blue_dark"], text_color="#ffffff")
             self.tab_clone.grid(row=0, column=0, sticky="nsew")
+        elif view == "pull":
+            if hasattr(self, "btn_nav_pull"):
+                self.btn_nav_pull.configure(fg_color=C["blue"], hover_color=C["blue_dark"], text_color="#ffffff")
+            if hasattr(self, "tab_pull"):
+                self.tab_pull.grid(row=0, column=0, sticky="nsew")
         elif view == "branch":
             if hasattr(self, "btn_branch"):
                 self.btn_branch.configure(fg_color=C["blue"], hover_color=C["blue_dark"], text_color="#ffffff")

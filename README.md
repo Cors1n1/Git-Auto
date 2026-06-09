@@ -169,3 +169,8 @@ Distribuído sob a licença MIT.
 ### 🔄 Atualização (08/06/2026)
 - Adicionada barra de progresso indeterminada na interface de geração de notas.
 - Atualizado feedback visual e estados do botão durante o processamento da IA.
+
+### 🔄 Atualização (09/06/2026)
+- Implementada nova aba de sincronização com funcionalidade de Auto-save pré-Pull.
+- Adicionado seletor de arquivos na interface de visualização de diferenças (Diff Viewer).
+- Adicionada opção de encerramento da aplicação no menu lateral.
