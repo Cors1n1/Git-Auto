@@ -177,14 +177,4 @@ Distribuído sob a licença MIT.
 - Adicionado seletor de arquivos na interface de visualização de diferenças (Diff Viewer).
 - Adicionada opção de encerramento da aplicação no menu lateral.
 Isso é um teste de Sincronização!
-=======
-Isso é um teste de Sincronização!Isso é um teste de Sincronização! 2
-=======
-Isso é um teste
->>>>>>> d9476d0108d9d407ca411a57b2a730229e85016d
 
->>>>>>> 07bacaad284d0086cfa1560edabcc854776a76a8
-=======
-Isso é um teste
-sincronizar
->>>>>>> 25feb85b40cc62491d6eb1c626bc7cf80f789433
