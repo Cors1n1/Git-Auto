@@ -193,6 +193,3 @@ Pillow==9.4.0
 ### 🔄 Atualização (09/06/2026)
 - Implementado mecanismo de auto-instalação de dependências.
 - Implementada configuração automática de variáveis de ambiente via interface gráfica.
-
-IMPORTANTE: Verifique se o código possui mecanismos de auto-instalação (ex: instala dependências sozinho) ou auto-configuração (ex: pede tokens de API via interface gráfica em vez de exigir criação manual de arquivo .env).
-Se sim, nas instruções de "Como Usar" ou "Configuração", documente que a instalação/configuração é AUTOMÁTICA ao executar o script principal. NÃO peça para o usuário rodar `pip install` ou criar arquivos `.env` manualmente nesses casos.
