@@ -138,3 +138,8 @@ Distribuído sob a licença MIT.
 - Implementada nova Dashboard com visualização de perfil GitHub e estatísticas de repositório.
 - Adicionada listagem dinâmica dos últimos projetos atualizados com atalho para clonagem.
 - Refatorado sistema de navegação da interface para suporte a múltiplas views (Push, Clone, Dashboard).
+
+### 🔄 Atualização (08/06/2026)
+- Implementado o novo módulo `BranchManagerView` para criação, exclusão e troca de branches.
+- Adicionado sistema de "Auto-Save" preventivo ao alternar entre branches via commit automático.
+- Integrada visualização do status da branch atual na barra de navegação principal da aplicação.

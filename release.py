@@ -661,6 +661,146 @@ class CloneProjectView(ctk.CTkFrame):
 
 
 # ── Diálogo de Histórico de Commits/Pushes ──────────────────────────────────────────
+class BranchManagerView(ctk.CTkFrame):
+    def __init__(self, parent, app):
+        super().__init__(parent, fg_color="transparent")
+        self.app = app
+        
+        self.grid_rowconfigure(2, weight=1)
+        self.grid_columnconfigure(0, weight=1)
+        
+        # Folder Indicator
+        self.info_frame = ctk.CTkFrame(self, fg_color=C["card"], corner_radius=16, border_width=1, border_color=C["blue"])
+        self.info_frame.grid(row=0, column=0, sticky="ew", padx=20, pady=(20, 0))
+        
+        self.lbl_current_repo = ctk.CTkLabel(self.info_frame, text="Nenhum diretório selecionado", font=ctk.CTkFont("Consolas", 14, "bold"), text_color=C["text"])
+        self.lbl_current_repo.pack(side="left", padx=20, pady=15, fill="x", expand=True, anchor="w")
+        
+        btn_change_folder = ctk.CTkButton(self.info_frame, text="📂 Trocar Pasta", width=120, height=36, font=ctk.CTkFont("Segoe UI", 12, "bold"), fg_color=C["blue"], hover_color=C["blue_dark"], command=self.change_folder)
+        btn_change_folder.pack(side="right", padx=20, pady=15)
+        
+        # New Branch Input
+        new_frame = ctk.CTkFrame(self, fg_color=C["card"], corner_radius=16, border_width=1, border_color=C["card_border"])
+        new_frame.grid(row=1, column=0, sticky="ew", padx=20, pady=20)
+        
+        lbl_title = ctk.CTkLabel(new_frame, text="🔀 Criar Nova Branch", font=ctk.CTkFont("Segoe UI", 16, "bold"), text_color=C["text"])
+        lbl_title.pack(anchor="w", padx=20, pady=(20, 10))
+        
+        input_container = ctk.CTkFrame(new_frame, fg_color="transparent")
+        input_container.pack(fill="x", padx=20, pady=(0, 20))
+        
+        self.entry_new = ctk.CTkEntry(input_container, placeholder_text="Nome da nova branch...", height=40)
+        self.entry_new.pack(side="left", fill="x", expand=True, padx=(0, 10))
+        
+        btn_create = ctk.CTkButton(input_container, text="Criar Branch", height=40, font=ctk.CTkFont("Segoe UI", 12, "bold"), command=self.create_branch)
+        btn_create.pack(side="left")
+        
+        # List of branches
+        list_container = ctk.CTkFrame(self, fg_color=C["card"], corner_radius=16, border_width=1, border_color=C["card_border"])
+        list_container.grid(row=2, column=0, sticky="nsew", padx=20, pady=(0, 20))
+        
+        lbl_list = ctk.CTkLabel(list_container, text="Branches Disponíveis", font=ctk.CTkFont("Segoe UI", 16, "bold"), text_color=C["text"])
+        lbl_list.pack(anchor="w", padx=20, pady=(20, 10))
+        
+        self.list_frame = ctk.CTkScrollableFrame(list_container, fg_color="transparent")
+        self.list_frame.pack(fill="both", expand=True, padx=10, pady=(0, 10))
+        
+    def get_repo_path(self):
+        return self.app.entry_folder.get().strip()
+        
+    def change_folder(self):
+        self.app.browse_folder()
+        self.load_branches()
+        
+    def load_branches(self):
+        for child in self.list_frame.winfo_children():
+            child.destroy()
+            
+        repo = self.get_repo_path()
+        if not repo or not os.path.exists(repo):
+            self.lbl_current_repo.configure(text="Nenhum diretório selecionado")
+            ctk.CTkLabel(self.list_frame, text="Nenhum diretório selecionado.").pack(pady=20)
+            return
+            
+        self.lbl_current_repo.configure(text=f"📁 Gerenciando: {repo}")
+        
+        original_cwd = os.getcwd()
+        try:
+            os.chdir(repo)
+            branches_str = self.app.run_command("git branch", check=False)
+            if not branches_str:
+                ctk.CTkLabel(self.list_frame, text="Não é um repositório git válido.").pack(pady=20)
+                return
+                
+            branches = branches_str.split('\n')
+            for b in branches:
+                if not b.strip(): continue
+                is_current = b.startswith('*')
+                b_name = b.replace('*', '').strip()
+                
+                item = ctk.CTkFrame(self.list_frame, fg_color=C["card_border"] if is_current else "transparent")
+                item.pack(fill="x", pady=2)
+                
+                lbl_name = ctk.CTkLabel(item, text=b_name, font=ctk.CTkFont("Segoe UI", 14, "bold" if is_current else "normal"), text_color=C["text"] if is_current else C["text_dim"])
+                lbl_name.pack(side="left", padx=10, pady=12)
+                
+                if not is_current:
+                    btn_del = ctk.CTkButton(item, text="🗑️", width=30, height=30, fg_color="transparent", hover_color=C["red_dark"], command=lambda name=b_name: self.delete_branch(name))
+                    btn_del.pack(side="right", padx=5)
+                    
+                    btn_chk = ctk.CTkButton(item, text="Mudar para Branch", height=30, fg_color=C["muted"], hover_color=C["blue"], command=lambda name=b_name: self.checkout_branch(name))
+                    btn_chk.pack(side="right", padx=15)
+                else:
+                    ctk.CTkLabel(item, text="(Você está aqui)", font=ctk.CTkFont("Segoe UI", 12), text_color=C["blue"]).pack(side="right", padx=15)
+                    
+        finally:
+            os.chdir(original_cwd)
+            self.app.update_branch_status()
+            
+    def create_branch(self):
+        name = self.entry_new.get().strip()
+        if not name: return
+        repo = self.get_repo_path()
+        original_cwd = os.getcwd()
+        try:
+            os.chdir(repo)
+            self.app.run_command(f"git checkout -b {name}", check=False)
+            self.entry_new.delete(0, "end")
+            self.load_branches()
+        finally:
+            os.chdir(original_cwd)
+            
+    def checkout_branch(self, name):
+        repo = self.get_repo_path()
+        original_cwd = os.getcwd()
+        try:
+            os.chdir(repo)
+            
+            # AUTO-SAVE MÁGICO: Garante que nada fique boiando antes de mudar de branch
+            self.app.run_command("git add .", check=False)
+            status = self.app.run_command("git status --porcelain", check=False)
+            if status.strip():
+                # Temos arquivos pendentes! Faz um commit automático de segurança.
+                current_branch = self.app.run_command("git branch --show-current", check=False)
+                self.app.run_command(f'git commit -m "Auto-save: Mudança de branch saindo da {current_branch}"', check=False)
+                
+            self.app.run_command(f"git checkout {name}", check=False)
+            self.load_branches()
+        finally:
+            os.chdir(original_cwd)
+            
+    def delete_branch(self, name):
+        if messagebox.askyesno("Confirmar Exclusão", f"Tem certeza que deseja apagar a branch '{name}'?\nIsso não pode ser desfeito."):
+            repo = self.get_repo_path()
+            original_cwd = os.getcwd()
+            try:
+                os.chdir(repo)
+                self.app.run_command(f"git branch -D {name}", check=False)
+                self.load_branches()
+            finally:
+                os.chdir(original_cwd)
+
+
 class ProjectHistoryDialog(ctk.CTkToplevel):
     """Exibe o histórico completo de commits/pushes de um repositório local."""
 
@@ -1146,6 +1286,7 @@ class App(ctk.CTk):
         self.entry_folder.delete(0, "end")
         self.entry_folder.insert(0, current_path)
         self.load_history_ui()
+        self.update_branch_status()
             
     def prompt_first_setup(self):
         messagebox.showinfo("Bem-vindo ao Git Auto", "Parece que é a sua primeira vez aqui (ou faltam credenciais)!\n\nPor favor, insira o seu Username, Token do GitHub e Chave do Gemini para habilitar todas as funções.")
@@ -1241,6 +1382,12 @@ class App(ctk.CTk):
         self.btn_nav_clone = ctk.CTkButton(self.nav_frame, text="⬇️ Central de Clonagem", font=ctk.CTkFont("Segoe UI", 14, "bold"), height=42, fg_color=C["card"], hover_color=C["card_border"], text_color=C["text_dim"], corner_radius=10, command=lambda: self.switch_main_view("clone"))
         self.btn_nav_clone.pack(side="left", padx=(0, 10))
 
+        self.btn_branch = ctk.CTkButton(
+            self.nav_frame, text="🔀 Branch: --", font=ctk.CTkFont("Segoe UI", 14, "bold"), height=42, 
+            fg_color=C["card"], hover_color=C["card_border"], text_color=C["text_dim"], 
+            corner_radius=10, command=lambda: self.switch_main_view("branch"))
+        self.btn_branch.pack(side="left", padx=(0, 10))
+
         # Container de Conteúdo
         self.content_frame = ctk.CTkFrame(self.main_frame, fg_color="transparent")
         self.content_frame.grid(row=2, column=0, sticky="nsew")
@@ -1256,6 +1403,10 @@ class App(ctk.CTk):
         
         self.clone_view = CloneProjectView(self.tab_clone, self)
         self.clone_view.pack(fill="both", expand=True)
+        
+        self.tab_branch = ctk.CTkFrame(self.content_frame, fg_color="transparent")
+        self.branch_manager_view = BranchManagerView(self.tab_branch, self)
+        self.branch_manager_view.pack(fill="both", expand=True)
 
         self.tab_dash = ctk.CTkFrame(self.content_frame, fg_color="transparent")
         self.dashboard_view = DashboardView(self.tab_dash, self)
@@ -1514,11 +1665,20 @@ class App(ctk.CTk):
         self.log(f"[INFO] Diretório carregado: {path}", "info")
         self.load_project_commits(path)
 
+    def update_branch_status(self):
+        repo = self.entry_folder.get().strip()
+        if not os.path.exists(os.path.join(repo, ".git")):
+            self.btn_branch.configure(text="🔀 Branch: --")
+            return
+        branch = self.run_command(f'git -C "{repo}" rev-parse --abbrev-ref HEAD', check=False)
+        self.btn_branch.configure(text=f"🔀 Branch: {branch}")
+
     def load_project_commits(self, path):
         self.tabs.set("Histórico de Pushes (Local)")
         for w in self.project_history_scroll.winfo_children():
             w.destroy()
             
+        self.update_branch_status()
         if not os.path.isdir(os.path.join(path, ".git")):
             ctk.CTkLabel(self.project_history_scroll, text="Repositório Git não inicializado.", text_color=C["muted"]).pack(pady=40)
             return
@@ -2092,11 +2252,15 @@ Distribuído sob a licença MIT.
     def switch_main_view(self, view):
         self.btn_nav_push.configure(fg_color=C["card"], hover_color=C["card_border"], text_color=C["text_dim"])
         self.btn_nav_clone.configure(fg_color=C["card"], hover_color=C["card_border"], text_color=C["text_dim"])
+        if hasattr(self, "btn_branch"):
+            self.btn_branch.configure(fg_color=C["card"], hover_color=C["card_border"], text_color=C["text_dim"])
         
         self.tab_push.grid_forget()
         self.tab_clone.grid_forget()
         if hasattr(self, "tab_dash"):
             self.tab_dash.grid_forget()
+        if hasattr(self, "tab_branch"):
+            self.tab_branch.grid_forget()
 
         if view == "push":
             self.btn_nav_push.configure(fg_color=C["blue"], hover_color=C["blue_dark"], text_color="#ffffff")
@@ -2104,6 +2268,11 @@ Distribuído sob a licença MIT.
         elif view == "clone":
             self.btn_nav_clone.configure(fg_color=C["blue"], hover_color=C["blue_dark"], text_color="#ffffff")
             self.tab_clone.grid(row=0, column=0, sticky="nsew")
+        elif view == "branch":
+            if hasattr(self, "btn_branch"):
+                self.btn_branch.configure(fg_color=C["blue"], hover_color=C["blue_dark"], text_color="#ffffff")
+            self.tab_branch.grid(row=0, column=0, sticky="nsew")
+            self.branch_manager_view.load_branches()
         elif view == "dashboard":
             self.tab_dash.grid(row=0, column=0, sticky="nsew")
             self.dashboard_view.load_profile()
