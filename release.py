@@ -595,21 +595,29 @@ class ReleaseManagerDialog(ctk.CTkToplevel):
                     return
                     
                 import google.generativeai as genai
-                prompt = f"Gere o 'Release Note' técnico em Markdown baseado nestes commits.\nProibido: usar introduções corporativas (ex: 'Prezados usuários', 'Temos o prazer de anunciar'), saudações, conclusões, gírias ou emojis.\nEstrutura EXIGIDA:\n1. Um único parágrafo direto ao ponto explicando qual foi o foco principal desta versão e as principais funcionalidades construídas.\n2. Um cabeçalho 'Resumo de Alterações' seguido de uma lista em bullet points com as modificações técnicas.\n\nCommits:\n{commits}"
+                prompt = f"Gere o 'Release Note' técnico em Markdown baseado nestes commits.\nProibido: usar introduções corporativas, saudações, conclusões, gírias ou emojis.\nEstrutura EXIGIDA:\n1. A PRIMEIRA LINHA deve ser estritamente um Título curto e profissional para o Lançamento (ex: Atualização de Interface e Refatoração).\n2. A SEGUNDA LINHA em diante deve ser um parágrafo direto ao ponto explicando o foco da versão.\n3. O resto deve ser um cabeçalho 'Resumo de Alterações' seguido de uma lista em bullet points.\n\nCommits:\n{commits}"
                 
-                model = genai.GenerativeModel("gemini-2.5-flash")
+                model = genai.GenerativeModel("gemini-3.5-flash")
                 resp = model.generate_content(prompt)
                 
-                self.parent_app.after(0, lambda: self._set_notes(resp.text))
+                text = resp.text.strip()
+                lines = text.split("\n", 1)
+                title_gen = lines[0].replace("#", "").replace("*", "").strip() if lines else ""
+                body_gen = lines[1].strip() if len(lines) > 1 else text
+                
+                self.parent_app.after(0, lambda: self._set_notes(body_gen, title=title_gen))
             except Exception as e:
                 error_msg = str(e)
                 self.parent_app.after(0, lambda msg=error_msg: self._set_notes(f"Erro ao gerar notas: {msg}"))
             finally:
-                self.parent_app.after(0, lambda: self.btn_gen.configure(text="✨ Gerar Notas da Versão com IA", state="normal"))
+                self.parent_app.after(0, lambda: self.btn_gen.configure(text=" Gerar Notas da Versão com IA", state="normal"))
                 
         threading.Thread(target=task, daemon=True).start()
         
-    def _set_notes(self, text):
+    def _set_notes(self, text, title=None):
+        if title is not None:
+            self.entry_title.delete(0, "end")
+            self.entry_title.insert(0, title)
         self.tb_notes.delete("1.0", "end")
         self.tb_notes.insert("end", text)
         

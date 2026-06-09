@@ -161,3 +161,7 @@ Distribuído sob a licença MIT.
 - Implementado o ReleaseManagerDialog para automação de tags e lançamentos via GitHub.
 - Integrada IA (Gemini) para geração automática de notas de versão baseadas no histórico de commits.
 - Adicionado botão de atalho "Lançar Versão" na interface principal para acesso rápido ao gerenciador.
+
+### 🔄 Atualização (08/06/2026)
+- Atualizado motor de IA para gemini-3.5-flash.
+- Refatorada estrutura de prompt e automação de títulos para Release Notes.
