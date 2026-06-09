@@ -111,3 +111,8 @@ build/
 dist/
 *.log
 tmp/
+
+# App Cache
+*_cache.json
+history.json
+avatar_cache.png
