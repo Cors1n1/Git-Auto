@@ -40,8 +40,9 @@ from dotenv import load_dotenv
 import customtkinter as ctk
 from tkinter import filedialog, messagebox
 import pystray
-from PIL import Image, ImageDraw
+from PIL import Image, ImageDraw, ImageTk, ImageOps
 import ctypes
+import io
 
 script_dir = os.path.dirname(os.path.abspath(__file__))
 load_dotenv(os.path.join(script_dir, ".env"), override=True)
@@ -955,6 +956,148 @@ class SettingsDialog(ctk.CTkToplevel):
             
         self.destroy()
 
+
+
+class DashboardView(ctk.CTkFrame):
+    def __init__(self, parent, app):
+        super().__init__(parent, fg_color="transparent")
+        self.app = app
+        self.loaded = False
+        
+        self.header = ctk.CTkFrame(self, fg_color=C["card"], corner_radius=16, border_width=1, border_color=C["card_border"])
+        self.header.pack(fill="x", pady=(0, 15))
+        
+        self.lbl_avatar = ctk.CTkLabel(self.header, text="", width=80, height=80)
+        self.lbl_avatar.pack(side="left", padx=20, pady=20)
+        
+        info_frame = ctk.CTkFrame(self.header, fg_color="transparent")
+        info_frame.pack(side="left", fill="both", expand=True, pady=20)
+        
+        self.lbl_name = ctk.CTkLabel(info_frame, text="Carregando Perfil...", font=ctk.CTkFont("Segoe UI", 24, "bold"), text_color=C["text"])
+        self.lbl_name.pack(anchor="w")
+        self.lbl_username = ctk.CTkLabel(info_frame, text="@...", font=ctk.CTkFont("Segoe UI", 14), text_color=C["blue"])
+        self.lbl_username.pack(anchor="w")
+        self.lbl_bio = ctk.CTkLabel(info_frame, text="", font=ctk.CTkFont("Segoe UI", 12), text_color=C["text_dim"])
+        self.lbl_bio.pack(anchor="w", pady=(5, 0))
+        
+        self.details_frame = ctk.CTkFrame(info_frame, fg_color="transparent", height=24)
+        self.details_frame.pack(anchor="w", pady=(10, 0))
+        
+        self.stats_frame = ctk.CTkFrame(self, fg_color="transparent")
+        self.stats_frame.pack(fill="x", pady=(0, 15))
+        self.stats_frame.grid_columnconfigure((0, 1, 2, 3), weight=1)
+        
+        self.stat_repos_pub = self._build_stat_card(self.stats_frame, 0, "Repositórios Públicos", "-")
+        self.stat_repos_priv = self._build_stat_card(self.stats_frame, 1, "Repositórios Privados", "-")
+        self.stat_followers = self._build_stat_card(self.stats_frame, 2, "Seguidores", "-")
+        self.stat_following = self._build_stat_card(self.stats_frame, 3, "Seguindo", "-")
+        
+        self.recent_frame = ctk.CTkFrame(self, fg_color=C["card"], corner_radius=16, border_width=1, border_color=C["card_border"])
+        self.recent_frame.pack(fill="both", expand=True)
+        ctk.CTkLabel(self.recent_frame, text="Últimos Projetos Atualizados", font=ctk.CTkFont("Segoe UI", 14, "bold"), text_color=C["text"]).pack(anchor="w", padx=20, pady=(15, 10))
+        
+        self.repos_container = ctk.CTkScrollableFrame(self.recent_frame, fg_color="transparent")
+        self.repos_container.pack(fill="both", expand=True, padx=10, pady=(0, 10))
+        
+    def _build_stat_card(self, parent, col, title, value):
+        card = ctk.CTkFrame(parent, fg_color=C["card"], corner_radius=12, border_width=1, border_color=C["card_border"])
+        card.grid(row=0, column=col, sticky="nsew", padx=5)
+        lbl_val = ctk.CTkLabel(card, text=value, font=ctk.CTkFont("Segoe UI", 28, "bold"), text_color=C["text"])
+        lbl_val.pack(pady=(15, 0))
+        ctk.CTkLabel(card, text=title, font=ctk.CTkFont("Segoe UI", 11), text_color=C["text_dim"]).pack(pady=(0, 15))
+        return lbl_val
+
+    def load_profile(self):
+        if self.loaded: return
+        self.loaded = True
+        threading.Thread(target=self._fetch_data_thread, daemon=True).start()
+        
+    def _create_circular_image(self, img_data):
+        img = Image.open(io.BytesIO(img_data)).convert("RGBA")
+        img = img.resize((80, 80), Image.Resampling.LANCZOS)
+        mask = Image.new('L', (80, 80), 0)
+        draw = ImageDraw.Draw(mask)
+        draw.ellipse((0, 0, 80, 80), fill=255)
+        result = Image.new('RGBA', (80, 80), (0, 0, 0, 0))
+        result.paste(img, (0, 0), mask)
+        return ctk.CTkImage(light_image=result, dark_image=result, size=(80, 80))
+
+    def _fetch_data_thread(self):
+        headers = {"Authorization": f"Bearer {GITHUB_TOKEN}", "Accept": "application/vnd.github.v3+json"}
+        try:
+            resp = requests.get("https://api.github.com/user", headers=headers, timeout=10)
+            if resp.status_code == 200:
+                data = resp.json()
+                
+                avatar_resp = requests.get(data.get("avatar_url", ""), timeout=10)
+                if avatar_resp.status_code == 200:
+                    ctk_img = self._create_circular_image(avatar_resp.content)
+                    self.app.after(0, lambda: self.lbl_avatar.configure(image=ctk_img))
+                
+                self.app.after(0, lambda: self._update_ui_user(data))
+                
+                repos_resp = requests.get("https://api.github.com/user/repos?sort=updated&per_page=5", headers=headers, timeout=10)
+                if repos_resp.status_code == 200:
+                    repos = repos_resp.json()
+                    self.app.after(0, lambda: self._update_ui_repos(repos))
+        except Exception as e:
+            pass
+            
+    def _update_ui_user(self, data):
+        self.lbl_name.configure(text=data.get("name") or data.get("login") or "Usuário")
+        self.lbl_username.configure(text=f"@{data.get('login', '')}")
+        self.lbl_bio.configure(text=data.get("bio") or "")
+        
+        for child in self.details_frame.winfo_children():
+            child.destroy()
+            
+        details = []
+        if data.get("location"): details.append(f"📍 {data['location']}")
+        if data.get("company"): details.append(f"🏢 {data['company']}")
+        if data.get("blog"): details.append(f"🌐 {data['blog']}")
+        if data.get("created_at"):
+            try:
+                dt = datetime.datetime.strptime(data["created_at"], "%Y-%m-%dT%H:%M:%SZ")
+                details.append(f"📅 Membro desde {dt.year}")
+            except Exception:
+                pass
+
+        for text in details:
+            # We add a bit of padding around the text
+            lbl = ctk.CTkLabel(self.details_frame, text=f" {text} ", font=ctk.CTkFont("Segoe UI", 11), 
+                               fg_color=C["card_border"], corner_radius=6, text_color=C["text"])
+            lbl.pack(side="left", padx=(0, 10))
+        
+        self.stat_repos_pub.configure(text=str(data.get("public_repos", 0)))
+        self.stat_repos_priv.configure(text=str(data.get("total_private_repos", 0)))
+        self.stat_followers.configure(text=str(data.get("followers", 0)))
+        self.stat_following.configure(text=str(data.get("following", 0)))
+
+    def _update_ui_repos(self, repos):
+        for child in self.repos_container.winfo_children():
+            child.destroy()
+            
+        for repo in repos:
+            item = ctk.CTkFrame(self.repos_container, fg_color="transparent")
+            item.pack(fill="x", pady=5)
+            
+            ctk.CTkLabel(item, text=repo.get("name", ""), font=ctk.CTkFont("Segoe UI", 13, "bold"), text_color=C["text"]).pack(side="left", padx=10)
+            
+            pvt = repo.get("private", False)
+            badge_color = C["red_dark"] if pvt else C["green_dark"]
+            badge_text = "Privado" if pvt else "Público"
+            
+            ctk.CTkLabel(item, text=badge_text, font=ctk.CTkFont("Segoe UI", 10), fg_color=badge_color, corner_radius=4, text_color="#ffffff").pack(side="left", padx=5)
+            
+            url = repo.get("clone_url", "")
+            btn = ctk.CTkButton(item, text="Baixar / Selecionar", width=120, height=28, font=ctk.CTkFont("Segoe UI", 11), fg_color=C["muted"], hover_color=C["blue"], command=lambda u=url: self._select_repo(u))
+            btn.pack(side="right", padx=10)
+            
+    def _select_repo(self, clone_url):
+        self.app.switch_main_view("clone")
+        self.app.clone_view.entry_url.delete(0, "end")
+        self.app.clone_view.entry_url.insert(0, clone_url)
+
 class App(ctk.CTk):
     def __init__(self):
         super().__init__()
@@ -1010,52 +1153,47 @@ class App(ctk.CTk):
 
     # ── SIDEBAR ───────────────────────────────────────────────────────────────
     def _build_sidebar(self):
-        self.sidebar = ctk.CTkFrame(self, width=300, corner_radius=0,
-                                    fg_color=C["sidebar"])
+        self.sidebar = ctk.CTkFrame(self, width=300, corner_radius=0, fg_color=C["sidebar"])
         self.sidebar.grid(row=0, column=0, sticky="nsew")
         self.sidebar.grid_propagate(False)
-        self.sidebar.grid_rowconfigure(4, weight=1)
+        self.sidebar.grid_rowconfigure(6, weight=1)
         self.sidebar.grid_columnconfigure(0, weight=1)
 
-        # Logo
         logo_frame = ctk.CTkFrame(self.sidebar, fg_color="transparent")
         logo_frame.grid(row=0, column=0, sticky="ew", padx=20, pady=(24, 0))
-        ctk.CTkLabel(logo_frame, text="⬡ Git Auto",
-                     font=ctk.CTkFont("Segoe UI", 22, "bold"),
-                     text_color=C["text"]).pack(anchor="w")
-        ctk.CTkLabel(logo_frame, text="AI-Powered Repository Manager",
-                     font=ctk.CTkFont("Segoe UI", 11),
-                     text_color=C["text_dim"]).pack(anchor="w")
+        ctk.CTkLabel(logo_frame, text="⬡ Git Auto", font=ctk.CTkFont("Segoe UI", 22, "bold"), text_color=C["text"]).pack(anchor="w")
+        ctk.CTkLabel(logo_frame, text="AI-Powered Repository Manager", font=ctk.CTkFont("Segoe UI", 11), text_color=C["text_dim"]).pack(anchor="w")
+
+        # Sidebar Dashboard Button
+        self.btn_sidebar_dash = ctk.CTkButton(
+            self.sidebar, text="👤  Meu Perfil", height=38, 
+            font=ctk.CTkFont("Segoe UI", 13, "bold"), 
+            fg_color=C["card"], hover_color=C["card_border"], 
+            text_color=C["blue"], border_width=1, border_color=C["card_border"],
+            command=lambda: self.switch_main_view("dashboard"))
+        self.btn_sidebar_dash.grid(row=1, column=0, sticky="ew", padx=20, pady=(20, 0))
 
         # Separador
         ctk.CTkFrame(self.sidebar, height=1, fg_color=C["card_border"]).grid(
-            row=1, column=0, sticky="ew", padx=0, pady=16)
+            row=2, column=0, sticky="ew", padx=0, pady=16)
 
         # Status pill
-        self.status_pill = ctk.CTkFrame(self.sidebar, fg_color=C["card"],
-                                        corner_radius=20, height=36)
-        self.status_pill.grid(row=2, column=0, padx=20, sticky="ew")
+        self.status_pill = ctk.CTkFrame(self.sidebar, fg_color=C["card"], corner_radius=20, height=36)
+        self.status_pill.grid(row=3, column=0, padx=20, sticky="ew")
         self.status_pill.pack_propagate(False)
-        self.status_dot = ctk.CTkLabel(self.status_pill, text="●",
-                                       font=ctk.CTkFont(size=12),
-                                       text_color=C["muted"])
+        self.status_dot = ctk.CTkLabel(self.status_pill, text="●", font=ctk.CTkFont(size=12), text_color=C["muted"])
         self.status_dot.pack(side="left", padx=(14, 4))
-        self.status_label = ctk.CTkLabel(self.status_pill, text="Aguardando",
-                                         font=ctk.CTkFont("Segoe UI", 12, "bold"),
-                                         text_color=C["text_dim"])
+        self.status_label = ctk.CTkLabel(self.status_pill, text="Aguardando", font=ctk.CTkFont("Segoe UI", 12, "bold"), text_color=C["text_dim"])
         self.status_label.pack(side="left")
 
         # Progress bar
-        self.progressbar = ctk.CTkProgressBar(self.sidebar, mode="indeterminate",
-                                              height=3, corner_radius=0,
-                                              progress_color=C["blue"],
-                                              fg_color=C["card_border"])
-        self.progressbar.grid(row=3, column=0, sticky="ew", padx=0, pady=(12, 0))
+        self.progressbar = ctk.CTkProgressBar(self.sidebar, mode="indeterminate", height=3, corner_radius=0, progress_color=C["blue"], fg_color=C["card_border"])
+        self.progressbar.grid(row=4, column=0, sticky="ew", padx=0, pady=(12, 0))
         self.progressbar.set(0)
 
         # Histórico
         hist_hdr = ctk.CTkFrame(self.sidebar, fg_color="transparent")
-        hist_hdr.grid(row=4, column=0, sticky="new", padx=20, pady=(20, 8))
+        hist_hdr.grid(row=5, column=0, sticky="new", padx=20, pady=(20, 8))
         hist_hdr.grid_columnconfigure(0, weight=1)
 
         ctk.CTkLabel(hist_hdr, text="PROJETOS RECENTES",
@@ -1075,9 +1213,8 @@ class App(ctk.CTk):
             self.sidebar, fg_color="transparent",
             scrollbar_button_color=C["muted"],
             scrollbar_button_hover_color=C["text_dim"])
-        self.history_frame.grid(row=4, column=0, sticky="nsew",
-                                padx=10, pady=(52, 10))
-
+        self.history_frame.grid(row=6, column=0, sticky="nsew",
+                                padx=10, pady=(0, 10))
 
         # Configurações
         self.btn_settings = ctk.CTkButton(
@@ -1085,7 +1222,7 @@ class App(ctk.CTk):
             font=ctk.CTkFont("Segoe UI", 12, "bold"),
             fg_color="transparent", hover_color=C["card_border"], text_color=C["text_dim"],
             command=self.open_settings)
-        self.btn_settings.grid(row=6, column=0, sticky="ew", padx=20, pady=(10, 20))
+        self.btn_settings.grid(row=7, column=0, sticky="ew", padx=20, pady=(10, 20))
 
     # ── ÁREA PRINCIPAL ────────────────────────────────────────────────────────
     def _build_main(self):
@@ -1102,7 +1239,7 @@ class App(ctk.CTk):
         self.btn_nav_push.pack(side="left", padx=(0, 10))
 
         self.btn_nav_clone = ctk.CTkButton(self.nav_frame, text="⬇️ Central de Clonagem", font=ctk.CTkFont("Segoe UI", 14, "bold"), height=42, fg_color=C["card"], hover_color=C["card_border"], text_color=C["text_dim"], corner_radius=10, command=lambda: self.switch_main_view("clone"))
-        self.btn_nav_clone.pack(side="left")
+        self.btn_nav_clone.pack(side="left", padx=(0, 10))
 
         # Container de Conteúdo
         self.content_frame = ctk.CTkFrame(self.main_frame, fg_color="transparent")
@@ -1119,6 +1256,10 @@ class App(ctk.CTk):
         
         self.clone_view = CloneProjectView(self.tab_clone, self)
         self.clone_view.pack(fill="both", expand=True)
+
+        self.tab_dash = ctk.CTkFrame(self.content_frame, fg_color="transparent")
+        self.dashboard_view = DashboardView(self.tab_dash, self)
+        self.dashboard_view.pack(fill="both", expand=True)
 
         # ── 1. Workspace card ─────────────────────────────────────────────────
         ws = ctk.CTkFrame(self.tab_push, fg_color=C["card"],
@@ -1949,16 +2090,23 @@ Distribuído sob a licença MIT.
             ProjectReadmeDialog(self, path)
 
     def switch_main_view(self, view):
+        self.btn_nav_push.configure(fg_color=C["card"], hover_color=C["card_border"], text_color=C["text_dim"])
+        self.btn_nav_clone.configure(fg_color=C["card"], hover_color=C["card_border"], text_color=C["text_dim"])
+        
+        self.tab_push.grid_forget()
+        self.tab_clone.grid_forget()
+        if hasattr(self, "tab_dash"):
+            self.tab_dash.grid_forget()
+
         if view == "push":
             self.btn_nav_push.configure(fg_color=C["blue"], hover_color=C["blue_dark"], text_color="#ffffff")
-            self.btn_nav_clone.configure(fg_color=C["card"], hover_color=C["card_border"], text_color=C["text_dim"])
-            self.tab_clone.grid_forget()
             self.tab_push.grid(row=0, column=0, sticky="nsew")
-        else:
+        elif view == "clone":
             self.btn_nav_clone.configure(fg_color=C["blue"], hover_color=C["blue_dark"], text_color="#ffffff")
-            self.btn_nav_push.configure(fg_color=C["card"], hover_color=C["card_border"], text_color=C["text_dim"])
-            self.tab_push.grid_forget()
             self.tab_clone.grid(row=0, column=0, sticky="nsew")
+        elif view == "dashboard":
+            self.tab_dash.grid(row=0, column=0, sticky="nsew")
+            self.dashboard_view.load_profile()
 
     def start_new_project_thread(self):
         dialog = NewProjectDialog(self)

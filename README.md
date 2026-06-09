@@ -133,3 +133,8 @@ Distribuído sob a licença MIT.
 - Implementado gerador visual de `.gitignore` com suporte a múltiplos templates tecnológicos.
 - Adicionada integração na interface para seleção e criação personalizada de arquivos de exclusão.
 - Atualizada a estrutura de ignorados padrão para maior abrangência de ambientes e SOs.
+
+### 🔄 Atualização (08/06/2026)
+- Implementada nova Dashboard com visualização de perfil GitHub e estatísticas de repositório.
+- Adicionada listagem dinâmica dos últimos projetos atualizados com atalho para clonagem.
+- Refatorado sistema de navegação da interface para suporte a múltiplas views (Push, Clone, Dashboard).
