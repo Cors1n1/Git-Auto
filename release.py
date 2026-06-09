@@ -3825,5 +3825,54 @@ Distribuído sob a licença MIT.
 
 
 if __name__ == "__main__":
+    import ctypes
+    import sys
+    import os
+
+    # Prevenir múltiplas instâncias e trazer janela para frente
+    kernel32 = ctypes.windll.kernel32
+    user32 = ctypes.windll.user32
+    
+    mutex = kernel32.CreateMutexW(None, False, "GitAutoSingleInstanceMutex")
+    last_error = kernel32.GetLastError()
+    
+    DATA_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data")
+    pid_file = os.path.join(DATA_DIR, "pid.txt")
+    
+    if last_error == 183:  # ERROR_ALREADY_EXISTS
+        try:
+            with open(pid_file, "r") as f:
+                target_pid = int(f.read().strip())
+                
+            EnumWindows = user32.EnumWindows
+            EnumWindowsProc = ctypes.WINFUNCTYPE(ctypes.c_bool, ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int))
+            
+            def foreach_window(hwnd, lParam):
+                if user32.IsWindowVisible(hwnd):
+                    length = user32.GetWindowTextLengthW(hwnd)
+                    if length > 0:  # Garante que é a janela real com título, e não processos ocultos do Tkinter
+                        pid = ctypes.c_ulong()
+                        user32.GetWindowThreadProcessId(hwnd, ctypes.byref(pid))
+                        if pid.value == target_pid:
+                            if user32.IsIconic(hwnd):
+                                user32.ShowWindow(hwnd, 9)  # SW_RESTORE
+                            
+                            # Força a janela a pular para frente de todas as outras (TopMost)
+                            user32.SetWindowPos(hwnd, -1, 0, 0, 0, 0, 3) # HWND_TOPMOST
+                            user32.SetWindowPos(hwnd, -2, 0, 0, 0, 0, 3) # HWND_NOTOPMOST
+                            user32.SetForegroundWindow(hwnd)
+                            return False # Para de buscar
+                return True
+                
+            EnumWindows(EnumWindowsProc(foreach_window), 0)
+        except Exception:
+            pass
+        sys.exit(0)
+
+    # Salva o PID para instâncias futuras acharem a janela
+    os.makedirs(DATA_DIR, exist_ok=True)
+    with open(pid_file, "w") as f:
+        f.write(str(os.getpid()))
+
     app = App()
     app.mainloop()
