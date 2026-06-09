@@ -2779,8 +2779,8 @@ Distribuído sob a licença MIT.
                     self._log_pull("> Nada local pendente de salvamento.")
                     
                 # 2. Executar Pull
-                self._log_pull("> [2/2] Baixando da nuvem (git pull)...")
-                proc = subprocess.run('git pull', cwd=path, shell=True, capture_output=True, text=True, encoding='utf-8', errors='replace')
+                self._log_pull("> [2/2] Baixando da nuvem (git pull origin HEAD)...")
+                proc = subprocess.run('git pull origin HEAD', cwd=path, shell=True, capture_output=True, text=True, encoding='utf-8', errors='replace')
                 
                 if proc.returncode == 0:
                     self._log_pull("> ✅ Sucesso! Projeto atualizado.\n" + proc.stdout)
