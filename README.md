@@ -54,7 +54,6 @@ Pillow==9.4.0
 
 3. **Execução:**
    ```bash
-   pip install -r requirements.txt
    python release.py
    ```
 
