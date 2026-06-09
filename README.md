@@ -188,3 +188,7 @@ Isso é um teste de Sincronização!
 
 ### 🔄 Atualização (09/06/2026)
 - Tornada dinâmica a URL de clone no README via variável de ambiente.
+
+### 🔄 Atualização (09/06/2026)
+- Adicionado gatilho de reinicialização (soft refresh) ao clicar no logo da aplicação.
+- Implementado método de recarga dinâmica para atualizar estados de views e repositórios.

@@ -2491,7 +2491,11 @@ class App(ctk.CTk):
 
         logo_frame = ctk.CTkFrame(self.sidebar, fg_color="transparent")
         logo_frame.grid(row=0, column=0, sticky="ew", padx=20, pady=(24, 0))
-        ctk.CTkLabel(logo_frame, text="⬡ Git Auto", font=ctk.CTkFont("Segoe UI", 22, "bold"), text_color=C["text"]).pack(anchor="w")
+        
+        logo_lbl = ctk.CTkLabel(logo_frame, text="⬡ Git Auto", font=ctk.CTkFont("Segoe UI", 22, "bold"), text_color=C["text"], cursor="hand2")
+        logo_lbl.pack(anchor="w")
+        logo_lbl.bind("<Button-1>", lambda e: self.restart_app())
+        
         ctk.CTkLabel(logo_frame, text="AI-Powered Repository Manager", font=ctk.CTkFont("Segoe UI", 11), text_color=C["text_dim"]).pack(anchor="w")
 
         # Sidebar Dashboard Button
@@ -2566,6 +2570,20 @@ class App(ctk.CTk):
         self.quit()
         self.destroy()
         os._exit(0)
+
+    def restart_app(self):
+        # Soft refresh to avoid abrupt window flashing
+        try:
+            self.load_history_ui()
+            if hasattr(self, "dashboard_view"):
+                self.dashboard_view.load_profile()
+            if hasattr(self, "issues_view"):
+                self.issues_view.load_repos()
+            if hasattr(self, "branch_manager_view"):
+                self.branch_manager_view.load_branches()
+            self.log("[SYS] Dados recarregados (Soft Refresh) com sucesso!", "success")
+        except Exception as e:
+            self.log(f"[ERRO] Falha ao recarregar: {e}", "error")
 
     def _build_main(self):
         self.main_frame = ctk.CTkFrame(self, fg_color="transparent")
