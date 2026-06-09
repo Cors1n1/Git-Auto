@@ -138,9 +138,6 @@ Distribuído sob a licença MIT.
 - Adicionada listagem dinâmica dos últimos projetos atualizados com atalho para clonagem.
 - Refatorado sistema de navegação da interface para suporte a múltiplas views (Push, Clone, Dashboard).
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
 ### 🔄 Atualização (08/06/2026)
 - Implementado o novo módulo `BranchManagerView` para criação, exclusão e troca de branches.
 - Adicionado sistema de "Auto-Save" preventivo ao alternar entre branches via commit automático.
