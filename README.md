@@ -27,7 +27,7 @@ O **git_auto** é uma ferramenta de automação desenvolvida em Python que integ
 ├── .gitignore        # Definição de arquivos ignorados pelo Git
 ├── Git Auto.lnk      # Atalho para execução da aplicação
 ├── README.md         # Documentação atualizada do projeto
-└── release.py        # Script principal: lógica da GUI, threads e auto-configuração
+└── release.py        # Script principal: contém a lógica da GUI, threads e auto-configuração
 ```
 
 ## Dependências
@@ -104,3 +104,9 @@ Pillow==9.4.0
 ### 🔄 Atualização (09/06/2026)
 - Substituído o script auxiliar `.vbs` por um atalho `.lnk` para melhor compatibilidade.
 - Otimização do carregamento de ícones na interface e na bandeja do sistema.
+
+### 🔄 Atualização (09/06/2026)
+- Refatorada paleta de cores com novos temas (GitHub, VSCode Modern, Vercel, etc.) e ajuste fino de contraste.
+- Atualizado o sistema de gestão de colaboradores com novos níveis de permissão e interface de edição integrada.
+- Implementada validação de segurança na "Máquina do Tempo" exigindo confirmação nominal da pasta.
+- Adicionada funcionalidade de comentários, edição e fechamento de tarefas (issues) diretamente na interface.

@@ -91,142 +91,98 @@ def set_title_bar_color(window, bg_hex, text_hex=None):
 
 def update_palette(app_theme, app_color):
     global C
-    if app_theme == "Light": ctk.set_appearance_mode("light")
+    if app_theme == "GitHub Light": ctk.set_appearance_mode("light")
     else: ctk.set_appearance_mode("dark")
     
-    if app_theme == "Light":
+    if app_theme == "GitHub Light":
         C.update({
-            "bg":          "#f8fafc",
-            "sidebar":     "#f1f5f9",
+            "bg":          "#ffffff",
+            "sidebar":     "#f6f8fa",
             "card":        "#ffffff",
-            "card_border": "#e2e8f0",
-            "input_bg":    "#f8fafc",
-            "green":       "#10b981",
-            "green_dark":  "#059669",
-            "blue":        "#3b82f6",
-            "blue_dark":   "#2563eb",
-            "orange":      "#f59e0b",
-            "red":         "#ef4444",
-            "red_dark":    "#dc2626",
-            "muted":       "#94a3b8",
-            "text":        "#0f172a",
-            "text_dim":    "#475569",
-            "success_bg":  "#dcfce7",
-            "warn_bg":     "#fef3c7",
-            "console_bg":  "#1e293b",
-            "console_fg":  "#a3e635",
+            "card_border": "#d0d7de",
+            "input_bg":    "#f6f8fa",
+            "green":       "#2da44e",
+            "green_dark":  "#1a7f37",
+            "blue":        "#0969da",
+            "blue_dark":   "#0550ae",
+            "orange":      "#bf8700",
+            "red":         "#cf222e",
+            "red_dark":    "#a40e26",
+            "muted":       "#57606a",
+            "text":        "#24292f",
+            "text_dim":    "#57606a",
+            "success_bg":  "#dafbe1",
+            "warn_bg":     "#fff8c5",
+            "console_bg":  "#f6f8fa",
+            "console_fg":  "#24292f",
         })
-    elif app_theme == "Dracula":
+    elif app_theme == "VSCode Modern":
         C.update({
-            "bg":          "#282a36",
-            "sidebar":     "#21222c",
-            "card":        "#44475a",
-            "card_border": "#6272a4",
-            "input_bg":    "#1e1f29",
-            "green":       "#50fa7b",
-            "green_dark":  "#42cc65",
-            "blue":        "#bd93f9", 
-            "blue_dark":   "#9d64f5",
-            "orange":      "#ffb86c",
-            "red":         "#ff5555",
-            "red_dark":    "#cc3c3c",
-            "muted":       "#6272a4",
-            "text":        "#f8f8f2",
-            "text_dim":    "#bfbfbf",
-            "success_bg":  "#0a2916",
-            "warn_bg":     "#2b2b1a",
-            "console_bg":  "#1e1f29",
-            "console_fg":  "#f8f8f2",
+            "bg":          "#181818",
+            "sidebar":     "#1f1f1f",
+            "card":        "#1f1f1f",
+            "card_border": "#333333",
+            "input_bg":    "#2b2b2b",
+            "green":       "#4eb071",
+            "green_dark":  "#3c8656",
+            "blue":        "#007acc",
+            "blue_dark":   "#005a9e",
+            "orange":      "#d18616",
+            "red":         "#f14c4c",
+            "red_dark":    "#d13b3b",
+            "muted":       "#858585",
+            "text":        "#cccccc",
+            "text_dim":    "#a0a0a0",
+            "success_bg":  "#1e2e23",
+            "warn_bg":     "#3b2e1b",
+            "console_bg":  "#1e1e1e",
+            "console_fg":  "#d4d4d4",
         })
-    elif app_theme == "Nord":
-        C.update({
-            "bg":          "#2e3440",
-            "sidebar":     "#3b4252",
-            "card":        "#434c5e",
-            "card_border": "#4c566a",
-            "input_bg":    "#2e3440",
-            "green":       "#a3be8c",
-            "green_dark":  "#8ca677",
-            "blue":        "#88c0d0",
-            "blue_dark":   "#5e81ac",
-            "orange":      "#d08770",
-            "red":         "#bf616a",
-            "red_dark":    "#a05159",
-            "muted":       "#4c566a",
-            "text":        "#eceff4",
-            "text_dim":    "#d8dee9",
-            "success_bg":  "#273024",
-            "warn_bg":     "#322824",
-            "console_bg":  "#2e3440",
-            "console_fg":  "#a3be8c",
-        })
-    elif app_theme == "Matrix":
+    elif app_theme == "Vercel Black":
         C.update({
             "bg":          "#000000",
-            "sidebar":     "#050505",
+            "sidebar":     "#000000",
             "card":        "#0a0a0a",
-            "card_border": "#00ff41",
+            "card_border": "#333333",
             "input_bg":    "#000000",
-            "green":       "#00ff41",
-            "green_dark":  "#008f11",
-            "blue":        "#00ff41",
-            "blue_dark":   "#008f11",
-            "orange":      "#f39c12",
-            "red":         "#ff0000",
-            "red_dark":    "#8f0000",
-            "muted":       "#003b00",
-            "text":        "#00ff41",
-            "text_dim":    "#008f11",
-            "success_bg":  "#001100",
-            "warn_bg":     "#111100",
+            "green":       "#0070f3",
+            "green_dark":  "#0051a2",
+            "blue":        "#ededed",
+            "blue_dark":   "#a1a1a1",
+            "orange":      "#f5a623",
+            "red":         "#e00000",
+            "red_dark":    "#cc0000",
+            "muted":       "#666666",
+            "text":        "#ededed",
+            "text_dim":    "#a1a1a1",
+            "success_bg":  "#001a00",
+            "warn_bg":     "#1a1000",
             "console_bg":  "#000000",
-            "console_fg":  "#00ff41",
+            "console_fg":  "#ededed",
         })
-    elif app_theme == "Cyberpunk":
+    elif app_theme == "Dracula PRO":
         C.update({
-            "bg":          "#0f001c",
-            "sidebar":     "#1b0033",
-            "card":        "#2e0057",
-            "card_border": "#fcee0a",
-            "input_bg":    "#0f001c",
-            "green":       "#05d9e8",
-            "green_dark":  "#0398a3",
-            "blue":        "#fcee0a",
-            "blue_dark":   "#b5aa00",
-            "orange":      "#ff003c",
-            "red":         "#ff003c",
-            "red_dark":    "#a30026",
-            "muted":       "#6800c2",
-            "text":        "#fcee0a",
-            "text_dim":    "#05d9e8",
-            "success_bg":  "#002026",
-            "warn_bg":     "#260000",
-            "console_bg":  "#0f001c",
-            "console_fg":  "#fcee0a",
+            "bg":          "#22212C",
+            "sidebar":     "#1E1E28",
+            "card":        "#2D2B3B",
+            "card_border": "#454158",
+            "input_bg":    "#1E1E28",
+            "green":       "#80FFEA",
+            "green_dark":  "#5CCCBA",
+            "blue":        "#8AFF80",
+            "blue_dark":   "#6BCC63",
+            "orange":      "#FFCA80",
+            "red":         "#FF9580",
+            "red_dark":    "#CC7766",
+            "muted":       "#7970A9",
+            "text":        "#F8F8F2",
+            "text_dim":    "#B8B4D1",
+            "success_bg":  "#2A3D39",
+            "warn_bg":     "#3D3126",
+            "console_bg":  "#22212C",
+            "console_fg":  "#80FFEA",
         })
-    elif app_theme == "Tokyo Night":
-        C.update({
-            "bg":          "#1a1b26",
-            "sidebar":     "#16161e",
-            "card":        "#24283b",
-            "card_border": "#414868",
-            "input_bg":    "#1a1b26",
-            "green":       "#9ece6a",
-            "green_dark":  "#73daca",
-            "blue":        "#7aa2f7",
-            "blue_dark":   "#2ac3de",
-            "orange":      "#e0af68",
-            "red":         "#f7768e",
-            "red_dark":    "#db4b4b",
-            "muted":       "#565f89",
-            "text":        "#c0caf5",
-            "text_dim":    "#a9b1d6",
-            "success_bg":  "#1f2a24",
-            "warn_bg":     "#292518",
-            "console_bg":  "#1a1b26",
-            "console_fg":  "#7dcfff",
-        })
-    elif app_theme == "Catppuccin":
+    elif app_theme == "Catppuccin Mocha":
         C.update({
             "bg":          "#1e1e2e",
             "sidebar":     "#181825",
@@ -248,33 +204,75 @@ def update_palette(app_theme, app_color):
             "console_bg":  "#1e1e2e",
             "console_fg":  "#f5c2e7",
         })
-    else: # Dark Default
+    elif app_theme == "One Dark Pro":
         C.update({
-            "bg":          "#0f1117",
-            "sidebar":     "#13151c",
-            "card":        "#1a1d27",
-            "card_border": "#252836",
-            "input_bg":    "#1e2130",
-            "green":       "#2ecc71",
-            "green_dark":  "#27ae60",
-            "blue":        "#3b82f6",
-            "blue_dark":   "#2563eb",
-            "orange":      "#f39c12",
-            "red":         "#e74c3c",
-            "red_dark":    "#c0392b",
-            "muted":       "#4b5563",
-            "text":        "#e2e8f0",
-            "text_dim":    "#94a3b8",
-            "success_bg":  "#0d2818",
-            "warn_bg":     "#2c1a04",
-            "console_bg":  "#080b10",
-            "console_fg":  "#a3e635",
+            "bg":          "#282c34",
+            "sidebar":     "#21252b",
+            "card":        "#2c313a",
+            "card_border": "#3e4451",
+            "input_bg":    "#1e2227",
+            "green":       "#98c379",
+            "green_dark":  "#7a9c61",
+            "blue":        "#61afef",
+            "blue_dark":   "#4e8cbf",
+            "orange":      "#d19a66",
+            "red":         "#e06c75",
+            "red_dark":    "#b3565e",
+            "muted":       "#5c6370",
+            "text":        "#abb2bf",
+            "text_dim":    "#828997",
+            "success_bg":  "#2a3328",
+            "warn_bg":     "#332b21",
+            "console_bg":  "#282c34",
+            "console_fg":  "#98c379",
+        })
+    elif app_theme == "Monokai Pro":
+        C.update({
+            "bg":          "#2d2a2e",
+            "sidebar":     "#221f22",
+            "card":        "#3a363b",
+            "card_border": "#5b595c",
+            "input_bg":    "#19181a",
+            "green":       "#a9dc76",
+            "green_dark":  "#87b05e",
+            "blue":        "#78dce8",
+            "blue_dark":   "#60b0ba",
+            "orange":      "#fc9867",
+            "red":         "#ff6188",
+            "red_dark":    "#cc4d6c",
+            "muted":       "#727072",
+            "text":        "#fcfcfa",
+            "text_dim":    "#c1c0c0",
+            "success_bg":  "#364528",
+            "warn_bg":     "#452b1f",
+            "console_bg":  "#2d2a2e",
+            "console_fg":  "#a9dc76",
+        })
+    else: # GitHub Dark (Default)
+        C.update({
+            "bg":          "#0d1117",
+            "sidebar":     "#010409",
+            "card":        "#161b22",
+            "card_border": "#30363d",
+            "input_bg":    "#0d1117",
+            "green":       "#238636",
+            "green_dark":  "#2ea043",
+            "blue":        "#58a6ff",
+            "blue_dark":   "#3182ce",
+            "orange":      "#d29922",
+            "red":         "#f85149",
+            "red_dark":    "#da3633",
+            "muted":       "#8b949e",
+            "text":        "#c9d1d9",
+            "text_dim":    "#b1bac4",
+            "success_bg":  "#12241b",
+            "warn_bg":     "#292000",
+            "console_bg":  "#0d1117",
+            "console_fg":  "#58a6ff",
         })
 
-    # A Cor de destaque manual só funciona nos temas Padrões (Light/Dark).
-    # Temas específicos (Dracula, Nord, Cyberpunk) possuem paletas travadas e perfeitamente calibradas
-    # para não quebrar o visual da estética.
-    if app_theme in ["Dark", "Light"]:
+    # A Cor de destaque manual só funciona nos temas flexíveis.
+    if app_theme in ["GitHub Dark", "GitHub Light", "VSCode Modern", "Vercel Black"]:
         if app_color == "Verde":
             C["blue"], C["blue_dark"] = C["green"], C["green_dark"]
         elif app_color == "Laranja":
@@ -395,13 +393,15 @@ class NewProjectDialog(ctk.CTkToplevel):
         self.destroy()
 
 class TimeMachineDialog(ctk.CTkToplevel):
-    def __init__(self, parent, commit_info):
+    def __init__(self, parent, commit_info, repo_name):
         super().__init__(parent)
+        self.repo_name = repo_name
         self.title("Aviso Crítico")
-        self.geometry("450x420")
+        self.geometry("450x540")
         self.transient(parent)
         self.grab_set()
         self.configure(fg_color=C["bg"])
+        self.after(200, lambda: self.winfo_exists() and set_title_bar_color(self, C["bg"], C["text"]))
         self.result = False
         
         # Header
@@ -416,17 +416,34 @@ class TimeMachineDialog(ctk.CTkToplevel):
         
         # Commit info pill
         pill = ctk.CTkFrame(self, fg_color=C["input_bg"], corner_radius=8, border_width=1, border_color=C["card_border"])
-        pill.pack(fill="x", padx=30, pady=15)
+        pill.pack(fill="x", padx=30, pady=10)
         ctk.CTkLabel(pill, text=f"📌 {commit_info}", font=ctk.CTkFont("Consolas", 11), text_color=C["blue"], wraplength=360).pack(padx=15, pady=15)
         
-        ctk.CTkLabel(self, text="Essa ação NÃO pode ser desfeita.", font=ctk.CTkFont("Segoe UI", 13, "bold"), text_color=C["red"]).pack(pady=(5, 15))
+        ctk.CTkLabel(self, text="Essa ação NÃO pode ser desfeita.", font=ctk.CTkFont("Segoe UI", 13, "bold"), text_color=C["red"]).pack(pady=(0, 10))
+        
+        # Validation Input
+        val_frame = ctk.CTkFrame(self, fg_color="transparent")
+        val_frame.pack(fill="x", padx=30, pady=(5, 10))
+        ctk.CTkLabel(val_frame, text=f"Digite o nome da pasta para confirmar:\n( {repo_name} )", font=ctk.CTkFont("Segoe UI", 12), text_color=C["text_dim"]).pack(pady=(0, 5))
+        
+        self.entry_var = ctk.StringVar()
+        self.entry_var.trace_add("write", self._check_validation)
+        self.entry_val = ctk.CTkEntry(val_frame, textvariable=self.entry_var, font=ctk.CTkFont("Consolas", 12), fg_color=C["input_bg"], border_color=C["card_border"], justify="center")
+        self.entry_val.pack(fill="x", padx=20)
         
         # Buttons
         btns = ctk.CTkFrame(self, fg_color="transparent")
         btns.pack(pady=(10, 20))
         
         ctk.CTkButton(btns, text="Cancelar", width=120, height=36, font=ctk.CTkFont("Segoe UI", 12), fg_color=C["card_border"], hover_color=C["muted"], text_color=C["text"], command=self.destroy).pack(side="left", padx=10)
-        ctk.CTkButton(btns, text="💥 SIM, DESCARTAR TUDO", width=180, height=36, font=ctk.CTkFont("Segoe UI", 12, "bold"), fg_color=C["red_dark"], hover_color=C["red"], command=self._confirm).pack(side="left", padx=10)
+        self.btn_confirm = ctk.CTkButton(btns, text="💥 SIM, DESCARTAR TUDO", width=200, height=36, font=ctk.CTkFont("Segoe UI", 12, "bold"), fg_color=C["red_dark"], hover_color=C["red"], state="disabled", command=self._confirm)
+        self.btn_confirm.pack(side="left", padx=10)
+        
+    def _check_validation(self, *args):
+        if self.entry_var.get().strip() == self.repo_name:
+            self.btn_confirm.configure(state="normal")
+        else:
+            self.btn_confirm.configure(state="disabled")
         
     def _confirm(self):
         self.result = True
@@ -440,54 +457,59 @@ class DiffViewerDialog(ctk.CTkToplevel):
         self.transient(parent)
         self.grab_set()
         self.configure(fg_color=C["bg"])
+        self.after(200, lambda: self.winfo_exists() and set_title_bar_color(self, C["bg"], C["text"]))
         
         # Header
         header_frame = ctk.CTkFrame(self, fg_color="transparent")
         header_frame.pack(fill="x", padx=20, pady=(15, 5))
         
-        ctk.CTkLabel(header_frame, text="Diferenças Não Salvas", font=ctk.CTkFont("Segoe UI", 18, "bold"), text_color=C["text"]).pack(side="left")
+        ctk.CTkLabel(header_frame, text="Visualizador de Diferenças", font=ctk.CTkFont("Segoe UI", 16, "bold"), text_color=C["text"]).pack(side="left")
         
         self.parse_diff_text(diff_text)
         files = list(self.diffs_by_file.keys())
         
         if files:
-            self.file_selector = ctk.CTkOptionMenu(header_frame, values=files, command=self._on_file_select, width=300, font=ctk.CTkFont("Segoe UI", 12))
+            self.file_selector = ctk.CTkOptionMenu(header_frame, values=files, command=self._on_file_select, width=350, font=ctk.CTkFont("Segoe UI", 12), fg_color=C["card"], button_color=C["card_border"])
             self.file_selector.pack(side="right")
         else:
-            self.file_selector = ctk.CTkOptionMenu(header_frame, values=["Nenhum arquivo alterado"], width=300, state="disabled")
+            self.file_selector = ctk.CTkOptionMenu(header_frame, values=["Nenhum arquivo alterado"], width=350, state="disabled")
             self.file_selector.pack(side="right")
         
         # Titles frame
         titles = ctk.CTkFrame(self, fg_color="transparent")
-        titles.pack(fill="x", padx=20, pady=(5, 5))
+        titles.pack(fill="x", padx=20, pady=(10, 0))
         titles.grid_columnconfigure(0, weight=1)
         titles.grid_columnconfigure(1, weight=1)
         
-        ctk.CTkLabel(titles, text="Código Original", font=ctk.CTkFont("Segoe UI", 12, "bold"), text_color=C["red"]).grid(row=0, column=0)
-        ctk.CTkLabel(titles, text="Novo Código", font=ctk.CTkFont("Segoe UI", 12, "bold"), text_color=C["green"]).grid(row=0, column=1)
+        ctk.CTkLabel(titles, text="Original", font=ctk.CTkFont("Segoe UI", 12), text_color=C["text_dim"]).grid(row=0, column=0, sticky="w", padx=10)
+        ctk.CTkLabel(titles, text="Modificado", font=ctk.CTkFont("Segoe UI", 12), text_color=C["text_dim"]).grid(row=0, column=1, sticky="w", padx=10)
         
         # Textboxes container
         container = ctk.CTkFrame(self, fg_color="transparent")
-        container.pack(fill="both", expand=True, padx=20, pady=(0, 10))
+        container.pack(fill="both", expand=True, padx=20, pady=(5, 10))
         container.grid_columnconfigure(0, weight=1)
-        container.grid_columnconfigure(1, weight=1)
+        container.grid_columnconfigure(2, weight=1)
         container.grid_rowconfigure(0, weight=1)
         
-        font_code = ctk.CTkFont("Consolas", 12)
+        font_code = ctk.CTkFont("Consolas", 13)
         
-        self.tb_left = ctk.CTkTextbox(container, font=font_code, fg_color=C["card"], text_color=C["text"], border_width=1, border_color=C["red_dark"], wrap="none")
-        self.tb_left.grid(row=0, column=0, sticky="nsew", padx=(0, 5))
+        self.tb_left = ctk.CTkTextbox(container, font=font_code, fg_color=C["console_bg"], text_color=C["text"], border_width=0, wrap="none")
+        self.tb_left.grid(row=0, column=0, sticky="nsew", padx=(0, 2))
         
-        self.tb_right = ctk.CTkTextbox(container, font=font_code, fg_color=C["card"], text_color=C["text"], border_width=1, border_color=C["green_dark"], wrap="none")
-        self.tb_right.grid(row=0, column=1, sticky="nsew", padx=(5, 0))
+        # Divisor
+        divisor = ctk.CTkFrame(container, width=1, fg_color=C["card_border"])
+        divisor.grid(row=0, column=1, sticky="ns")
         
-        # Configure tags
+        self.tb_right = ctk.CTkTextbox(container, font=font_code, fg_color=C["console_bg"], text_color=C["text"], border_width=0, wrap="none")
+        self.tb_right.grid(row=0, column=2, sticky="nsew", padx=(2, 0))
+        
+        # Configure tags (Estilo VSCode)
         for tb in [self.tb_left, self.tb_right]:
-            tb.tag_config("deletion", foreground="#ff6b6b", background="#3b1a1a")
-            tb.tag_config("addition", foreground="#2ecc71", background="#1a3b26")
-            tb.tag_config("header", foreground="#3498db")
-            tb.tag_config("info", foreground=C["muted"])
-            tb.tag_config("blank", foreground=C["bg"])
+            tb.tag_config("deletion", background="#511d1d", foreground="#f48771")
+            tb.tag_config("addition", background="#1d3b26", foreground="#61cc86")
+            tb.tag_config("header", foreground="#569cd6")
+            tb.tag_config("info", foreground="#858585")
+            tb.tag_config("blank", foreground=C["console_bg"], background=C["console_bg"])
             
             # Bind sync scroll
             tb.bind("<MouseWheel>", self.sync_scroll)
@@ -607,7 +629,7 @@ class ReleaseManagerDialog(ctk.CTkToplevel):
         
         # Header
         ctk.CTkLabel(self, text="Lançar Versão", font=ctk.CTkFont("Segoe UI", 20, "bold"), text_color=C["orange"]).pack(pady=(20, 5))
-        ctk.CTkLabel(self, text="Crie um 'Patch Note' oficial e publique no GitHub.", font=ctk.CTkFont("Segoe UI", 12), text_color=C["text_dim"]).pack(pady=(0, 20))
+        ctk.CTkLabel(self, text="Crie um 'Patch Note' oficial e publico no GitHub.", font=ctk.CTkFont("Segoe UI", 12), text_color=C["text_dim"]).pack(pady=(0, 20))
         
         # Inputs
         inputs_frame = ctk.CTkFrame(self, fg_color="transparent")
@@ -1345,9 +1367,12 @@ class HelpDialog(ctk.CTkToplevel):
                 "1. Acesse o GitHub no navegador e faça login.\n"
                 "2. Vá em Settings > Developer settings > Personal access tokens > Tokens (classic).\n"
                 "3. Clique em 'Generate new token (classic)'.\n"
-                "4. Dê um nome (ex: Git Auto), defina a validade e marque a caixinha 'repo' (Full control of private repositories).\n"
-                "5. Clique em 'Generate token' no fim da página.\n"
-                "6. Copie o token gerado (começa com ghp_...) e cole aqui."
+                "4. Dê um nome (ex: Git Auto) e defina a validade (Expiration).\n"
+                "5. Marque a caixa 'repo' (Controle de código e tarefas).\n"
+                "6. Marque a caixa 'admin:org' (Obrigatório para gerenciar permissões de colaboradores).\n"
+                "7. Marque a caixa 'user' (Necessário para carregar seu avatar e perfil).\n"
+                "8. Clique em 'Generate token' no fim da página.\n"
+                "9. Copie o token gerado (começa com ghp_...) e cole aqui."
             )
         elif topic == "gemini_key":
             title = "Como obter a Gemini API Key?"
@@ -1422,13 +1447,13 @@ class SettingsDialog(ctk.CTkToplevel):
         theme_frame = ctk.CTkFrame(frame, fg_color="transparent")
         theme_frame.pack(fill="x", pady=(0, 20))
         
-        ctk.CTkLabel(theme_frame, text="Tema Base:", font=ctk.CTkFont("Segoe UI", 12), text_color=C["text_dim"]).pack(side="left", padx=(0, 10))
-        self.opt_theme = ctk.CTkOptionMenu(theme_frame, values=["Dark", "Light", "Dracula", "Nord", "Matrix", "Cyberpunk", "Tokyo Night", "Catppuccin"], fg_color=C["input_bg"], button_color=C["card_border"], text_color=C["text"], text_color_disabled=C["text"])
+        ctk.CTkLabel(theme_frame, text="Tema:", font=ctk.CTkFont("Segoe UI", 12), text_color=C["text_dim"]).pack(side="left", padx=(0, 10))
+        self.opt_theme = ctk.CTkOptionMenu(theme_frame, values=["GitHub Dark", "GitHub Light", "VSCode Modern", "Vercel Black", "Dracula PRO", "Catppuccin Mocha", "One Dark Pro", "Monokai Pro"], fg_color=C["input_bg"], button_color=C["card_border"], text_color=C["text"])
         self.opt_theme.pack(side="left", fill="x", expand=True, padx=(0, 15))
         self.opt_theme.set(APP_THEME)
         
         ctk.CTkLabel(theme_frame, text="Destaque:", font=ctk.CTkFont("Segoe UI", 12), text_color=C["text_dim"]).pack(side="left", padx=(0, 10))
-        self.opt_color = ctk.CTkOptionMenu(theme_frame, values=["Azul", "Verde", "Laranja", "Roxo", "Vermelho"], fg_color=C["input_bg"], button_color=C["card_border"], text_color=C["text"], text_color_disabled=C["text"])
+        self.opt_color = ctk.CTkOptionMenu(theme_frame, values=["Azul", "Verde", "Laranja", "Roxo", "Vermelho"], fg_color=C["input_bg"], button_color=C["card_border"], text_color=C["text"])
         self.opt_color.pack(side="left", fill="x", expand=True)
         self.opt_color.set(APP_COLOR)
         
@@ -1534,10 +1559,14 @@ class CollaboratorManagerDialog(ctk.CTkToplevel):
         invite_frame = ctk.CTkFrame(self, fg_color="transparent")
         invite_frame.pack(fill="x", padx=20, pady=(10, 5))
         
-        self.entry_username = ctk.CTkEntry(invite_frame, placeholder_text="Digite o @username do GitHub", width=300, fg_color=C["input_bg"], text_color=C["text"], border_color=C["card_border"])
+        self.entry_username = ctk.CTkEntry(invite_frame, placeholder_text="Digite o @username", width=180, fg_color=C["input_bg"], text_color=C["text"], border_color=C["card_border"])
         self.entry_username.pack(side="left", padx=(0, 10))
         
-        btn_invite = ctk.CTkButton(invite_frame, text="Convidar", width=100, fg_color=C["blue"], hover_color=C["blue_dark"], text_color="#ffffff", command=self._invite)
+        self.opt_perm = ctk.CTkOptionMenu(invite_frame, values=["Leitura (Pull)", "Escrita (Push)", "Triagem", "Manutenção", "Admin"], width=130, fg_color=C["input_bg"], button_color=C["card_border"], text_color=C["text"])
+        self.opt_perm.pack(side="left", padx=(0, 10))
+        self.opt_perm.set("Escrita (Push)")
+        
+        btn_invite = ctk.CTkButton(invite_frame, text="Convidar", width=90, fg_color=C["blue"], hover_color=C["blue_dark"], text_color="#ffffff", command=self._invite)
         btn_invite.pack(side="left", expand=True, fill="x")
         
         self.lbl_status = ctk.CTkLabel(self, text="", font=ctk.CTkFont("Segoe UI", 12))
@@ -1633,14 +1662,40 @@ class CollaboratorManagerDialog(ctk.CTkToplevel):
             ctk.CTkLabel(self.list_frame, text="Nenhum colaborador encontrado.", text_color=C["text_dim"]).pack(pady=20)
             return
             
+        perm_reverse_map = {"read": "Leitura (Pull)", "write": "Escrita (Push)", "admin": "Admin", "maintain": "Manutenção", "triage": "Triagem"}
         for user in data:
             row = ctk.CTkFrame(self.list_frame, fg_color="transparent")
             row.pack(fill="x", pady=8)
             
             ctk.CTkLabel(row, text=user.get("login", ""), font=ctk.CTkFont("Segoe UI", 15, "bold"), text_color=C["text"]).pack(side="left", padx=10)
             
-            role_name = user.get("role_name", "read").capitalize()
-            ctk.CTkLabel(row, text=role_name, font=ctk.CTkFont("Segoe UI", 12, "bold"), text_color=C["blue"], fg_color=C["bg"], corner_radius=6, padx=10, pady=2).pack(side="right", padx=10)
+            role_name = user.get("role_name", "read").lower()
+            current_ui_perm = perm_reverse_map.get(role_name, "Leitura (Pull)")
+            
+            opt = ctk.CTkOptionMenu(row, values=["Leitura (Pull)", "Escrita (Push)", "Triagem", "Manutenção", "Admin"], width=130, height=28, font=ctk.CTkFont("Segoe UI", 11, "bold"), fg_color=C["bg"], button_color=C["card_border"], text_color=C["blue"], command=lambda v, u=user.get("login", ""): self._update_permission(u, v))
+            opt.set(current_ui_perm)
+            opt.pack(side="right", padx=10)
+
+    def _update_permission(self, username, new_ui_perm):
+        perm_map = {"Leitura (Pull)": "pull", "Escrita (Push)": "push", "Triagem": "triage", "Manutenção": "maintain", "Admin": "admin"}
+        perm = perm_map.get(new_ui_perm, "push")
+        self.lbl_status.configure(text=f"Atualizando permissão de {username}...", text_color=C["text_dim"])
+        
+        def task():
+            import requests, os
+            token = os.getenv("GITHUB_TOKEN")
+            headers = {"Authorization": f"Bearer {token}", "Accept": "application/vnd.github+json"}
+            url = f"https://api.github.com/repos/{self.owner}/{self.repo}/collaborators/{username}"
+            try:
+                resp = requests.put(url, headers=headers, json={"permission": perm})
+                if resp.status_code in [201, 204]:
+                    self.app.after(0, lambda: self.lbl_status.configure(text=f"✅ Permissão de @{username} atualizada!", text_color=C["green"]))
+                else:
+                    self.app.after(0, lambda: self.lbl_status.configure(text="❌ Erro ao atualizar permissão.", text_color=C["red"]))
+            except:
+                self.app.after(0, lambda: self.lbl_status.configure(text="❌ Falha de conexão.", text_color=C["red"]))
+        import threading
+        threading.Thread(target=task, daemon=True).start()
 
     def _invite(self):
         username = self.entry_username.get().strip()
@@ -1649,6 +1704,9 @@ class CollaboratorManagerDialog(ctk.CTkToplevel):
             
         if username.startswith("@"):
             username = username[1:]
+            
+        perm_map = {"Leitura (Pull)": "pull", "Escrita (Push)": "push", "Triagem": "triage", "Manutenção": "maintain", "Admin": "admin"}
+        perm = perm_map.get(self.opt_perm.get(), "push")
             
         self.lbl_status.configure(text="Enviando convite...", text_color=C["text_dim"])
             
@@ -1659,9 +1717,9 @@ class CollaboratorManagerDialog(ctk.CTkToplevel):
             url = f"https://api.github.com/repos/{self.owner}/{self.repo}/collaborators/{username}"
             
             try:
-                resp = requests.put(url, headers=headers)
+                resp = requests.put(url, headers=headers, json={"permission": perm})
                 if resp.status_code in [201, 204]:
-                    self.app.after(0, lambda: self.lbl_status.configure(text=f"✅ Convite enviado para @{username}!", text_color=C["green"]))
+                    self.app.after(0, lambda: self.lbl_status.configure(text=f"✅ Convite enviado para @{username} com permissão: {perm}!", text_color=C["green"]))
                     self.app.after(0, self._load_collaborators)
                     self.app.after(0, lambda: self.entry_username.delete(0, "end"))
                 else:
@@ -1700,10 +1758,11 @@ class HoverTooltip:
             self.is_visible = False
 
 class NewIssueDialog(ctk.CTkToplevel):
-    def __init__(self, parent, repo_name):
+    def __init__(self, parent, repo_name, edit_mode=False, initial_title="", initial_body=""):
         super().__init__(parent)
         self.result = None
-        self.title("Nova Tarefa")
+        self.edit_mode = edit_mode
+        self.title("Editar Tarefa" if edit_mode else "Nova Tarefa")
         self.geometry("500x450")
         self.resizable(False, False)
         self.attributes("-topmost", True)
@@ -1715,7 +1774,8 @@ class NewIssueDialog(ctk.CTkToplevel):
         hdr = ctk.CTkFrame(self, fg_color=C["card"], corner_radius=0, height=60)
         hdr.pack(fill="x")
         hdr.pack_propagate(False)
-        ctk.CTkLabel(hdr, text=f"Nova Tarefa em {repo_name}", font=ctk.CTkFont("Segoe UI", 18, "bold"), text_color=C["text"]).pack(side="left", padx=20, pady=15)
+        hdr_text = f"Editar Tarefa em {repo_name}" if edit_mode else f"Nova Tarefa em {repo_name}"
+        ctk.CTkLabel(hdr, text=hdr_text, font=ctk.CTkFont("Segoe UI", 18, "bold"), text_color=C["text"]).pack(side="left", padx=20, pady=15)
         
         frame = ctk.CTkFrame(self, fg_color="transparent")
         frame.pack(fill="both", expand=True, padx=20, pady=20)
@@ -1723,15 +1783,19 @@ class NewIssueDialog(ctk.CTkToplevel):
         ctk.CTkLabel(frame, text="Título:", font=ctk.CTkFont("Segoe UI", 12, "bold"), text_color=C["text_dim"]).pack(anchor="w")
         self.entry_title = ctk.CTkEntry(frame, height=36, font=ctk.CTkFont("Segoe UI", 12), fg_color=C["input_bg"], border_color=C["card_border"], text_color=C["text"])
         self.entry_title.pack(fill="x", pady=(5, 15))
+        if initial_title: self.entry_title.insert(0, initial_title)
         
         ctk.CTkLabel(frame, text="Descrição:", font=ctk.CTkFont("Segoe UI", 12, "bold"), text_color=C["text_dim"]).pack(anchor="w")
         self.txt_body = ctk.CTkTextbox(frame, height=120, font=ctk.CTkFont("Segoe UI", 12), fg_color=C["input_bg"], border_color=C["card_border"], border_width=1, text_color=C["text"])
         self.txt_body.pack(fill="x", pady=(5, 20))
+        if initial_body: self.txt_body.insert("1.0", initial_body)
         
         btn_frame = ctk.CTkFrame(frame, fg_color="transparent")
         btn_frame.pack(fill="x", side="bottom")
         ctk.CTkButton(btn_frame, text="Cancelar", width=100, height=36, fg_color="transparent", border_width=1, border_color=C["card_border"], hover_color=C["card"], text_color=C["text"], command=self.destroy).pack(side="left")
-        ctk.CTkButton(btn_frame, text="Criar Tarefa", width=120, height=36, fg_color=C["blue"], hover_color=C["blue_dark"], command=self.confirm).pack(side="right")
+        
+        btn_text = "Salvar" if edit_mode else "Criar Tarefa"
+        ctk.CTkButton(btn_frame, text=btn_text, width=120, height=36, fg_color=C["blue"], hover_color=C["blue_dark"], command=self.confirm).pack(side="right")
         self.entry_title.focus()
 
     def confirm(self):
@@ -1745,47 +1809,73 @@ class NewIssueDialog(ctk.CTkToplevel):
         self.destroy()
 
 class IssueDetailsDialog(ctk.CTkToplevel):
-    def __init__(self, parent, issue_data, close_callback):
+    def __init__(self, parent, issue_data, issues_view):
         super().__init__(parent)
+        self.issue_data = issue_data
+        self.issues_view = issues_view
+        
         self.title(f"Issue #{issue_data['number']}")
-        self.geometry("600x500")
+        self.geometry("650x700")
         self.attributes("-topmost", True)
         self.grab_set()
         self.configure(fg_color=C["bg"])
         self.after(200, lambda: self.winfo_exists() and set_title_bar_color(self, C["bg"], C["text"]))
         
-        self.issue_data = issue_data
-        self.close_callback = close_callback
+        # Add Comment Input at the bottom
+        add_frame = ctk.CTkFrame(self, fg_color=C["card"], corner_radius=0, height=80)
+        add_frame.pack(fill="x", side="bottom")
+        add_frame.pack_propagate(False)
         
-        # Header
-        hdr = ctk.CTkFrame(self, fg_color=C["card"], corner_radius=0, height=70)
-        hdr.pack(fill="x")
-        hdr.pack_propagate(False)
+        self.entry_comment = ctk.CTkEntry(add_frame, placeholder_text="Escreva um comentário...", font=ctk.CTkFont("Segoe UI", 12), fg_color=C["input_bg"], border_color=C["card_border"])
+        self.entry_comment.pack(side="left", fill="x", expand=True, padx=(20, 10), pady=20)
         
-        title_lbl = ctk.CTkLabel(hdr, text=issue_data["title"], font=ctk.CTkFont("Segoe UI", 16, "bold"), text_color=C["text"], wraplength=450)
-        title_lbl.pack(side="left", padx=20, pady=10)
+        ctk.CTkButton(add_frame, text="Comentar", width=100, height=36, font=ctk.CTkFont("Segoe UI", 12, "bold"), fg_color=C["blue"], hover_color=C["blue_dark"], command=self.post_comment).pack(side="right", padx=(0, 20), pady=20)
         
-        state_color = C["green"] if issue_data["state"] == "open" else C["red"]
-        ctk.CTkLabel(hdr, text=issue_data["state"].upper(), font=ctk.CTkFont("Segoe UI", 12, "bold"), text_color=state_color).pack(side="right", padx=20)
+        self.main_scroll = ctk.CTkScrollableFrame(self, fg_color="transparent")
+        self.main_scroll.pack(fill="both", expand=True, padx=20, pady=10)
         
-        main_frame = ctk.CTkScrollableFrame(self, fg_color="transparent")
-        main_frame.pack(fill="both", expand=True, padx=20, pady=20)
+        self.build_ui()
+        self.load_comments()
+
+    def build_ui(self):
+        for w in self.main_scroll.winfo_children(): w.destroy()
         
-        ctk.CTkLabel(main_frame, text="Descrição", font=ctk.CTkFont("Segoe UI", 14, "bold"), text_color=C["text_dim"]).pack(anchor="w", pady=(0, 10))
+        # Header (State + Title)
+        hdr = ctk.CTkFrame(self.main_scroll, fg_color="transparent")
+        hdr.pack(fill="x", pady=(0, 10))
         
-        body_text = issue_data.get("body") or "*Sem descrição*"
-        lbl_body = ctk.CTkLabel(main_frame, text=body_text, font=ctk.CTkFont("Segoe UI", 12), text_color=C["text"], justify="left", wraplength=520)
-        lbl_body.pack(anchor="w", pady=(0, 20))
+        is_open = self.issue_data["state"] == "open"
+        state_color = C["green"] if is_open else C["red"]
+        ctk.CTkLabel(hdr, text=self.issue_data["state"].upper(), font=ctk.CTkFont("Segoe UI", 12, "bold"), text_color=state_color).pack(side="left", padx=(0, 15))
         
-        self.ai_frame = ctk.CTkFrame(main_frame, fg_color=C["card"], corner_radius=8, border_width=1, border_color=C["blue"])
+        ctk.CTkLabel(hdr, text=self.issue_data["title"], font=ctk.CTkFont("Segoe UI", 18, "bold"), text_color=C["text"], wraplength=500, justify="left").pack(side="left", fill="x", expand=True)
         
-        btn_frame = ctk.CTkFrame(self, fg_color="transparent")
-        btn_frame.pack(fill="x", padx=20, pady=15)
+        # Body
+        body_text = self.issue_data.get("body") or "*Sem descrição*"
+        ctk.CTkLabel(self.main_scroll, text=body_text, font=ctk.CTkFont("Segoe UI", 13), text_color=C["text_dim"], justify="left", wraplength=550).pack(anchor="w", pady=(0, 20))
         
-        ctk.CTkButton(btn_frame, text="Dica do Gemini", width=140, height=36, fg_color=C["blue"], hover_color=C["blue_dark"], command=self.ask_gemini).pack(side="left")
-        if issue_data["state"] == "open":
-            ctk.CTkButton(btn_frame, text="Marcar como Concluída ✔", width=160, height=36, fg_color=C["green"], hover_color="#207a3c", command=self.close_issue).pack(side="right")
+        # Action Buttons
+        actions = ctk.CTkFrame(self.main_scroll, fg_color="transparent")
+        actions.pack(fill="x", pady=(0, 20))
+        
+        ctk.CTkButton(actions, text="Editar", width=80, height=30, fg_color="transparent", border_width=1, border_color=C["card_border"], hover_color=C["muted"], text_color=C["text"], command=self.edit_issue).pack(side="left", padx=(0, 10))
+        
+        if is_open:
+            ctk.CTkButton(actions, text="Concluir Tarefa", width=120, height=30, fg_color=C["green"], hover_color="#207a3c", command=lambda: self.toggle_state("closed")).pack(side="left", padx=(0, 10))
+        else:
+            ctk.CTkButton(actions, text="Reabrir Tarefa", width=120, height=30, fg_color=C["orange"], hover_color="#cc6600", command=lambda: self.toggle_state("open")).pack(side="left", padx=(0, 10))
             
+        ctk.CTkButton(actions, text="Dica do Gemini", width=120, height=30, fg_color=C["blue"], hover_color=C["blue_dark"], command=self.ask_gemini).pack(side="left")
+        
+        self.ai_frame = ctk.CTkFrame(self.main_scroll, fg_color=C["card"], corner_radius=8, border_width=1, border_color=C["blue"])
+        
+        # Comments divider
+        ctk.CTkFrame(self.main_scroll, height=1, fg_color=C["card_border"]).pack(fill="x", pady=20)
+        ctk.CTkLabel(self.main_scroll, text="Comentários", font=ctk.CTkFont("Segoe UI", 14, "bold"), text_color=C["text"]).pack(anchor="w", pady=(0, 10))
+        
+        self.comments_container = ctk.CTkFrame(self.main_scroll, fg_color="transparent")
+        self.comments_container.pack(fill="x", pady=(0, 10))
+
     def ask_gemini(self):
         self.ai_frame.pack(fill="x", pady=10)
         for w in self.ai_frame.winfo_children(): w.destroy()
@@ -1809,9 +1899,98 @@ class IssueDetailsDialog(ctk.CTkToplevel):
         ctk.CTkLabel(self.ai_frame, text="Dica do Gemini", font=ctk.CTkFont("Segoe UI", 12, "bold"), text_color=C["blue"]).pack(anchor="w", padx=15, pady=(15, 5))
         ctk.CTkLabel(self.ai_frame, text=text, font=ctk.CTkFont("Segoe UI", 12), text_color=C["text"], justify="left", wraplength=480).pack(anchor="w", padx=15, pady=(0, 15))
 
-    def close_issue(self):
-        self.close_callback(self.issue_data["number"])
-        self.destroy()
+    def load_comments(self):
+        for w in self.comments_container.winfo_children(): w.destroy()
+        ctk.CTkLabel(self.comments_container, text="Carregando...", text_color=C["text_dim"]).pack(pady=10)
+        
+        def task():
+            import requests, os
+            token = os.getenv("GITHUB_TOKEN")
+            username = os.getenv("GITHUB_USERNAME")
+            headers = {"Authorization": f"Bearer {token}", "Accept": "application/vnd.github+json"}
+            url = f"https://api.github.com/repos/{username}/{self.issues_view.current_repo}/issues/{self.issue_data['number']}/comments"
+            try:
+                r = requests.get(url, headers=headers)
+                if r.status_code == 200:
+                    comments = r.json()
+                    self.winfo_exists() and self.after(0, lambda: self.render_comments(comments))
+                else:
+                    self.winfo_exists() and self.after(0, lambda: self.render_comments([]))
+            except:
+                self.winfo_exists() and self.after(0, lambda: self.render_comments([]))
+        import threading
+        threading.Thread(target=task, daemon=True).start()
+
+    def render_comments(self, comments):
+        for w in self.comments_container.winfo_children(): w.destroy()
+        if not comments:
+            ctk.CTkLabel(self.comments_container, text="Nenhum comentário ainda.", text_color=C["muted"]).pack(pady=10)
+            return
+            
+        for c in comments:
+            c_frame = ctk.CTkFrame(self.comments_container, fg_color=C["card"], corner_radius=8, border_width=1, border_color=C["card_border"])
+            c_frame.pack(fill="x", pady=5)
+            
+            hdr = ctk.CTkFrame(c_frame, fg_color="transparent")
+            hdr.pack(fill="x", padx=15, pady=(10, 5))
+            user = c.get("user", {}).get("login", "alguém")
+            date = c.get("created_at", "").split("T")[0]
+            ctk.CTkLabel(hdr, text=user, font=ctk.CTkFont("Segoe UI", 11, "bold"), text_color=C["text"]).pack(side="left")
+            ctk.CTkLabel(hdr, text=date, font=ctk.CTkFont("Segoe UI", 10), text_color=C["muted"]).pack(side="right")
+            
+            body = c.get("body", "")
+            ctk.CTkLabel(c_frame, text=body, font=ctk.CTkFont("Segoe UI", 12), text_color=C["text_dim"], justify="left", wraplength=500).pack(anchor="w", padx=15, pady=(0, 15))
+
+    def post_comment(self):
+        text = self.entry_comment.get().strip()
+        if not text: return
+        self.entry_comment.delete(0, "end")
+        
+        def task():
+            import requests, os
+            token = os.getenv("GITHUB_TOKEN")
+            username = os.getenv("GITHUB_USERNAME")
+            headers = {"Authorization": f"Bearer {token}", "Accept": "application/vnd.github+json"}
+            url = f"https://api.github.com/repos/{username}/{self.issues_view.current_repo}/issues/{self.issue_data['number']}/comments"
+            requests.post(url, headers=headers, json={"body": text})
+            self.winfo_exists() and self.after(0, self.load_comments)
+        import threading
+        threading.Thread(target=task, daemon=True).start()
+
+    def toggle_state(self, new_state):
+        def task():
+            import requests, os
+            token = os.getenv("GITHUB_TOKEN")
+            username = os.getenv("GITHUB_USERNAME")
+            headers = {"Authorization": f"Bearer {token}", "Accept": "application/vnd.github+json"}
+            url = f"https://api.github.com/repos/{username}/{self.issues_view.current_repo}/issues/{self.issue_data['number']}"
+            r = requests.patch(url, headers=headers, json={"state": new_state})
+            if r.status_code == 200:
+                self.issue_data["state"] = new_state
+                self.winfo_exists() and self.after(0, self.build_ui)
+                self.winfo_exists() and self.after(0, lambda: self.issues_view.load_issues_for_repo(self.issues_view.current_repo))
+        import threading
+        threading.Thread(target=task, daemon=True).start()
+
+    def edit_issue(self):
+        dialog = NewIssueDialog(self, self.issues_view.current_repo, edit_mode=True, initial_title=self.issue_data["title"], initial_body=self.issue_data.get("body", ""))
+        self.wait_window(dialog)
+        if dialog.result:
+            title, body = dialog.result["title"], dialog.result["body"]
+            def task():
+                import requests, os
+                token = os.getenv("GITHUB_TOKEN")
+                username = os.getenv("GITHUB_USERNAME")
+                headers = {"Authorization": f"Bearer {token}", "Accept": "application/vnd.github+json"}
+                url = f"https://api.github.com/repos/{username}/{self.issues_view.current_repo}/issues/{self.issue_data['number']}"
+                r = requests.patch(url, headers=headers, json={"title": title, "body": body})
+                if r.status_code == 200:
+                    self.issue_data["title"] = title
+                    self.issue_data["body"] = body
+                    self.winfo_exists() and self.after(0, self.build_ui)
+                    self.winfo_exists() and self.after(0, lambda: self.issues_view.load_issues_for_repo(self.issues_view.current_repo))
+            import threading
+            threading.Thread(target=task, daemon=True).start()
 
 class IssuesView(ctk.CTkFrame):
     def __init__(self, parent, app):
@@ -1893,26 +2072,34 @@ class IssuesView(ctk.CTkFrame):
             return
             
         for issue in issues:
-            card = ctk.CTkFrame(self.list_frame, fg_color=C["card"], corner_radius=10, border_width=1, border_color=C["card_border"])
-            card.pack(fill="x", pady=5)
+            is_open = issue["state"] == "open"
             
-            top_bar = ctk.CTkFrame(card, fg_color="transparent")
-            top_bar.pack(fill="x", padx=15, pady=(15, 5))
+            # Card principal SUPER compacto (1 linha apenas)
+            card = ctk.CTkFrame(self.list_frame, fg_color=C["card"], corner_radius=6, border_width=1, border_color=C["card_border"], height=46)
+            card.pack(fill="x", pady=4, padx=5)
+            card.pack_propagate(False) # Impede que o card cresça desnecessariamente
             
-            state_color = C["green"] if issue["state"] == "open" else C["text_dim"]
-            ctk.CTkLabel(top_bar, text=f"#{issue['number']} - {issue['state'].upper()}", font=ctk.CTkFont("Segoe UI", 10, "bold"), text_color=state_color).pack(side="left")
+            # Ícone de Status
+            status_icon = "🟢" if is_open else "🟣"
+            ctk.CTkLabel(card, text=status_icon, font=ctk.CTkFont("Segoe UI", 12)).pack(side="left", padx=(15, 10))
             
-            date_str = issue["created_at"].split("T")[0]
-            ctk.CTkLabel(top_bar, text=date_str, font=ctk.CTkFont("Segoe UI", 10), text_color=C["muted"]).pack(side="right")
+            # Título
+            title = issue["title"]
+            if len(title) > 45: title = title[:42] + "..."
+            ctk.CTkLabel(card, text=title, font=ctk.CTkFont("Segoe UI", 13, "bold"), text_color=C["text"]).pack(side="left")
             
-            ctk.CTkLabel(card, text=issue["title"], font=ctk.CTkFont("Segoe UI", 14, "bold"), text_color=C["text"], justify="left", wraplength=600).pack(anchor="w", padx=15)
+            # Info meta (número, autor)
+            user = issue.get("user", {}).get("login", "alguém")
+            meta_text = f"  #{issue['number']} aberto por {user}"
+            ctk.CTkLabel(card, text=meta_text, font=ctk.CTkFont("Segoe UI", 11), text_color=C["text_dim"]).pack(side="left", padx=(0, 10))
             
-            body = (issue.get("body") or "")[:80] + ("..." if len(issue.get("body") or "") > 80 else "")
-            ctk.CTkLabel(card, text=body if body else "Sem descrição", font=ctk.CTkFont("Segoe UI", 12), text_color=C["text_dim"]).pack(anchor="w", padx=15, pady=(5, 15))
+            # Botão "Abrir" alinhado à direita
+            ctk.CTkButton(card, text="Abrir  →", width=80, height=26, font=ctk.CTkFont("Segoe UI", 11, "bold"), fg_color=C["input_bg"], hover_color=C["blue"], text_color=C["text"], command=lambda i=issue: self.open_issue_details(i)).pack(side="right", padx=(10, 15))
             
-            btn_frame = ctk.CTkFrame(card, fg_color="transparent")
-            btn_frame.pack(fill="x", padx=15, pady=(0, 15))
-            ctk.CTkButton(btn_frame, text="Ver Detalhes", height=28, fg_color="transparent", border_width=1, border_color=C["card_border"], hover_color=C["input_bg"], text_color=C["text"], command=lambda i=issue: self.open_issue_details(i)).pack(side="left")
+            # Labels (Tags) na direita, antes do botão
+            for lbl in reversed(issue.get("labels", [])[:2]): # max 2 labels
+                color_hex = f"#{lbl.get('color', '333333')}"
+                ctk.CTkLabel(card, text=f" {lbl.get('name')} ", font=ctk.CTkFont("Segoe UI", 10, "bold"), fg_color=color_hex, text_color="#111111" if int(color_hex[1:], 16) > 0x888888 else "#ffffff", corner_radius=4).pack(side="right", padx=2)
 
     def show_error(self, msg):
         for w in self.list_frame.winfo_children(): w.destroy()
@@ -1926,7 +2113,7 @@ class IssuesView(ctk.CTkFrame):
             self.create_issue(dialog.result["title"], dialog.result["body"])
             
     def open_issue_details(self, issue):
-        IssueDetailsDialog(self, issue, self.close_issue)
+        IssueDetailsDialog(self.app, issue, self)
 
     def create_issue(self, title, body):
         import requests, os, threading
@@ -1947,22 +2134,6 @@ class IssuesView(ctk.CTkFrame):
                 pass
         threading.Thread(target=task, daemon=True).start()
 
-    def close_issue(self, issue_number):
-        import requests, os, threading
-        token = os.getenv("GITHUB_TOKEN")
-        username = os.getenv("GITHUB_USERNAME")
-        
-        def task():
-            headers = {"Authorization": f"Bearer {token}", "Accept": "application/vnd.github+json"}
-            url = f"https://api.github.com/repos/{username}/{self.current_repo}/issues/{issue_number}"
-            try:
-                r = requests.patch(url, headers=headers, json={"state": "closed"})
-                if r.status_code == 200:
-                    self.app.after(0, lambda: self.app.log(f"[SYS] Tarefa #{issue_number} marcada como concluída!", "success"))
-                    self.app.after(2000, lambda: self.load_issues_for_repo(self.current_repo))
-            except:
-                pass
-        threading.Thread(target=task, daemon=True).start()
 
 class DashboardView(ctk.CTkScrollableFrame):
     def __init__(self, parent, app):
@@ -2691,29 +2862,30 @@ class App(ctk.CTk):
         ws_actions = ctk.CTkFrame(ws, fg_color="transparent")
         ws_actions.grid(row=2, column=0, columnspan=3, sticky="ew", padx=20, pady=(0, 16))
         
-        self.btn_gitignore = ctk.CTkButton(
-            ws_actions, text="Gerar .gitignore", width=180, height=30,
-            font=ctk.CTkFont("Segoe UI", 11, "bold"),
-            fg_color="transparent", hover_color=C["card_border"], text_color=C["blue"],
-            border_width=1, border_color=C["card_border"],
-            command=self.open_gitignore_generator)
-        self.btn_gitignore.pack(side="left")
-        
-        self.btn_time_machine = ctk.CTkButton(
-            ws_actions, text="⏪ Máquina do Tempo", width=180, height=30,
-            font=ctk.CTkFont("Segoe UI", 11, "bold"),
-            fg_color="transparent", hover_color=C["red_dark"], text_color=C["red"],
-            border_width=1, border_color=C["red"],
-            command=self.discard_changes)
-        self.btn_time_machine.pack(side="left", padx=(10, 0))
-
+        # Alinhando à direita para melhor aproveitamento do espaço (ordem inversa no pack)
         self.btn_release = ctk.CTkButton(
-            ws_actions, text="Lançar Versão", width=150, height=30,
+            ws_actions, text="Lançar Versão", height=28, width=120,
             font=ctk.CTkFont("Segoe UI", 11, "bold"),
-            fg_color="transparent", hover_color=C["warn_bg"], text_color=C["orange"],
-            border_width=1, border_color=C["orange"],
+            fg_color="transparent", hover_color=C["card"], text_color=C["orange"],
+            border_width=1, border_color=C["card_border"], 
             command=self.open_release_manager)
-        self.btn_release.pack(side="left", padx=(10, 0))
+        self.btn_release.pack(side="right", padx=(10, 0))
+
+        self.btn_time_machine = ctk.CTkButton(
+            ws_actions, text="Máquina do Tempo", height=28, width=130,
+            font=ctk.CTkFont("Segoe UI", 11, "bold"),
+            fg_color="transparent", hover_color=C["warn_bg"], text_color=C["red"],
+            border_width=1, border_color=C["card_border"], 
+            command=self.discard_changes)
+        self.btn_time_machine.pack(side="right", padx=(10, 0))
+
+        self.btn_gitignore = ctk.CTkButton(
+            ws_actions, text="Gerar .gitignore", height=28, width=120,
+            font=ctk.CTkFont("Segoe UI", 11, "bold"),
+            fg_color="transparent", hover_color=C["card"], text_color=C["text_dim"],
+            border_width=1, border_color=C["card_border"], 
+            command=self.open_gitignore_generator)
+        self.btn_gitignore.pack(side="right", padx=(0, 0))
 
         # ── 2. Action cards ───────────────────────────────────────────────────
         self.actions_frame = ctk.CTkFrame(self.tab_push, fg_color="transparent")
@@ -2721,64 +2893,66 @@ class App(ctk.CTk):
         self.actions_frame.grid_columnconfigure((0, 1), weight=1)
 
         # Card — Atualizar
-        cu = ctk.CTkFrame(self.actions_frame, fg_color=C["card"], corner_radius=16,
-                          border_width=1, border_color=C["blue_dark"])
+        cu = ctk.CTkFrame(self.actions_frame, fg_color=C["card"], corner_radius=12,
+                          border_width=1, border_color=C["card_border"])
         cu.grid(row=0, column=0, sticky="nsew", padx=(0, 10))
         cu.grid_columnconfigure(0, weight=1)
 
         top_u = ctk.CTkFrame(cu, fg_color="transparent")
-        top_u.grid(row=0, column=0, sticky="ew", padx=20, pady=(18, 0))
-        ctk.CTkLabel(top_u, text="🔄", font=ctk.CTkFont(size=26)).pack(side="left", padx=(0, 10))
+        top_u.grid(row=0, column=0, sticky="ew", padx=24, pady=(24, 16))
+        
         txt_u = ctk.CTkFrame(top_u, fg_color="transparent")
-        txt_u.pack(side="left")
-        ctk.CTkLabel(txt_u, text="Atualizar Projeto",
-                     font=ctk.CTkFont("Segoe UI", 15, "bold"),
-                     text_color=C["blue"]).pack(anchor="w")
-        ctk.CTkLabel(txt_u, text="Detecta mudanças, gera/atualiza README via IA e faz push.",
+        txt_u.pack(side="left", fill="x", expand=True)
+        ctk.CTkLabel(txt_u, text="Atualizar Projeto Existente",
+                     font=ctk.CTkFont("Segoe UI", 14, "bold"),
+                     text_color=C["text"]).pack(anchor="w")
+        ctk.CTkLabel(txt_u, text="Sincroniza mudanças locais, gera o README com IA e faz o Push automático.",
                      font=ctk.CTkFont("Segoe UI", 11),
-                     text_color=C["text_dim"]).pack(anchor="w")
+                     text_color=C["text_dim"], wraplength=300, justify="left").pack(anchor="w", pady=(4, 0))
 
         self.btn_diff = ctk.CTkButton(
-            cu, text="Ver Diferenças", height=30,
+            cu, text="Visualizar Diferenças", height=32,
             font=ctk.CTkFont("Segoe UI", 12, "bold"),
-            fg_color="transparent", hover_color=C["card_border"], text_color=C["text_dim"],
-            border_width=1, border_color=C["card_border"],
-            command=self.open_diff_viewer)
-        self.btn_diff.grid(row=1, column=0, sticky="ew", padx=20, pady=(14, 0))
+            fg_color=C["input_bg"], hover_color=C["card_border"], text_color=C["text_dim"],
+            corner_radius=6, command=self.open_diff_viewer)
+        self.btn_diff.grid(row=1, column=0, sticky="ew", padx=24, pady=(0, 10))
 
         self.btn_update = ctk.CTkButton(
-            cu, text="Executar Fluxo  →", height=44,
-            font=ctk.CTkFont("Segoe UI", 13, "bold"),
-            fg_color=C["blue_dark"], hover_color=C["blue"],
-            corner_radius=8, command=self.start_update_thread)
-        self.btn_update.grid(row=2, column=0, sticky="ew",
-                             padx=20, pady=(10, 18))
+            cu, text="Executar Fluxo", height=36,
+            font=ctk.CTkFont("Segoe UI", 12, "bold"),
+            fg_color=C["blue"], hover_color=C["blue_dark"], text_color="#1a1b26",
+            corner_radius=6, command=self.start_update_thread)
+        self.btn_update.grid(row=2, column=0, sticky="ew", padx=24, pady=(0, 24))
+
 
         # Card — Novo Projeto
-        cn = ctk.CTkFrame(self.actions_frame, fg_color=C["card"], corner_radius=16,
-                          border_width=1, border_color=C["green_dark"])
+        cn = ctk.CTkFrame(self.actions_frame, fg_color=C["card"], corner_radius=12,
+                          border_width=1, border_color=C["card_border"])
         cn.grid(row=0, column=1, sticky="nsew", padx=(10, 0))
         cn.grid_columnconfigure(0, weight=1)
 
         top_n = ctk.CTkFrame(cn, fg_color="transparent")
-        top_n.grid(row=0, column=0, sticky="ew", padx=20, pady=(18, 0))
-        ctk.CTkLabel(top_n, text="🚀", font=ctk.CTkFont(size=26)).pack(side="left", padx=(0, 10))
+        top_n.grid(row=0, column=0, sticky="ew", padx=24, pady=(24, 16))
+        
         txt_n = ctk.CTkFrame(top_n, fg_color="transparent")
-        txt_n.pack(side="left")
-        ctk.CTkLabel(txt_n, text="Novo Projeto",
-                     font=ctk.CTkFont("Segoe UI", 15, "bold"),
-                     text_color=C["green"]).pack(anchor="w")
-        ctk.CTkLabel(txt_n, text="Cria repositório no GitHub, gera README e faz push.",
+        txt_n.pack(side="left", fill="x", expand=True)
+        ctk.CTkLabel(txt_n, text="Criar Novo Projeto",
+                     font=ctk.CTkFont("Segoe UI", 14, "bold"),
+                     text_color=C["text"]).pack(anchor="w")
+        ctk.CTkLabel(txt_n, text="Inicia o repositório no GitHub, estrutura o README e publica o código.",
                      font=ctk.CTkFont("Segoe UI", 11),
-                     text_color=C["text_dim"]).pack(anchor="w")
+                     text_color=C["text_dim"], wraplength=300, justify="left").pack(anchor="w", pady=(4, 0))
+
+        # Espaçador para manter os botões primários alinhados na mesma altura
+        spacer = ctk.CTkFrame(cn, fg_color="transparent", height=32)
+        spacer.grid(row=1, column=0, sticky="ew", padx=24, pady=(0, 10))
 
         self.btn_new = ctk.CTkButton(
-            cn, text="Criar e Enviar  →", height=44,
-            font=ctk.CTkFont("Segoe UI", 13, "bold"),
-            fg_color=C["green_dark"], hover_color=C["green"],
-            corner_radius=8, command=self.start_new_project_thread)
-        self.btn_new.grid(row=1, column=0, sticky="ew",
-                          padx=20, pady=(14, 18))
+            cn, text="Criar e Enviar", height=36,
+            font=ctk.CTkFont("Segoe UI", 12, "bold"),
+            fg_color=C["green"], hover_color=C["green_dark"], text_color="#1a1b26",
+            corner_radius=6, command=self.start_new_project_thread)
+        self.btn_new.grid(row=2, column=0, sticky="ew", padx=24, pady=(0, 24))
 
         # ── 3. Tabs (Console e Histórico) ─────────────────────────────────────
         self.tabs = ctk.CTkTabview(self.tab_push, fg_color=C["card"],
@@ -3127,6 +3301,8 @@ class App(ctk.CTk):
             self._show_error("Esta pasta não é um repositório Git válido.")
             return
             
+        repo_name = os.path.basename(os.path.abspath(repo))
+
         # Obter informações do último commit
         commit_info_text = "Nenhum commit encontrado (Estado Inicial)"
         try:
@@ -3140,7 +3316,7 @@ class App(ctk.CTk):
         except Exception:
             pass
             
-        dialog = TimeMachineDialog(self, commit_info_text)
+        dialog = TimeMachineDialog(self, commit_info_text, repo_name)
         self.wait_window(dialog)
         
         if dialog.result:
