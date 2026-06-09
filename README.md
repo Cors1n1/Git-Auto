@@ -1,5 +1,5 @@
 # git_auto
-
+git teste
 > Automação inteligente para versionamento e gerenciamento de releases Git.
 
 ## Sobre o Projeto
