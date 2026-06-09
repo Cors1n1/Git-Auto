@@ -3221,39 +3221,70 @@ class App(ctk.CTk):
 
     # ── IA / FALLBACK ─────────────────────────────────────────────────────────
     def generate_readme(self, diff):
-        self.log("[IA] Analisando código para gerar documentação…", "info")
+        self.log("[IA] Analisando código para atualizar documentação…", "info")
         current_readme = ""
         if os.path.exists("README.md"):
             with open("README.md", "r", encoding="utf-8") as f:
                 current_readme = f.read()
 
         today = datetime.datetime.now().strftime("%d/%m/%Y")
-        is_append = False
+        
+        # Build project tree (max depth 2 to avoid huge tokens)
+        def build_tree(dir_path, prefix="", depth=0):
+            if depth > 2: return ""
+            ignored = {".git", "__pycache__", "node_modules", ".venv", "venv", "env", "dist", "build", "data"}
+            try:
+                entries = [e for e in os.listdir(dir_path) if e not in ignored]
+            except:
+                return ""
+            entries.sort(key=lambda x: (not os.path.isdir(os.path.join(dir_path, x)), x))
+            tree_str = ""
+            for i, entry in enumerate(entries):
+                is_last = (i == len(entries) - 1)
+                tree_str += prefix + ("└── " if is_last else "├── ") + entry + "\n"
+                full_path = os.path.join(dir_path, entry)
+                if os.path.isdir(full_path):
+                    tree_str += build_tree(full_path, prefix + ("    " if is_last else "│   "), depth + 1)
+            return tree_str
+            
+        tree = ".\n" + build_tree(os.getcwd())
         
         if not current_readme.strip():
             # README não existe ou está vazio: cria do zero
-            prompt = f"""Você é um desenvolvedor sênior. Crie um README.md curto e objetivo para este novo projeto, baseado no git diff inicial abaixo.
+            prompt = f"""Você é um desenvolvedor sênior. Crie um README.md curto e objetivo para este novo projeto, baseado no git diff inicial e na estrutura de arquivos abaixo.
 Retorne APENAS o markdown final, sem blocos de código (```markdown).
+
+--- ESTRUTURA DE ARQUIVOS ---
+{tree}
 
 --- GIT DIFF ---
 {diff}
 """
         else:
-            # README já existe: apenas adiciona log de alterações
-            is_append = True
-            prompt = f"""Você é um desenvolvedor sênior.
-Abaixo está o GIT DIFF com as mais recentes modificações de código do projeto.
-Para garantir uma leitura extremamente rápida no histórico visual, NÃO reescreva o README inteiro. 
-Escreva APENAS uma seção de Changelog EXTREMAMENTE RESUMIDA E DIRETA (máximo de 3 tópicos, com apenas 1 linha curta cada), usando o seguinte formato estrito:
+            # README já existe: atualiza estrutura e adiciona changelog
+            prompt = f"""Você é um desenvolvedor sênior mantenedor deste projeto.
+Abaixo está o README ATUAL, a NOVA ESTRUTURA de pastas e o GIT DIFF com as mais recentes modificações de código.
+
+SUA TAREFA É RETORNAR O README COMPLETO ATUALIZADO:
+1. Mantenha todo o histórico de atualizações antigas intacto.
+2. Atualize a seção de "Estrutura do Projeto" substituindo a antiga pela nova estrutura (pode adicionar breves comentários nos arquivos principais).
+3. Caso não exista a tag "## 📋 Histórico de Atualizações", crie-a no final do arquivo.
+4. Ao final do Histórico de Atualizações, adicione a nova atualização de hoje usando EXATAMENTE o formato estrito:
 
 ### 🔄 Atualização ({today})
-- [Resumo direto da ação 1]
-- [Resumo direto da ação 2]
+- [Resumo direto da ação 1 baseado no DIFF]
+- [Resumo direto da ação 2 baseado no DIFF]
 
-Retorne APENAS o markdown dessa nova seção, sem blocos (```markdown).
+Retorne APENAS o texto markdown do README completo final, sem a tag ```markdown em volta.
 
---- GIT DIFF ---
+--- NOVA ESTRUTURA DE ARQUIVOS ---
+{tree}
+
+--- GIT DIFF DAS ALTERAÇÕES ---
 {diff}
+
+--- README ATUAL ---
+{current_readme}
 """
         retry_delays = [15, 30, 60, 120]
         for attempt in range(4):
@@ -3267,12 +3298,16 @@ Retorne APENAS o markdown dessa nova seção, sem blocos (```markdown).
                 if content.endswith("```"):
                     content = content[::-1].replace("```"[::-1], "", 1)[::-1]
                     
-                if is_append:
-                    if "Histórico de Atualizações" not in current_readme:
-                        return current_readme.rstrip() + "\n\n## 📋 Histórico de Atualizações\n\n" + content.strip(), content.strip()
-                    return current_readme.rstrip() + "\n\n" + content.strip(), content.strip()
+                # Extrai o resumo para exibir no commit in-line
+                ai_summary = "Atualização documentada via Git Auto"
+                if "### 🔄 Atualização" in content:
+                    parts = content.split("### 🔄 Atualização")
+                    if len(parts) > 1:
+                        last_update = parts[-1]
+                        lines = [line.strip("- *").strip() for line in last_update.split("\n") if line.strip().startswith("-")]
+                        if lines: ai_summary = lines[0]
                 
-                return content.strip(), "Initial commit via Git Auto"
+                return content.strip(), ai_summary
 
             except google_exceptions.ResourceExhausted as e:
                 err = str(e)

@@ -24,6 +24,7 @@ O **git_auto** é uma ferramenta de automação desenvolvida em Python que integ
 .
 ├── .env              # Variáveis de ambiente (API keys e tokens)
 ├── .gitignore        # Definição de arquivos ignorados pelo Git
+├── README.md         # Documentação do projeto
 └── release.py        # Script principal com a lógica da GUI, threads e integração Git/IA
 ```
 
@@ -63,14 +64,6 @@ Pillow==9.4.0
 - Refatoração do design dos cards de histórico: mudança para layout vertical com separação clara de blocos (Header, Status e Ação).
 - Inclusão de botão de remoção rápida na interface de histórico.
 - Otimização do fluxo da IA para documentação: o sistema agora diferencia a criação de um README do zero da adição de logs de alterações (*Changelog*), evitando redundância e processamento desnecessário ao atualizar a documentação.
-
-## Contribuição
-
-Contribuições são bem-vindas! Sinta-se à vontade para abrir uma *issue* ou enviar um *pull request*.
-
-## Licença
-
-Distribuído sob a licença MIT.
 
 ### 🔄 Atualização (08/06/2026)
 - Implementado sistema de visualização expandível no histórico de projetos, exibindo metadados do commit (hash, autor, mensagem) e um log detalhado de arquivos alterados (`git show --name-status`).
@@ -170,7 +163,6 @@ Distribuído sob a licença MIT.
 - Implementada nova aba de sincronização com funcionalidade de Auto-save pré-Pull.
 - Adicionado seletor de arquivos na interface de visualização de diferenças (Diff Viewer).
 - Adicionada opção de encerramento da aplicação no menu lateral.
-Isso é um teste de Sincronização!
 
 ### 🔄 Atualização (09/06/2026)
 - Implementado sistema de cache local para dados de perfil, repositórios e gráfico de contribuições.
@@ -196,3 +188,7 @@ Isso é um teste de Sincronização!
 ### 🔄 Atualização (09/06/2026)
 - Centralização de todos os arquivos de cache e dados no diretório /data.
 - Adição de delay de 2 segundos na atualização da lista de tarefas após ações de rede.
+
+### 🔄 Atualização (09/06/2026)
+- Refatorado sistema de geração de README para incluir a estrutura atual de arquivos do projeto.
+- Implementado gerador de árvore de arquivos com limite de profundidade para otimização de tokens da IA.
