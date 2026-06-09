@@ -424,6 +424,114 @@ class TimeMachineDialog(ctk.CTkToplevel):
         self.result = True
         self.destroy()
 
+class DiffViewerDialog(ctk.CTkToplevel):
+    def __init__(self, parent, diff_text):
+        super().__init__(parent)
+        self.title("🔍 Lente de Aumento - Diff Lado a Lado")
+        self.geometry("1200x700")
+        self.transient(parent)
+        self.grab_set()
+        self.configure(fg_color=C["bg"])
+        
+        # Header
+        ctk.CTkLabel(self, text="Diferenças Não Salvas", font=ctk.CTkFont("Segoe UI", 18, "bold"), text_color=C["text"]).pack(pady=(15, 5))
+        
+        # Titles frame
+        titles = ctk.CTkFrame(self, fg_color="transparent")
+        titles.pack(fill="x", padx=20, pady=(5, 5))
+        titles.grid_columnconfigure(0, weight=1)
+        titles.grid_columnconfigure(1, weight=1)
+        
+        ctk.CTkLabel(titles, text="🔴 Código Original (Remoções)", font=ctk.CTkFont("Segoe UI", 12, "bold"), text_color=C["red"]).grid(row=0, column=0)
+        ctk.CTkLabel(titles, text="🟢 Novo Código (Adições)", font=ctk.CTkFont("Segoe UI", 12, "bold"), text_color=C["green"]).grid(row=0, column=1)
+        
+        # Textboxes container
+        container = ctk.CTkFrame(self, fg_color="transparent")
+        container.pack(fill="both", expand=True, padx=20, pady=(0, 10))
+        container.grid_columnconfigure(0, weight=1)
+        container.grid_columnconfigure(1, weight=1)
+        container.grid_rowconfigure(0, weight=1)
+        
+        font_code = ctk.CTkFont("Consolas", 12)
+        
+        self.tb_left = ctk.CTkTextbox(container, font=font_code, fg_color=C["card"], text_color=C["text"], border_width=1, border_color=C["red_dark"], wrap="none")
+        self.tb_left.grid(row=0, column=0, sticky="nsew", padx=(0, 5))
+        
+        self.tb_right = ctk.CTkTextbox(container, font=font_code, fg_color=C["card"], text_color=C["text"], border_width=1, border_color=C["green_dark"], wrap="none")
+        self.tb_right.grid(row=0, column=1, sticky="nsew", padx=(5, 0))
+        
+        # Configure tags
+        for tb in [self.tb_left, self.tb_right]:
+            tb.tag_config("deletion", foreground="#ff6b6b", background="#3b1a1a")
+            tb.tag_config("addition", foreground="#2ecc71", background="#1a3b26")
+            tb.tag_config("header", foreground="#3498db")
+            tb.tag_config("info", foreground=C["muted"])
+            tb.tag_config("blank", foreground=C["bg"])
+            
+            # Bind sync scroll
+            tb.bind("<MouseWheel>", self.sync_scroll)
+        
+        self.insert_diff_side_by_side(diff_text)
+        self.tb_left.configure(state="disabled")
+        self.tb_right.configure(state="disabled")
+        
+        # Bottom bar
+        btn_close = ctk.CTkButton(self, text="Fechar Lente", width=120, height=36, font=ctk.CTkFont("Segoe UI", 12, "bold"), fg_color=C["card_border"], hover_color=C["muted"], text_color=C["text"], command=self.destroy)
+        btn_close.pack(pady=(10, 20))
+
+    def sync_scroll(self, event):
+        delta = int(-1 * (event.delta / 120))
+        self.tb_left._textbox.yview_scroll(delta, "units")
+        self.tb_right._textbox.yview_scroll(delta, "units")
+        return "break"
+        
+    def insert_diff_side_by_side(self, diff_text):
+        if not diff_text.strip():
+            self.tb_left.insert("end", " Nenhuma diferença encontrada.", "info")
+            self.tb_right.insert("end", " Nenhuma diferença encontrada.", "info")
+            return
+            
+        del_buf = []
+        add_buf = []
+        
+        def flush_buffers():
+            n = max(len(del_buf), len(add_buf))
+            for i in range(n):
+                dl = del_buf[i] if i < len(del_buf) else ""
+                al = add_buf[i] if i < len(add_buf) else ""
+                
+                if dl:
+                    self.tb_left.insert("end", dl + "\n", "deletion")
+                else:
+                    self.tb_left.insert("end", "\n", "blank")
+                    
+                if al:
+                    self.tb_right.insert("end", al + "\n", "addition")
+                else:
+                    self.tb_right.insert("end", "\n", "blank")
+            del_buf.clear()
+            add_buf.clear()
+            
+        lines = diff_text.split('\n')
+        for line in lines:
+            if line.startswith('diff --git') or line.startswith('+++') or line.startswith('---'):
+                flush_buffers()
+                self.tb_left.insert("end", "\n" + line + "\n", "header")
+                self.tb_right.insert("end", "\n" + line + "\n", "header")
+            elif line.startswith('@@'):
+                flush_buffers()
+                self.tb_left.insert("end", "\n" + line + "\n", "info")
+                self.tb_right.insert("end", "\n" + line + "\n", "info")
+            elif line.startswith('-'):
+                del_buf.append(line)
+            elif line.startswith('+'):
+                add_buf.append(line)
+            else: 
+                flush_buffers()
+                self.tb_left.insert("end", line + "\n")
+                self.tb_right.insert("end", line + "\n")
+        flush_buffers()
+
 class GitignoreDialog(ctk.CTkToplevel):
     def __init__(self, parent):
         super().__init__(parent)
@@ -1519,13 +1627,21 @@ class App(ctk.CTk):
                      font=ctk.CTkFont("Segoe UI", 11),
                      text_color=C["text_dim"]).pack(anchor="w")
 
+        self.btn_diff = ctk.CTkButton(
+            cu, text="🔍 Ver Diferenças", height=30,
+            font=ctk.CTkFont("Segoe UI", 12, "bold"),
+            fg_color="transparent", hover_color=C["card_border"], text_color=C["text_dim"],
+            border_width=1, border_color=C["card_border"],
+            command=self.open_diff_viewer)
+        self.btn_diff.grid(row=1, column=0, sticky="ew", padx=20, pady=(14, 0))
+
         self.btn_update = ctk.CTkButton(
             cu, text="Executar Fluxo  →", height=44,
             font=ctk.CTkFont("Segoe UI", 13, "bold"),
             fg_color=C["blue_dark"], hover_color=C["blue"],
             corner_radius=8, command=self.start_update_thread)
-        self.btn_update.grid(row=1, column=0, sticky="ew",
-                             padx=20, pady=(14, 18))
+        self.btn_update.grid(row=2, column=0, sticky="ew",
+                             padx=20, pady=(10, 18))
 
         # Card — Novo Projeto
         cn = ctk.CTkFrame(self.actions_frame, fg_color=C["card"], corner_radius=16,
@@ -1929,6 +2045,25 @@ class App(ctk.CTk):
                 self.log(f"[ERRO] Falha ao executar a Máquina do Tempo: {str(e)}", "error")
             finally:
                 os.chdir(original_cwd)
+
+    def open_diff_viewer(self):
+        repo = self.entry_folder.get().strip()
+        if not repo or not os.path.exists(os.path.join(repo, ".git")):
+            self._show_error("Esta pasta não é um repositório Git válido.")
+            return
+            
+        original_cwd = os.getcwd()
+        try:
+            os.chdir(repo)
+            self.run_command("git add -N .", check=False) # Adiciona arquivos não rastreados pro diff funcionar
+            diff_output = self.run_command("git diff", check=False)
+        except Exception as e:
+            diff_output = f"Erro ao gerar diff: {str(e)}"
+        finally:
+            os.chdir(original_cwd)
+            
+        dialog = DiffViewerDialog(self, diff_output)
+        self.wait_window(dialog)
 
     def generate_specific_gitignore(self, template_names, silent=False):
         base_ignores = "# Ambiente / SO\n.env\n.env.*\n!.env.example\n.DS_Store\nThumbs.db\ndesktop.ini\n\n# IDEs\n.vscode/\n.idea/\n\n"

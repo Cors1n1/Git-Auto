@@ -152,3 +152,7 @@ Distribuído sob a licença MIT.
 ### 🔄 Atualização (08/06/2026)
 - Refatorada exibição das informações de commit no dashboard.
 - Adicionada separação visual entre metadados e mensagem do commit.
+
+### 🔄 Atualização (08/06/2026)
+- Implementada classe `DiffViewerDialog` para visualização comparativa de alterações (side-by-side).
+- Adicionada funcionalidade de inspeção de diff via interface gráfica com scroll sincronizado.
