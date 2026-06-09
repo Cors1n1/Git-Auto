@@ -192,3 +192,7 @@ Isso é um teste de Sincronização!
 ### 🔄 Atualização (09/06/2026)
 - Adicionado gatilho de reinicialização (soft refresh) ao clicar no logo da aplicação.
 - Implementado método de recarga dinâmica para atualizar estados de views e repositórios.
+
+### 🔄 Atualização (09/06/2026)
+- Centralização de todos os arquivos de cache e dados no diretório /data.
+- Adição de delay de 2 segundos na atualização da lista de tarefas após ações de rede.

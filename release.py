@@ -52,12 +52,15 @@ APP_COLOR = os.getenv("APP_COLOR", "Azul")
 GITHUB_TOKEN = os.getenv("GITHUB_TOKEN", "")
 GITHUB_USERNAME = os.getenv("GITHUB_USERNAME", "")
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "")
-HISTORY_FILE = os.path.join(script_dir, "history.json")
-CACHE_PROFILE = os.path.join(script_dir, "profile_cache.json")
-CACHE_REPOS = os.path.join(script_dir, "repos_cache.json")
-CACHE_AVATAR = os.path.join(script_dir, "avatar_cache.png")
-CACHE_EVENTS = os.path.join(script_dir, "events_cache.json")
-CACHE_GRAPH = os.path.join(script_dir, "graph_cache.json")
+DATA_DIR = os.path.join(script_dir, "data")
+os.makedirs(DATA_DIR, exist_ok=True)
+
+HISTORY_FILE = os.path.join(DATA_DIR, "history.json")
+CACHE_PROFILE = os.path.join(DATA_DIR, "profile_cache.json")
+CACHE_REPOS = os.path.join(DATA_DIR, "repos_cache.json")
+CACHE_AVATAR = os.path.join(DATA_DIR, "avatar_cache.png")
+CACHE_EVENTS = os.path.join(DATA_DIR, "events_cache.json")
+CACHE_GRAPH = os.path.join(DATA_DIR, "graph_cache.json")
 
 if GEMINI_API_KEY:
     genai.configure(api_key=GEMINI_API_KEY)
@@ -733,7 +736,7 @@ class ReleaseManagerDialog(ctk.CTkToplevel):
                 token = os.environ.get("GITHUB_TOKEN", "")
                 if not token:
                     try:
-                        with open(os.path.join(os.path.dirname(__file__), "history.json"), "r", encoding="utf-8") as f:
+                        with open(HISTORY_FILE, "r", encoding="utf-8") as f:
                             data = json.load(f)
                             token = data.get("github_token", "")
                     except:
@@ -1937,7 +1940,7 @@ class IssuesView(ctk.CTkFrame):
                 r = requests.post(url, headers=headers, json={"title": title, "body": body})
                 if r.status_code == 201:
                     self.app.after(0, lambda: self.app.log(f"[SYS] Tarefa '{title}' criada com sucesso!", "success"))
-                    self.app.after(0, lambda: self.load_issues_for_repo(self.current_repo))
+                    self.app.after(2000, lambda: self.load_issues_for_repo(self.current_repo))
                 else:
                     self.app.after(0, lambda: self.app.log(f"[ERRO] Falha ao criar tarefa ({r.status_code})", "error"))
             except:
@@ -1956,7 +1959,7 @@ class IssuesView(ctk.CTkFrame):
                 r = requests.patch(url, headers=headers, json={"state": "closed"})
                 if r.status_code == 200:
                     self.app.after(0, lambda: self.app.log(f"[SYS] Tarefa #{issue_number} marcada como concluída!", "success"))
-                    self.app.after(0, lambda: self.load_issues_for_repo(self.current_repo))
+                    self.app.after(2000, lambda: self.load_issues_for_repo(self.current_repo))
             except:
                 pass
         threading.Thread(target=task, daemon=True).start()

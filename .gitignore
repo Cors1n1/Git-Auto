@@ -116,3 +116,5 @@ tmp/
 *_cache.json
 history.json
 avatar_cache.png
+
+data/
