@@ -3232,7 +3232,7 @@ class App(ctk.CTk):
         # Build project tree (max depth 2 to avoid huge tokens)
         def build_tree(dir_path, prefix="", depth=0):
             if depth > 2: return ""
-            ignored = {".git", "__pycache__", "node_modules", ".venv", "venv", "env", "dist", "build", "data"}
+            ignored = {".git", "__pycache__", "node_modules", ".venv", "venv", "env", "dist", "build"}
             try:
                 entries = [e for e in os.listdir(dir_path) if e not in ignored]
             except:
@@ -3243,19 +3243,35 @@ class App(ctk.CTk):
                 is_last = (i == len(entries) - 1)
                 tree_str += prefix + ("└── " if is_last else "├── ") + entry + "\n"
                 full_path = os.path.join(dir_path, entry)
-                if os.path.isdir(full_path):
+                if os.path.isdir(full_path) and entry != "data":
                     tree_str += build_tree(full_path, prefix + ("    " if is_last else "│   "), depth + 1)
             return tree_str
             
         tree = ".\n" + build_tree(os.getcwd())
         
+        deps_content = ""
+        if os.path.exists("requirements.txt"):
+            try:
+                with open("requirements.txt", "r", encoding="utf-8") as f:
+                    deps_content = "\n--- DEPENDÊNCIAS ATUAIS (requirements.txt) ---\n" + f.read()[:2000]
+            except: pass
+        elif os.path.exists("package.json"):
+            try:
+                with open("package.json", "r", encoding="utf-8") as f:
+                    import json
+                    pkg = json.load(f)
+                    deps = pkg.get("dependencies", {})
+                    deps_content = "\n--- DEPENDÊNCIAS ATUAIS (package.json) ---\n" + json.dumps(deps, indent=2)
+            except: pass
+        
         if not current_readme.strip():
             # README não existe ou está vazio: cria do zero
-            prompt = f"""Você é um desenvolvedor sênior. Crie um README.md curto e objetivo para este novo projeto, baseado no git diff inicial e na estrutura de arquivos abaixo.
+            prompt = f"""Você é um desenvolvedor sênior. Crie um README.md curto e objetivo para este novo projeto, baseado no git diff inicial, na estrutura de arquivos e nas dependências abaixo.
 Retorne APENAS o markdown final, sem blocos de código (```markdown).
 
 --- ESTRUTURA DE ARQUIVOS ---
 {tree}
+{deps_content}
 
 --- GIT DIFF ---
 {diff}
@@ -3263,13 +3279,14 @@ Retorne APENAS o markdown final, sem blocos de código (```markdown).
         else:
             # README já existe: atualiza estrutura e adiciona changelog
             prompt = f"""Você é um desenvolvedor sênior mantenedor deste projeto.
-Abaixo está o README ATUAL, a NOVA ESTRUTURA de pastas e o GIT DIFF com as mais recentes modificações de código.
+Abaixo está o README ATUAL, a NOVA ESTRUTURA de pastas, as DEPENDÊNCIAS e o GIT DIFF com as mais recentes modificações de código.
 
 SUA TAREFA É RETORNAR O README COMPLETO ATUALIZADO:
 1. Mantenha todo o histórico de atualizações antigas intacto.
 2. Atualize a seção de "Estrutura do Projeto" substituindo a antiga pela nova estrutura (pode adicionar breves comentários nos arquivos principais).
-3. Caso não exista a tag "## 📋 Histórico de Atualizações", crie-a no final do arquivo.
-4. Ao final do Histórico de Atualizações, adicione a nova atualização de hoje usando EXATAMENTE o formato estrito:
+3. Atualize a seção de "Dependências" (se existir) com base na lista de DEPENDÊNCIAS ATUAIS informada abaixo.
+4. Caso não exista a tag "## 📋 Histórico de Atualizações", crie-a no final do arquivo.
+5. Ao final do Histórico de Atualizações, adicione a nova atualização de hoje usando EXATAMENTE o formato estrito:
 
 ### 🔄 Atualização ({today})
 - [Resumo direto da ação 1 baseado no DIFF]
@@ -3279,6 +3296,7 @@ Retorne APENAS o texto markdown do README completo final, sem a tag ```markdown 
 
 --- NOVA ESTRUTURA DE ARQUIVOS ---
 {tree}
+{deps_content}
 
 --- GIT DIFF DAS ALTERAÇÕES ---
 {diff}

@@ -6,22 +6,23 @@
 O **git_auto** é uma ferramenta de automação desenvolvida em Python que integra a API do Google Gemini para auxiliar no gerenciamento de fluxos de trabalho Git. A ferramenta simplifica a criação de repositórios, geração de documentação (README.md) via IA e monitoramento de histórico através de uma interface gráfica intuitiva.
 
 - **Linguagem principal:** Python
-- **IA Generativa:** Utiliza o modelo `gemini-3.1-flash-lite` para processamento de contexto e geração de documentação.
+- **IA Generativa:** Utiliza o modelo `gemini-3.5-flash` para processamento de contexto e geração de documentação.
 - **Interface:** Desenvolvida com `CustomTkinter` para uma experiência moderna e temática em modo escuro.
 
 ## Funcionalidades
 
 - **Criação Assistida:** Criação de novos repositórios locais e remotos (GitHub) com um clique.
-- **Documentação Automática:** Gera ou atualiza o `README.md` baseando-se nas mudanças reais do código, suportando criação inicial ou adição incremental de logs de atualização.
-- **Interface de Abas:** Navegação integrada entre console de logs e histórico de pushes locais.
+- **Documentação Automática:** Gera ou atualiza o `README.md` baseando-se nas mudanças reais do código, incluindo a estrutura de pastas e dependências.
+- **Interface de Abas:** Navegação integrada entre console de logs, histórico de pushes, dashboard e gerenciamento de issues.
 - **Rastreabilidade:** Histórico persistente e visualização de logs de commits remotos.
-- **Workflow Integrado:** Automação de `add`, `commit` (com mensagens sugeridas) e `push` com confirmações in-line na UI.
+- **Workflow Integrado:** Automação de `add`, `commit` e `push` com revisão via IA.
 - **System Tray:** Suporte para minimização na bandeja do sistema para monitoramento contínuo.
 
 ## Estrutura do Projeto
 
 ```
 .
+├── data/             # Armazenamento de caches, logs e dados locais
 ├── .env              # Variáveis de ambiente (API keys e tokens)
 ├── .gitignore        # Definição de arquivos ignorados pelo Git
 ├── README.md         # Documentação do projeto
