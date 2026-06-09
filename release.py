@@ -2567,14 +2567,12 @@ class App(ctk.CTk):
         self.destroy()
         os._exit(0)
 
-    # ── ÁREA PRINCIPAL ────────────────────────────────────────────────────────
     def _build_main(self):
         self.main_frame = ctk.CTkFrame(self, fg_color="transparent")
         self.main_frame.grid(row=0, column=1, sticky="nsew", padx=28, pady=28)
         self.main_frame.grid_rowconfigure(2, weight=1)
         self.main_frame.grid_columnconfigure(0, weight=1)
 
-        # Barra de Navegação Superior Customizada
         self.nav_frame = ctk.CTkFrame(self.main_frame, fg_color="transparent")
         self.nav_frame.grid(row=0, column=0, sticky="ew", pady=(0, 20))
         

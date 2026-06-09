@@ -184,3 +184,7 @@ Isso é um teste de Sincronização!
 - Implementado módulo de gerenciamento de Tarefas (Issues) com integração via GitHub API.
 - Adicionada funcionalidade de sugestões rápidas para resolução de problemas utilizando o Gemini AI.
 - Atualizada interface de navegação com nova aba para controle e acompanhamento de Issues.
+
+### 🔄 Atualização (09/06/2026)
+- Removidos comentários redundantes no código da classe App.
+- Limpeza na estrutura do método _build_main para maior legibilidade.
