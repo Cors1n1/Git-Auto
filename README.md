@@ -175,3 +175,7 @@ Distribuído sob a licença MIT.
 - Adicionada opção de encerramento da aplicação no menu lateral.
 Isso é um teste de Sincronização!
 
+### 🔄 Atualização (09/06/2026)
+- Implementado sistema de cache local para dados de perfil, repositórios e gráfico de contribuições.
+- Adicionado painel de gerenciamento de colaboradores com suporte a convites via GitHub API.
+- Adicionado gráfico interativo de contribuições no Dashboard com visualização de detalhes por data.
