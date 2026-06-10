@@ -9,6 +9,14 @@ import subprocess
 import threading
 import time
 import datetime
+import ctypes
+
+try:
+    # Tell Windows this is a separate app, not just a python script, to fix the taskbar icon
+    myappid = 'corsini.gitauto.app.1.0'
+    ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
+except Exception:
+    pass
 
 import requests
 import customtkinter as ctk

@@ -91,30 +91,12 @@ Pillow
 ### 🔄 Atualização (08/06/2026)
 - Implementado sistema de visualização expandível no histórico de projetos e refatorado o fluxo de commit para utilizar mensagens dinâmicas via IA.
 - Ajustada a persistência de mensagens através de `.git/AUTO_MSG`.
-
-### 🔄 Atualização (08/06/2026)
 - Implementada interface para gerenciamento de credenciais (.env) e configurações via UI.
-
-### 🔄 Atualização (08/06/2026)
 - Implementado sistema de temas (Dracula, Nord, Matrix, etc) com persistência via .env.
-
-### 🔄 Atualização (08/06/2026)
 - Implementado auto-instalador de dependências.
-
-### 🔄 Atualização (08/06/2026)
 - Implementada interface de "Central de Clonagem" e navegação por abas.
-
-### 🔄 Atualização (08/06/2026)
 - Implementado `BranchManagerView` para controle de branches e "Máquina do Tempo" para resetar estados.
-
-### 🔄 Atualização (08/06/2026)
 - Implementado `DiffViewerDialog` para visualização comparativa (side-by-side) de alterações.
 
-### 🔄 Atualização (08/06/2026)
-- Implementado `ReleaseManagerDialog` para automação de tags e lançamentos no GitHub.
-
 ### 🔄 Atualização (10/06/2026)
-- Adicionado botão de integração rápida com VSCode na interface de workspace.
-- Melhorado o gerador de `.gitignore` para suportar inserção de novas regras sem sobrescrever o arquivo existente.
-- Adicionado logs detalhados (verbose mode) para rastreio de comandos Git.
-- Inclusão de créditos dinâmicos e link para repositório do desenvolvedor na barra lateral.
+- Adicionado suporte a `AppUserModelID` no Windows para correção do ícone da aplicação na barra de tarefas, garantindo que o `git_auto` seja identificado como um processo individual independente do interpretador Python.
