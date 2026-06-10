@@ -118,3 +118,8 @@ history.json
 avatar_cache.png
 
 data/
+
+
+# --- Regras Automáticas Adicionais (Git Auto) ---
+.flaskenv*
+.flasken

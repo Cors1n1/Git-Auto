@@ -70,7 +70,7 @@ class SettingsDialog(ctk.CTkToplevel):
     def __init__(self, master):
         super().__init__(master)
         self.title("Configurações do Git Auto")
-        self.geometry("450x520")
+        self.geometry("450x620")
         self.attributes("-topmost", True)
         self.resizable(False, False)
         self.grab_set()
@@ -147,7 +147,21 @@ class SettingsDialog(ctk.CTkToplevel):
         self.opt_color.pack(side="left", fill="x", expand=True)
         self.opt_color.set(cfg.APP_COLOR)
 
-        ctk.CTkButton(frame, text="Salvar Credenciais e Tema  ✓", height=36,
+        ctk.CTkFrame(frame, height=1, fg_color=C["card_border"]).pack(fill="x", pady=(5, 15))
+
+        ctk.CTkLabel(frame, text="Sistema",
+                     font=ctk.CTkFont("Segoe UI", 16, "bold"),
+                     text_color=C["text"]).pack(anchor="w", pady=(0, 10))
+        
+        self.sw_verbose = ctk.CTkSwitch(frame, text="Logs Detalhados (Mostrar comandos no painel)",
+                                        font=ctk.CTkFont("Segoe UI", 12),
+                                        progress_color=C["blue"], button_color=C["text"],
+                                        text_color=C["text_dim"])
+        self.sw_verbose.pack(anchor="w", pady=(0, 20))
+        if cfg.VERBOSE_LOGGING:
+            self.sw_verbose.select()
+
+        ctk.CTkButton(frame, text="Salvar Configurações  ✓", height=36,
                       font=ctk.CTkFont("Segoe UI", 12, "bold"),
                       fg_color=C["blue"], hover_color=C["blue_dark"],
                       command=self.save).pack(fill="x")
@@ -158,6 +172,7 @@ class SettingsDialog(ctk.CTkToplevel):
         gem_key    = self.entry_gemini.get().strip()
         app_theme  = self.opt_theme.get()
         app_color  = self.opt_color.get()
+        is_verbose = self.sw_verbose.get() == 1
 
         env_path = os.path.join(cfg.PROJECT_ROOT, ".env")
         with open(env_path, "w", encoding="utf-8") as f:
@@ -166,6 +181,7 @@ class SettingsDialog(ctk.CTkToplevel):
             f.write(f'GITHUB_TOKEN="{gh_tok}"\n')
             f.write(f'GITHUB_USERNAME="{gh_user}"\n')
             f.write(f'GEMINI_API_KEY="{gem_key}"\n')
+            f.write(f'VERBOSE_LOGGING="{is_verbose}"\n')
 
         # Update os.environ so subprocesses inherit new values
         os.environ["GITHUB_TOKEN"]    = gh_tok
@@ -173,11 +189,13 @@ class SettingsDialog(ctk.CTkToplevel):
         os.environ["GEMINI_API_KEY"]  = gem_key
         os.environ["APP_THEME"]       = app_theme
         os.environ["APP_COLOR"]       = app_color
+        os.environ["VERBOSE_LOGGING"] = str(is_verbose)
 
         # Update the shared config module globals
         cfg.GITHUB_TOKEN    = gh_tok
         cfg.GITHUB_USERNAME = gh_user
         cfg.GEMINI_API_KEY  = gem_key
+        cfg.VERBOSE_LOGGING = is_verbose
 
         if gem_key:
             genai.configure(api_key=gem_key)

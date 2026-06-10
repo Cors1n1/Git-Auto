@@ -352,7 +352,7 @@ class App(ctk.CTk):
         self.history_frame.grid(row=6, column=0, sticky="nsew", padx=10, pady=(0, 10))
 
         bottom_frame = ctk.CTkFrame(self.sidebar, fg_color="transparent")
-        bottom_frame.grid(row=7, column=0, sticky="ew", padx=20, pady=(10, 20))
+        bottom_frame.grid(row=7, column=0, sticky="ew", padx=20, pady=(10, 5))
         bottom_frame.grid_columnconfigure(0, weight=0)
         bottom_frame.grid_columnconfigure(1, weight=1)
         bottom_frame.grid_columnconfigure(2, weight=1)
@@ -377,6 +377,19 @@ class App(ctk.CTk):
             fg_color="transparent", hover_color="#8b0000", text_color="#ff4444",
             command=self.shutdown_app)
         self.btn_shutdown.grid(row=0, column=2, sticky="ew")
+
+        import base64
+        _c_txt = base64.b64decode(b"RGVzZW52b2x2aWRvIHBvciBDb3JzaW5p").decode("utf-8")
+        self.lbl_credits = ctk.CTkLabel(
+            self.sidebar, text=_c_txt, font=ctk.CTkFont("Segoe UI", 10),
+            text_color=C["muted"], cursor="hand2")
+        self.lbl_credits.grid(row=8, column=0, sticky="s", pady=(0, 20))
+        
+        def _open_creator(e):
+            import webbrowser
+            _u = base64.b64decode(b"aHR0cHM6Ly9naXRodWIuY29tL0NvcnMxbjE=").decode("utf-8")
+            webbrowser.open(_u)
+        self.lbl_credits.bind("<Button-1>", _open_creator)
 
     def shutdown_app(self):
         self.quit()
@@ -490,7 +503,7 @@ class App(ctk.CTk):
         ws_actions.grid(row=2, column=0, columnspan=3, sticky="ew", padx=20, pady=(0, 16))
 
         self.btn_release = ctk.CTkButton(
-            ws_actions, text="Lançar Versão", height=28, width=120,
+            ws_actions, text="Lançar Versão", height=28, width=110,
             font=ctk.CTkFont("Segoe UI", 11, "bold"),
             fg_color="transparent", hover_color=C["card"], text_color=C["orange"],
             border_width=1, border_color=C["card_border"],
@@ -498,15 +511,23 @@ class App(ctk.CTk):
         self.btn_release.pack(side="right", padx=(10, 0))
 
         self.btn_time_machine = ctk.CTkButton(
-            ws_actions, text="Máquina do Tempo", height=28, width=130,
+            ws_actions, text="Máquina do Tempo", height=28, width=120,
             font=ctk.CTkFont("Segoe UI", 11, "bold"),
             fg_color="transparent", hover_color=C["warn_bg"], text_color=C["red"],
             border_width=1, border_color=C["card_border"],
             command=self.discard_changes)
         self.btn_time_machine.pack(side="right", padx=(10, 0))
 
+        self.btn_vscode = ctk.CTkButton(
+            ws_actions, text="Abrir VSCode", height=28, width=110,
+            font=ctk.CTkFont("Segoe UI", 11, "bold"),
+            fg_color="transparent", hover_color=C["card"], text_color=C["blue"],
+            border_width=1, border_color=C["card_border"],
+            command=self.open_vscode)
+        self.btn_vscode.pack(side="right", padx=(10, 0))
+
         self.btn_gitignore = ctk.CTkButton(
-            ws_actions, text="Gerar .gitignore", height=28, width=120,
+            ws_actions, text="Gerar .gitignore", height=28, width=110,
             font=ctk.CTkFont("Segoe UI", 11, "bold"),
             fg_color="transparent", hover_color=C["card"], text_color=C["text_dim"],
             border_width=1, border_color=C["card_border"],
@@ -884,12 +905,18 @@ class App(ctk.CTk):
 
     # ── GIT HELPERS ───────────────────────────────────────────────────────────
     def run_command(self, command, check=True):
+        if cfg.VERBOSE_LOGGING:
+            self.log(f"Executando: {command}", "debug")
         try:
             result = subprocess.run(
                 command, shell=True, check=check,
                 capture_output=True, text=True, encoding="utf-8", errors="replace")
+            if cfg.VERBOSE_LOGGING:
+                self.log(f"  [OK] Comando concluído.", "success")
             return result.stdout.strip()
         except subprocess.CalledProcessError as e:
+            if cfg.VERBOSE_LOGGING:
+                self.log(f"  [FALHA] Código de erro: {e.returncode}", "error")
             if check:
                 self.log(f"[ERRO] {command}\n{e.stderr.strip()}", "error")
             return ""
@@ -898,14 +925,26 @@ class App(ctk.CTk):
         messagebox.showerror("Erro", msg)
 
     def ensure_gitignore(self):
-        if not os.path.exists(".gitignore"):
-            self.generate_specific_gitignore(["Generico"], silent=True)
+        all_templates = ["Python", "Node.js", "Java", "C++", "React/Next.js", "Godot", "Unity", "Generico"]
+        self.generate_specific_gitignore(all_templates, silent=True, append_missing=True)
 
     def open_gitignore_generator(self):
         dialog = GitignoreDialog(self)
         self.wait_window(dialog)
         if dialog.result:
             self.generate_specific_gitignore(dialog.result)
+
+    def open_vscode(self):
+        repo = self.entry_folder.get().strip()
+        if not repo or not os.path.exists(repo):
+            self._show_error("Selecione uma pasta válida primeiro.")
+            return
+        try:
+            subprocess.Popen(["code", "."], cwd=repo, shell=True)
+            if cfg.VERBOSE_LOGGING:
+                self.log(f"[SYS] VSCode aberto na pasta: {repo}", "success")
+        except Exception as e:
+            self._show_error(f"Erro ao abrir VSCode: {e}\nCertifique-se de que o comando 'code' está no PATH.")
 
     def discard_changes(self):
         repo = self.entry_folder.get().strip()
@@ -967,8 +1006,8 @@ class App(ctk.CTk):
         dialog = ReleaseManagerDialog(self, repo)
         self.wait_window(dialog)
 
-    def generate_specific_gitignore(self, template_names, silent=False):
-        base_ignores = ("# Ambiente / SO\n.env\n.env.*\n!.env.example\n.DS_Store\n"
+    def generate_specific_gitignore(self, template_names, silent=False, append_missing=False):
+        base_ignores = ("# Ambiente / SO\n.env\n.env.*\n.flaskenv*\n.flasken\n!.env.example\n.DS_Store\n"
                         "Thumbs.db\ndesktop.ini\n\n# IDEs\n.vscode/\n.idea/\n\n")
         templates = {
             "Python":      "# Python\n__pycache__/\n*.py[cod]\n*$py.class\nvenv/\n.venv/\nenv/\n.env/\nbuild/\ndist/\n*.egg-info/\n*.log\n",
@@ -983,18 +1022,46 @@ class App(ctk.CTk):
         selected = "\n".join(templates.get(t, "") for t in template_names)
         content  = base_ignores + (selected if selected.strip() else templates["Generico"])
         path = self.entry_folder.get()
+        
         if not path or not os.path.exists(path):
             if not silent:
                 self.log("[ERRO] Diretório inválido para gerar .gitignore.", "error")
             return
+            
+        filepath = os.path.join(path, ".gitignore")
+        
         try:
-            with open(os.path.join(path, ".gitignore"), "w", encoding="utf-8") as f:
-                f.write(content)
-            if not silent:
-                self.log(f"[SYS] .gitignore ({', '.join(template_names)}) gerado com sucesso.", "success")
+            if append_missing and os.path.exists(filepath):
+                with open(filepath, "r", encoding="utf-8") as f:
+                    existing_content = f.read()
+                
+                existing_rules = set(line.strip() for line in existing_content.split("\n") 
+                                     if line.strip() and not line.startswith("#"))
+                
+                to_append = ""
+                added_any = False
+                for line in content.split("\n"):
+                    clean = line.strip()
+                    if clean and not clean.startswith("#"):
+                        if clean not in existing_rules:
+                            to_append += clean + "\n"
+                            added_any = True
+                            existing_rules.add(clean)
+                
+                if added_any:
+                    to_append = "\n\n# --- Regras Automáticas Adicionais (Git Auto) ---\n" + to_append
+                    with open(filepath, "a", encoding="utf-8") as f:
+                        f.write(to_append)
+                    if not silent:
+                        self.log("[SYS] .gitignore existente atualizado com regras de segurança.", "success")
+            else:
+                with open(filepath, "w", encoding="utf-8") as f:
+                    f.write(content)
+                if not silent:
+                    self.log(f"[SYS] .gitignore gerado com sucesso.", "success")
         except Exception as e:
             if not silent:
-                self.log(f"[ERRO] Falha ao criar .gitignore: {e}", "error")
+                self.log(f"[ERRO] Falha ao criar/atualizar .gitignore: {e}", "error")
 
     def get_code_changes(self):
         self.ensure_gitignore()
@@ -1054,12 +1121,17 @@ class App(ctk.CTk):
             "auto-configuração. Se sim, documente que a instalação/configuração é AUTOMÁTICA.\n"
         )
 
+        # Prevenção contra Payload Too Large / Limites de Token
+        safe_diff = diff[:8000] + "\n... [diff truncado]" if len(diff) > 8000 else diff
+        safe_tree = tree[:4000] + "\n... [árvore truncada]" if len(tree) > 4000 else tree
+        safe_readme = current_readme[:4000] + "\n... [readme truncado]" if len(current_readme) > 4000 else current_readme
+
         if not current_readme.strip():
             prompt = (
                 f"Você é um desenvolvedor sênior. Crie um README.md curto e objetivo para este "
                 f"novo projeto, baseado no git diff inicial, na estrutura de arquivos e nas dependências abaixo.\n"
                 f"Retorne APENAS o markdown final, sem blocos de código (```markdown).\n{auto_setup_rule}\n"
-                f"--- ESTRUTURA DE ARQUIVOS ---\n{tree}{deps_content}\n--- GIT DIFF ---\n{diff}\n"
+                f"--- ESTRUTURA DE ARQUIVOS ---\n{safe_tree}{deps_content}\n--- GIT DIFF ---\n{safe_diff}\n"
             )
         else:
             prompt = (
@@ -1071,8 +1143,8 @@ class App(ctk.CTk):
                 f"4. Crie a tag '## 📋 Histórico de Atualizações' se não existir.\n"
                 f"5. Adicione:\n\n### 🔄 Atualização ({today})\n- [Resumo da ação]\n\n"
                 f"Retorne APENAS o markdown final.\n"
-                f"--- NOVA ESTRUTURA ---\n{tree}{deps_content}\n"
-                f"--- GIT DIFF ---\n{diff}\n--- README ATUAL ---\n{current_readme}\n"
+                f"--- NOVA ESTRUTURA ---\n{safe_tree}{deps_content}\n"
+                f"--- GIT DIFF ---\n{safe_diff}\n--- README ATUAL ---\n{safe_readme}\n"
             )
 
         retry_delays = [15, 30, 60, 120]
@@ -1503,6 +1575,19 @@ class App(ctk.CTk):
                 self.run_command("git init")
                 self.log("[GIT] Repositório local inicializado.", "info")
 
+            diff = self.get_code_changes()
+            new_readme, ai_summary = self.generate_readme(diff)
+            if not new_readme:
+                new_readme, ai_summary = self.generate_readme_fallback()
+            if not new_readme:
+                self.log("[ERRO] Não foi possível gerar README. Abortando.", "error")
+                return
+
+            final_commit_msg = self.ask_inline_commit_preview(ai_summary, title="🚀 Finalizar Setup")
+            if not final_commit_msg:
+                self.log("[SYS] Setup cancelado pelo usuário. Repositório no GitHub não foi criado.", "warn")
+                return
+
             headers = {"Authorization": f"Bearer {cfg.GITHUB_TOKEN}",
                        "Accept": "application/vnd.github.v3+json"}
             payload = {"name":        repo_name,
@@ -1525,23 +1610,11 @@ class App(ctk.CTk):
             else:
                 msg = resp.json().get("message", "Erro desconhecido")
                 err = resp.json().get("errors", "")
-                self.log(f"[GITHUB] Erro: {msg} | {err}", "error")
+                self.log(f"[GITHUB] Erro ao criar repo: {msg} | {err}", "error")
                 return
 
-            diff = self.get_code_changes()
-            new_readme, ai_summary = self.generate_readme(diff)
-            if not new_readme:
-                new_readme, ai_summary = self.generate_readme_fallback()
-            if not new_readme:
-                self.log("[ERRO] Não foi possível gerar README. Abortando.", "error")
-                return
-
-            final_commit_msg = self.ask_inline_commit_preview(ai_summary, title="🚀 Finalizar Setup")
-            if final_commit_msg:
-                with open("README.md", "w", encoding="utf-8") as f:
-                    f.write(new_readme + "\n")
-                self.execute_workflow(path, commit_message=final_commit_msg)
-            else:
-                self.log("[SYS] Upload cancelado pelo usuário.", "info")
+            with open("README.md", "w", encoding="utf-8") as f:
+                f.write(new_readme + "\n")
+            self.execute_workflow(path, commit_message=final_commit_msg)
         finally:
             self.set_processing_state(False)

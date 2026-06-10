@@ -19,6 +19,7 @@ APP_COLOR       = os.getenv("APP_COLOR", "Azul")
 GITHUB_TOKEN    = os.getenv("GITHUB_TOKEN", "")
 GITHUB_USERNAME = os.getenv("GITHUB_USERNAME", "")
 GEMINI_API_KEY  = os.getenv("GEMINI_API_KEY", "")
+VERBOSE_LOGGING = os.getenv("VERBOSE_LOGGING", "False").lower() == "true"
 
 # ── Caminhos de dados ──────────────────────────────────────────────────────────
 DATA_DIR      = os.path.join(PROJECT_ROOT, "data")

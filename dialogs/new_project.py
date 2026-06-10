@@ -14,7 +14,7 @@ class NewProjectDialog(ctk.CTkToplevel):
         super().__init__(parent)
         self.result = None
         self.title("Novo Repositório")
-        self.geometry("480x340")
+        self.geometry("480x380")
         self.resizable(False, False)
         self.attributes("-topmost", True)
         self.grab_set()
