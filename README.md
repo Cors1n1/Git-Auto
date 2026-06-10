@@ -23,14 +23,14 @@ O **git_auto** é uma ferramenta de automação desenvolvida em Python que integ
 
 ```
 .
-├── app/
+├── app
 │   ├── __init__.py
 │   ├── app.py
 │   ├── config.py
 │   ├── history.py
 │   └── theme.py
-├── data/
-├── dialogs/
+├── data
+├── dialogs
 │   ├── __init__.py
 │   ├── collaborators.py
 │   ├── diff_viewer.py
@@ -41,13 +41,13 @@ O **git_auto** é uma ferramenta de automação desenvolvida em Python que integ
 │   ├── release_manager.py
 │   ├── settings.py
 │   └── time_machine.py
-├── views/
+├── views
 │   ├── __init__.py
 │   ├── branch_view.py
 │   ├── clone_view.py
 │   ├── dashboard_view.py
 │   └── issues_view.py
-├── widgets/
+├── widgets
 │   ├── __init__.py
 │   └── tooltip.py
 ├── .env
@@ -144,3 +144,4 @@ Pillow
 - Refatoração completa da estrutura do projeto para um formato modular (pacotes `app`, `views`, `dialogs`, `widgets`).
 - Migração do script monolítico `release.py` para um sistema de arquivos organizado sob `main.py`.
 - Melhoria na escalabilidade do código fonte para facilitar a manutenção por desenvolvedores seniores.
+- Implementada rotina de minimização para bandeja do sistema ao fechar a janela principal (`WM_DELETE_WINDOW`).

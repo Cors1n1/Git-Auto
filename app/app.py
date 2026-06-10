@@ -48,6 +48,7 @@ class App(ctk.CTk):
         self.after(200, lambda: self.winfo_exists() and set_title_bar_color(self, C["bg"], C["text"]))
         self.grid_rowconfigure(0, weight=1)
         self.grid_columnconfigure(1, weight=1)
+        self.protocol("WM_DELETE_WINDOW", self.hide_to_tray)
 
         self._build_sidebar()
         self._build_main()
