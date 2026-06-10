@@ -23,23 +23,49 @@ O **git_auto** é uma ferramenta de automação desenvolvida em Python que integ
 
 ```
 .
-├── data/             # Armazenamento de caches, logs, ícones e dados locais
-├── .env              # Variáveis de ambiente (gerenciado via GUI)
-├── .gitignore        # Definição de arquivos ignorados pelo Git
-├── Git Auto.lnk      # Atalho para execução da aplicação
-├── README.md         # Documentação atualizada do projeto
-└── release.py        # Script principal: lógica da GUI, threads, screensaver e auto-configuração
+├── app/
+│   ├── __init__.py
+│   ├── app.py
+│   ├── config.py
+│   ├── history.py
+│   └── theme.py
+├── data/
+├── dialogs/
+│   ├── __init__.py
+│   ├── collaborators.py
+│   ├── diff_viewer.py
+│   ├── gitignore_dialog.py
+│   ├── history_dialog.py
+│   ├── new_project.py
+│   ├── readme_dialog.py
+│   ├── release_manager.py
+│   ├── settings.py
+│   └── time_machine.py
+├── views/
+│   ├── __init__.py
+│   ├── branch_view.py
+│   ├── clone_view.py
+│   ├── dashboard_view.py
+│   └── issues_view.py
+├── widgets/
+│   ├── __init__.py
+│   └── tooltip.py
+├── .env
+├── .gitignore
+├── Git Auto.lnk
+├── README.md
+└── main.py
 ```
 
 ## Dependências
 
 ```
-google-generativeai==0.4.1
-python-dotenv==1.0.1
-requests==2.31.0
-customtkinter==5.2.2
-pystray==0.19.0
-Pillow==9.4.0
+customtkinter
+google-generativeai
+python-dotenv
+requests
+pystray
+Pillow
 ```
 
 ## Como Usar
@@ -51,9 +77,9 @@ Pillow==9.4.0
    ```
 
 2. **Execução:**
-   - Execute `release.py` diretamente ou utilize o atalho `Git Auto.lnk`.
+   - Execute `main.py` diretamente ou utilize o atalho `Git Auto.lnk`.
 
-**Configuração Automática:** O projeto possui mecanismos de auto-instalação e auto-configuração. Ao executar o script pela primeira vez, as dependências serão instaladas automaticamente e a interface solicitará os tokens necessários. Não é necessário realizar configurações manuais.
+**Configuração Automática:** O projeto possui mecanismos de auto-instalação e auto-configuração. Ao executar o script pela primeira vez, as dependências serão instaladas automaticamente e a interface solicitará os tokens necessários. A configuração é **AUTOMÁTICA**.
 
 ## 📋 Histórico de Atualizações
 
@@ -72,7 +98,7 @@ Pillow==9.4.0
 - Implementado sistema de temas (Dracula, Nord, Matrix, etc) com persistência via .env.
 
 ### 🔄 Atualização (08/06/2026)
-- Implementado auto-instalador de dependências em `release.py`.
+- Implementado auto-instalador de dependências.
 
 ### 🔄 Atualização (08/06/2026)
 - Implementada interface de "Central de Clonagem" e navegação por abas.
@@ -99,19 +125,22 @@ Pillow==9.4.0
 
 ### 🔄 Atualização (09/06/2026)
 - Implementada prevenção de múltiplas instâncias usando Mutex e PID.
-- Adicionado `Git Auto.vbs` para execução silenciosa e script de foco automático na janela principal.
 
 ### 🔄 Atualização (09/06/2026)
-- Substituído o script auxiliar `.vbs` por um atalho `.lnk` para melhor compatibilidade.
 - Otimização do carregamento de ícones na interface e na bandeja do sistema.
 
 ### 🔄 Atualização (09/06/2026)
-- Refatorada paleta de cores com novos temas (GitHub, VSCode Modern, Vercel, etc.) e ajuste fino de contraste.
-- Atualizado o sistema de gestão de colaboradores com novos níveis de permissão e interface de edição integrada.
+- Refatorada paleta de cores com novos temas e ajuste fino de contraste.
+- Atualizado o sistema de gestão de colaboradores com novos níveis de permissão.
 - Implementada validação de segurança na "Máquina do Tempo" exigindo confirmação nominal da pasta.
-- Adicionada funcionalidade de comentários, edição e fechamento de tarefas (issues) diretamente na interface.
+- Adicionada funcionalidade de comentários, edição e fechamento de tarefas (issues).
 
 ### 🔄 Atualização (09/06/2026)
 - Adicionado sistema de proteção de tela (screensaver) animado após 15 minutos de inatividade.
 - Adicionado suporte para adicionar projetos Git locais ao histórico via interface.
-- Refatorada a barra lateral para incluir controles de acesso rápido (add, screensaver, configuração e saída).
+- Refatorada a barra lateral para incluir controles de acesso rápido.
+
+### 🔄 Atualização (10/06/2026)
+- Refatoração completa da estrutura do projeto para um formato modular (pacotes `app`, `views`, `dialogs`, `widgets`).
+- Migração do script monolítico `release.py` para um sistema de arquivos organizado sob `main.py`.
+- Melhoria na escalabilidade do código fonte para facilitar a manutenção por desenvolvedores seniores.
