@@ -1171,11 +1171,11 @@ class App(ctk.CTk):
             prompt = (
                 f"Você é um desenvolvedor sênior mantenedor deste projeto.\n{auto_setup_rule}\n"
                 f"SUA TAREFA É RETORNAR O README COMPLETO ATUALIZADO:\n"
-                f"1. Mantenha todo o histórico de atualizações antigas intacto.\n"
+                f"1. IMPORTANTE: Mantenha TODO o 'Histórico de Atualizações' antigo INTACTO. Copie exatamente como está, sem deletar nenhum bullet-point (-) ou resumir.\n"
                 f"2. Atualize a seção 'Estrutura do Projeto'.\n"
                 f"3. Atualize a seção 'Dependências' se existir.\n"
                 f"4. Crie a tag '## 📋 Histórico de Atualizações' se não existir.\n"
-                f"5. Adicione:\n\n### 🔄 Atualização ({today})\n- [Resumo da ação]\n\n"
+                f"5. Adicione no topo do histórico:\n\n### 🔄 Atualização ({today})\n- [Resumo da ação]\n\n"
                 f"Retorne APENAS o markdown final.\n"
                 f"--- NOVA ESTRUTURA ---\n{safe_tree}{deps_content}\n"
                 f"--- GIT DIFF ---\n{safe_diff}\n--- README ATUAL ---\n{safe_readme}\n"
