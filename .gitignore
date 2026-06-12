@@ -123,3 +123,12 @@ data/
 # --- Regras Automáticas Adicionais (Git Auto) ---
 .flaskenv*
 .flasken
+
+
+# --- Regras Automáticas Adicionais (Git Auto) ---
+*_token.json
+*token*.json
+secrets.json
+credentials.json
+*.pem
+*.key

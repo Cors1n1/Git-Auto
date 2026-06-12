@@ -19,6 +19,7 @@ O **git_auto** é uma ferramenta de automação desenvolvida em Python que integ
 - **System Tray:** Suporte para minimização na bandeja do sistema para monitoramento contínuo.
 - **Integração VSCode:** Abertura rápida do ambiente de desenvolvimento diretamente pelo diretório do projeto.
 - **Gestão Gitignore:** Gerador inteligente com suporte a múltiplos templates e integração automática.
+- **Segurança:** Módulo de limpeza automática para remoção de arquivos sensíveis e credenciais.
 
 ## Estrutura do Projeto
 
@@ -47,7 +48,8 @@ O **git_auto** é uma ferramenta de automação desenvolvida em Python que integ
 │   ├── branch_view.py
 │   ├── clone_view.py
 │   ├── dashboard_view.py
-│   └── issues_view.py
+│   ├── issues_view.py
+│   └── security_view.py
 ├── widgets
 │   ├── __init__.py
 │   └── tooltip.py
@@ -99,4 +101,11 @@ Pillow
 - Implementado `DiffViewerDialog` para visualização comparativa (side-by-side) de alterações.
 
 ### 🔄 Atualização (10/06/2026)
-- Adicionado suporte a `AppUserModelID` no Windows para correção do ícone da aplicação na barra de tarefas, garantindo que o `git_auto` seja identificado como um processo individual independente do interpretador Python.
+- Adicionado suporte a `AppUserModelID` no Windows para correção do ícone da aplicação na barra de tarefas.
+
+### 🔄 Atualização (12/06/2026)
+- **Segurança:** Adicionado `SecurityView` para limpeza de arquivos sensíveis e tokens.
+- **Network:** Implementado DNS Monkey Patch para bypass de bloqueios de ISP em conexões com a API do GitHub.
+- **IA:** Migração para o endpoint `gemini-3.1-flash-lite` com sistema de retry robusto para lidar com Rate Limits (429).
+- **Gitignore:** Adicionadas regras automáticas para bloqueio de arquivos de credenciais e chaves (.pem, .key, etc).
+- **Performance:** Otimização na inserção de logs no console e refatoração do layout dos cards de workspace.

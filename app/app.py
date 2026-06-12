@@ -11,6 +11,17 @@ import time
 import datetime
 import ctypes
 
+# --- DNS MONKEY PATCH PARA BYPASS DE BLOQUEIO DE ISP ---
+from urllib3.util import connection
+_orig_create_connection = connection.create_connection
+def patched_create_connection(address, *args, **kwargs):
+    host, port = address
+    if host == 'api.github.com':
+        host = '140.82.114.5'
+    return _orig_create_connection((host, port), *args, **kwargs)
+connection.create_connection = patched_create_connection
+# -------------------------------------------------------
+
 try:
     # Tell Windows this is a separate app, not just a python script, to fix the taskbar icon
     myappid = 'corsini.gitauto.app.1.0'
@@ -41,6 +52,7 @@ from dialogs.diff_viewer import DiffViewerDialog
 from dialogs.gitignore_dialog import GitignoreDialog
 from dialogs.release_manager import ReleaseManagerDialog
 from dialogs.readme_dialog import ProjectReadmeDialog
+from views.security_view import SecurityView
 
 
 class App(ctk.CTk):
@@ -450,6 +462,9 @@ class App(ctk.CTk):
         self.btn_nav_issues = _nav_btn("Tarefas", lambda: self.switch_main_view("issues"))
         self.btn_nav_issues.pack(side="left", padx=(0, 10))
 
+        self.btn_nav_security = _nav_btn("Limpeza", lambda: self.switch_main_view("security"))
+        self.btn_nav_security.pack(side="left", padx=(0, 10))
+
         # Content container
         self.content_frame = ctk.CTkFrame(self.main_frame, fg_color="transparent")
         self.content_frame.grid(row=2, column=0, sticky="nsew")
@@ -478,13 +493,17 @@ class App(ctk.CTk):
         self.issues_view = IssuesView(self.tab_issues, self)
         self.issues_view.pack(fill="both", expand=True)
 
+        self.tab_security = ctk.CTkFrame(self.content_frame, fg_color="transparent")
+        self.security_view = SecurityView(self.tab_security, self)
+        self.security_view.pack(fill="both", expand=True)
+
         self.tab_pull = ctk.CTkFrame(self.content_frame, fg_color="transparent")
         self._build_pull_tab()
 
-        # ── Workspace card ────────────────────────────────────────────────────
-        ws = ctk.CTkFrame(self.tab_push, fg_color=C["card"], corner_radius=16,
+        # ── Workspace card (Global across all tabs) ───────────────────────────
+        ws = ctk.CTkFrame(self.main_frame, fg_color=C["card"], corner_radius=16,
                           border_width=1, border_color=C["card_border"])
-        ws.grid(row=0, column=0, sticky="ew", pady=(0, 18))
+        ws.grid(row=1, column=0, sticky="ew", pady=(0, 18))
         ws.grid_columnconfigure(1, weight=1)
 
         ctk.CTkLabel(ws, text="DIRETÓRIO DO PROJETO",
@@ -544,7 +563,7 @@ class App(ctk.CTk):
 
         # ── Action cards ──────────────────────────────────────────────────────
         self.actions_frame = ctk.CTkFrame(self.tab_push, fg_color="transparent")
-        self.actions_frame.grid(row=1, column=0, sticky="ew", pady=(0, 18))
+        self.actions_frame.grid(row=0, column=0, sticky="ew", pady=(0, 18))
         self.actions_frame.grid_columnconfigure((0, 1), weight=1)
 
         # Card Atualizar
@@ -898,8 +917,15 @@ class App(ctk.CTk):
             "debug":   ("·", C["muted"]),
         }
         sym, _ = prefix_map.get(level, ("▸", C["console_fg"]))
-        self.console.insert("end", f"[{ts}] {sym}  {text}\n")
-        self.console.see("end")
+        
+        def _do_log():
+            try:
+                self.console.insert("end", f"[{ts}] {sym}  {text}\n")
+                self.console.see("end")
+            except Exception:
+                pass
+                
+        self.after(0, _do_log)
 
     def clear_log(self):
         self.console.delete("1.0", "end")
@@ -1016,7 +1042,7 @@ class App(ctk.CTk):
 
     def generate_specific_gitignore(self, template_names, silent=False, append_missing=False):
         base_ignores = ("# Ambiente / SO\n.env\n.env.*\n.flaskenv*\n.flasken\n!.env.example\n.DS_Store\n"
-                        "Thumbs.db\ndesktop.ini\n\n# IDEs\n.vscode/\n.idea/\n\n")
+                        "Thumbs.db\ndesktop.ini\n\n# Arquivos Sensíveis\n*_token.json\n*token*.json\nsecrets.json\ncredentials.json\n*.pem\n*.key\n\n# IDEs\n.vscode/\n.idea/\n\n")
         templates = {
             "Python":      "# Python\n__pycache__/\n*.py[cod]\n*$py.class\nvenv/\n.venv/\nenv/\n.env/\nbuild/\ndist/\n*.egg-info/\n*.log\n",
             "Node.js":     "# Node\nnode_modules/\nnpm-debug.log\nyarn-error.log\nbuild/\ndist/\ncoverage/\n",
@@ -1158,8 +1184,29 @@ class App(ctk.CTk):
         retry_delays = [15, 30, 60, 120]
         for attempt in range(4):
             try:
-                response = cfg.model.generate_content(prompt)
-                content  = response.text.strip()
+                import requests
+                url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-lite:generateContent?key={cfg.GEMINI_API_KEY}"
+                payload = {"contents": [{"parts": [{"text": prompt}]}]}
+                resp = requests.post(url, json=payload, timeout=60)
+                
+                if resp.status_code != 200:
+                    err_msg = resp.json().get("error", {}).get("message", "Unknown API error")
+                    if "exhausted" in err_msg.lower() or "quota" in err_msg.lower() or resp.status_code == 429:
+                        wait = retry_delays[attempt] if attempt < len(retry_delays) else 120
+                        self.log(f"[IA] Rate-limit. Tentativa {attempt + 1}/4 — aguardando {wait}s…", "warn")
+                        if attempt < 3:
+                            time.sleep(wait)
+                            continue
+                        else:
+                            self.log("Limite persistente. Usando fallback local.", "warn")
+                            return None, None
+                    else:
+                        self.log(f"[IA] Erro da API ({resp.status_code}): {err_msg}", "error")
+                        return None, None
+
+                data = resp.json()
+                content = data["candidates"][0]["content"]["parts"][0]["text"].strip()
+                
                 for marker in ("```markdown", "```"):
                     if content.startswith(marker):
                         content = content[len(marker):]
@@ -1176,21 +1223,6 @@ class App(ctk.CTk):
                             ai_summary = lines[0]
                 return content.strip(), ai_summary
 
-            except google_exceptions.ResourceExhausted as e:
-                err = str(e)
-                if "PerDay" in err or "per_day" in err.lower():
-                    self.log("⚠ Cota diária de IA esgotada. Usando fallback local…", "warn")
-                    return None, None
-                wait = retry_delays[attempt] if attempt < len(retry_delays) else 120
-                self.log(f"[IA] Rate-limit. Tentativa {attempt + 1}/4 — aguardando {wait}s…", "warn")
-                if attempt < 3:
-                    time.sleep(wait)
-                else:
-                    self.log("Limite persistente. Usando fallback local.", "warn")
-                    return None, None
-            except google_exceptions.GoogleAPIError as e:
-                self.log(f"[IA] Erro API: {type(e).__name__} — {e}", "error")
-                return None, None
             except Exception as e:
                 self.log(f"[IA] Erro inesperado: {type(e).__name__} — {e}", "error")
                 return None, None
@@ -1280,11 +1312,10 @@ class App(ctk.CTk):
             self.save_to_history(project_path, branch=branch, status="erro")
             return False
 
-    # ── INLINE CONFIRMATIONS ──────────────────────────────────────────────────
     def ask_inline_confirmation(self, title, message):
         self._confirm_result = None
         self._confirm_event  = threading.Event()
-        self.after(0, self._show_inline_confirmation, title, message)
+        self.after(0, lambda: self._show_inline_confirmation(title, message))
         self._confirm_event.wait()
         return self._confirm_result
 
@@ -1321,45 +1352,53 @@ class App(ctk.CTk):
     def ask_inline_commit_preview(self, suggested_commit, title="📝 Revisão do Commit"):
         self._preview_result = None
         self._preview_event  = threading.Event()
-        self.after(0, self._show_inline_commit_preview, title, suggested_commit)
+        self.after(0, lambda: self._show_inline_commit_preview(title, suggested_commit))
         self._preview_event.wait()
         return self._preview_result
 
     def _show_inline_commit_preview(self, title, suggested_commit):
-        self.actions_frame.grid_forget()
-        self.preview_frame = ctk.CTkFrame(self.main_frame, fg_color=C["card"],
-                                          corner_radius=12, border_width=1,
-                                          border_color=C["blue"])
-        self.preview_frame.grid(row=1, column=0, sticky="ew", pady=(0, 18))
-        self.preview_frame.grid_columnconfigure(0, weight=1)
-        ctk.CTkLabel(self.preview_frame, text=title,
-                     font=ctk.CTkFont("Segoe UI", 16, "bold"),
-                     text_color=C["blue"]).pack(pady=(15, 5))
-        ctk.CTkLabel(self.preview_frame,
-                     text="A IA sugeriu a mensagem abaixo. Edite se desejar antes de enviar:",
-                     font=ctk.CTkFont("Segoe UI", 13),
-                     text_color=C["text"]).pack(pady=(0, 10))
-        self.commit_textbox = ctk.CTkTextbox(
-            self.preview_frame, height=80, font=ctk.CTkFont("Consolas", 13),
-            fg_color=C["input_bg"], border_color=C["card_border"], border_width=1,
-            text_color=C["text"])
-        self.commit_textbox.pack(fill="x", padx=20, pady=(0, 15))
-        self.commit_textbox.insert("0.0", suggested_commit)
-        btns = ctk.CTkFrame(self.preview_frame, fg_color="transparent")
-        btns.pack(pady=(0, 15))
-        ctk.CTkButton(btns, text="Cancelar", width=110, height=36,
-                      font=ctk.CTkFont("Segoe UI", 12, "bold"),
-                      fg_color=C["card_border"], hover_color=C["red_dark"], text_color=C["text"],
-                      command=lambda: self._resolve_preview(None)).pack(side="left", padx=10)
-        ctk.CTkButton(btns, text="Confirmar Push", width=150, height=36,
-                      font=ctk.CTkFont("Segoe UI", 12, "bold"),
-                      fg_color=C["green_dark"], hover_color=C["green"], text_color="white",
-                      command=lambda: self._resolve_preview(
-                          self.commit_textbox.get("0.0", "end").strip())).pack(side="left", padx=10)
+        try:
+            self.actions_frame.grid_forget()
+            self.preview_frame = ctk.CTkFrame(self.main_frame, fg_color=C["card"],
+                                              corner_radius=12, border_width=1,
+                                              border_color=C["blue"])
+            self.preview_frame.grid(row=1, column=0, sticky="ew", pady=(0, 18))
+            self.preview_frame.grid_columnconfigure(0, weight=1)
+            ctk.CTkLabel(self.preview_frame, text=title,
+                         font=ctk.CTkFont("Segoe UI", 16, "bold"),
+                         text_color=C["blue"]).pack(pady=(15, 5))
+            ctk.CTkLabel(self.preview_frame,
+                         text="A IA sugeriu a mensagem abaixo. Edite se desejar antes de enviar:",
+                         font=ctk.CTkFont("Segoe UI", 13),
+                         text_color=C["text"]).pack(pady=(0, 10))
+            self.commit_textbox = ctk.CTkTextbox(
+                self.preview_frame, height=80, font=ctk.CTkFont("Consolas", 13),
+                fg_color=C["input_bg"], border_color=C["card_border"], border_width=1,
+                text_color=C["text"])
+            self.commit_textbox.pack(fill="x", padx=20, pady=(0, 15))
+            self.commit_textbox.insert("0.0", suggested_commit)
+            btns = ctk.CTkFrame(self.preview_frame, fg_color="transparent")
+            btns.pack(pady=(0, 15))
+            ctk.CTkButton(btns, text="Cancelar", width=110, height=36,
+                          font=ctk.CTkFont("Segoe UI", 12, "bold"),
+                          fg_color=C["card_border"], hover_color=C["red_dark"], text_color=C["text"],
+                          command=lambda: self._resolve_preview(None)).pack(side="left", padx=10)
+            ctk.CTkButton(btns, text="Confirmar Push", width=150, height=36,
+                          font=ctk.CTkFont("Segoe UI", 12, "bold"),
+                          fg_color=C["green_dark"], hover_color=C["green"], text_color="white",
+                          command=lambda: self._resolve_preview(
+                              self.commit_textbox.get("0.0", "end").strip())).pack(side="left", padx=10)
+        except Exception as e:
+            self.log(f"[UI ERRO] Falha ao exibir preview: {e}", "error")
+            self._preview_result = suggested_commit
+            self._preview_event.set()
 
     def _resolve_preview(self, result):
-        self.preview_frame.destroy()
-        self.actions_frame.grid(row=1, column=0, sticky="ew", pady=(0, 18))
+        try:
+            self.preview_frame.destroy()
+            self.actions_frame.grid(row=1, column=0, sticky="ew", pady=(0, 18))
+        except Exception:
+            pass
         self._preview_result = result
         self._preview_event.set()
 
@@ -1517,7 +1556,7 @@ class App(ctk.CTk):
         threading.Thread(target=task, daemon=True).start()
 
     def _log_pull(self, msg):
-        self.after(0, self._insert_pull_log, msg)
+        self.after(0, lambda: self._insert_pull_log(msg))
 
     def _insert_pull_log(self, msg):
         self.pull_console.configure(state="normal")
@@ -1532,13 +1571,13 @@ class App(ctk.CTk):
         active   = {"fg_color": C["blue"], "hover_color": C["blue_dark"], "text_color": "#ffffff"}
 
         for btn in (self.btn_nav_push, self.btn_nav_clone,
-                    self.btn_branch, self.btn_nav_pull, self.btn_nav_issues):
+                    self.btn_branch, self.btn_nav_pull, self.btn_nav_issues, self.btn_nav_security):
             if hasattr(self, btn.winfo_name() if hasattr(btn, "winfo_name") else ""):
                 pass
             btn.configure(**inactive)
 
         # Hide all tabs
-        for tab in ("tab_push", "tab_clone", "tab_pull", "tab_dash", "tab_branch", "tab_issues"):
+        for tab in ("tab_push", "tab_clone", "tab_pull", "tab_dash", "tab_branch", "tab_issues", "tab_security"):
             if hasattr(self, tab):
                 getattr(self, tab).grid_forget()
 
@@ -1549,6 +1588,7 @@ class App(ctk.CTk):
             "branch":    (self.btn_branch,     self.tab_branch),
             "dashboard": (None,                self.tab_dash),
             "issues":    (self.btn_nav_issues, self.tab_issues),
+            "security":  (self.btn_nav_security, self.tab_security),
         }
         btn_ref, tab_ref = mapping.get(view, (None, None))
         if btn_ref:
@@ -1602,7 +1642,7 @@ class App(ctk.CTk):
                        "private":     opts["private"],
                        "description": opts.get("description", "")}
             resp = requests.post("https://api.github.com/user/repos",
-                                 json=payload, headers=headers)
+                                 json=payload, headers=headers, timeout=15)
             if resp.status_code == 201:
                 remote_url = resp.json()["clone_url"]
                 if cfg.GITHUB_USERNAME and cfg.GITHUB_TOKEN:
@@ -1624,5 +1664,7 @@ class App(ctk.CTk):
             with open("README.md", "w", encoding="utf-8") as f:
                 f.write(new_readme + "\n")
             self.execute_workflow(path, commit_message=final_commit_msg)
+        except Exception as e:
+            self.log(f"[ERRO] Falha fatal na criação do projeto: {e}", "error")
         finally:
             self.set_processing_state(False)
