@@ -86,8 +86,6 @@ Pillow
 
 ## 📋 Histórico de Atualizações
 
-### 🔄 Atualização (16/06/2026)
-- Otimização do layout da barra de navegação principal (Dashboard): botões responsivos, redução de fonte para melhor legibilidade e preenchimento distribuído para melhor aproveitamento de espaço.
 
 ### 🔄 Atualização (22/05/2024)
 - Refatoração do design dos cards de histórico: mudança para layout vertical com separação clara de blocos (Header, Status e Ação).
@@ -106,3 +104,6 @@ Pillow
 
 ### 🔄 Atualização (09/06/2026)
 - [Inserir histórico anterior conforme projeto original]
+
+### 🔄 Atualização (16/06/2026)
+- Otimização do layout da barra de navegação principal (Dashboard): botões responsivos, redução de fonte para melhor legibilidade e preenchimento distribuído para melhor aproveitamento de espaço.
