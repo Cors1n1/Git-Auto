@@ -55,7 +55,6 @@ O **git_auto** é uma ferramenta de automação desenvolvida em Python que integ
 │   └── tooltip.py
 ├── .env
 ├── .gitignore
-├── Git Auto.lnk
 ├── README.md
 └── main.py
 ```
@@ -80,11 +79,14 @@ Pillow
    ```
 
 2. **Execução:**
-   - Execute `main.py` diretamente ou utilize o atalho `Git Auto.lnk`.
+   - Execute `main.py` diretamente.
 
 **Configuração Automática:** O projeto possui mecanismos de auto-instalação e auto-configuração. Ao executar o script pela primeira vez, as dependências serão instaladas automaticamente e a interface solicitará os tokens necessários. A instalação e configuração são **AUTOMÁTICAS**.
 
 ## 📋 Histórico de Atualizações
+
+### 🔄 Atualização (16/06/2026)
+- Atualização da estrutura do projeto e remoção do atalho do Windows (.lnk) do repositório para manter a padronização do Git.
 
 ### 🔄 Atualização (16/06/2026)
 - Otimização do layout da barra de navegação principal (Dashboard): botões responsivos, redução de fonte para melhor legibilidade e preenchimento distribuído para melhor aproveitamento de espaço.
@@ -100,9 +102,4 @@ Pillow
 - Implementado sistema de temas (Dracula, Nord, Matrix, etc) com persistência via .env.
 - Implementado auto-instalador de dependências.
 - Implementada interface de "Central de Clonagem" e navegação por abas.
-- Implementado `BranchManagerView` para controle de branches e "Máquina do Tempo" para resetar estados.
-- Implementado `DiffViewerDialog` para visualização comparativa (side-by-side) de alterações.
-- Implementado `ReleaseManagerDialog` para automação de tags e lançamentos no GitHub.
-
-### 🔄 Atualização (09/06/2026)
-- [Inserir histórico anterior conforme projeto original]
+- Implementado `BranchManagerView` para controle de branches e "Máquina do Tempo" para res

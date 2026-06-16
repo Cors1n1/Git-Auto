@@ -132,3 +132,6 @@ secrets.json
 credentials.json
 *.pem
 *.key
+
+# Windows Shortcuts
+*.lnk
