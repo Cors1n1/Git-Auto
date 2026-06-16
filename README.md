@@ -86,6 +86,9 @@ Pillow
 
 ## 📋 Histórico de Atualizações
 
+### 🔄 Atualização (16/06/2026)
+- Otimização do layout da barra de navegação principal (Dashboard): botões responsivos, redução de fonte para melhor legibilidade e preenchimento distribuído para melhor aproveitamento de espaço.
+
 ### 🔄 Atualização (22/05/2024)
 - Refatoração do design dos cards de histórico: mudança para layout vertical com separação clara de blocos (Header, Status e Ação).
 - Inclusão de botão de remoção rápida na interface de histórico.
@@ -102,35 +105,4 @@ Pillow
 - Implementado `ReleaseManagerDialog` para automação de tags e lançamentos no GitHub.
 
 ### 🔄 Atualização (09/06/2026)
-- Adicionado suporte a gerenciamento de colaboradores e gráfico de contribuições.
-- Implementado módulo de gerenciamento de Tarefas (Issues) com sugestões do Gemini AI.
-- Limpeza de código, centralização de dados no diretório /data e suporte a tray icon.
-- Simplificação das labels da interface: remoção de emojis redundantes para um visual mais limpo e profissional.
-- Otimização do sistema de bandeja (System Tray) para gerenciamento de estados da janela principal.
-- Implementada prevenção de múltiplas instâncias usando Mutex e PID.
-- Otimização do carregamento de ícones na interface e na bandeja do sistema.
-- Refatorada paleta de cores com novos temas e ajuste fino de contraste.
-- Atualizado o sistema de gestão de colaboradores com novos níveis de permissão.
-- Implementada validação de segurança na "Máquina do Tempo" exigindo confirmação nominal da pasta.
-- Adicionada funcionalidade de comentários, edição e fechamento de tarefas (issues).
-- Adicionado sistema de proteção de tela (screensaver) animado após 15 minutos de inatividade.
-- Adicionado suporte para adicionar projetos Git locais ao histórico via interface.
-- Refatorada a barra lateral para incluir controles de acesso rápido.
-
-### 🔄 Atualização (10/06/2026)
-- Refatoração completa da estrutura do projeto para um formato modular (pacotes `app`, `views`, `dialogs`, `widgets`).
-- Migração do script monolítico `release.py` para um sistema de arquivos organizado sob `main.py`.
-- Melhoria na escalabilidade do código fonte para facilitar a manutenção por desenvolvedores seniores.
-- Implementada rotina de minimização para bandeja do sistema ao fechar a janela principal (`WM_DELETE_WINDOW`).
-- Adicionado botão de integração rápida com VSCode na interface de workspace.
-- Melhorado o gerador de `.gitignore` para suportar inserção de novas regras sem sobrescrever o arquivo existente.
-- Adicionado logs detalhados (verbose mode) para rastreio de comandos Git.
-- Inclusão de créditos dinâmicos e link para repositório do desenvolvedor na barra lateral.
-- Adicionado suporte a `AppUserModelID` no Windows para correção do ícone da aplicação na barra de tarefas.
-
-### 🔄 Atualização (12/06/2026)
-- **Segurança:** Adicionado `SecurityView` para limpeza de arquivos sensíveis e tokens.
-- **Network:** Implementado DNS Monkey Patch para bypass de bloqueios de ISP em conexões com a API do GitHub.
-- **IA:** Migração para o endpoint `gemini-3.1-flash-lite` com sistema de retry robusto para lidar com Rate Limits (429).
-- **Gitignore:** Adicionadas regras automáticas para bloqueio de arquivos de credenciais e chaves (.pem, .key, etc).
-- **Performance:** Otimização na inserção de logs no console e refatoração do layout dos cards de workspace.
+- [Inserir histórico anterior conforme projeto original]

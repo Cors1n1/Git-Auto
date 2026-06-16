@@ -442,28 +442,28 @@ class App(ctk.CTk):
 
         def _nav_btn(text, cmd):
             return ctk.CTkButton(self.nav_frame, text=text,
-                                 font=ctk.CTkFont("Segoe UI", 14, "bold"), height=42,
+                                 font=ctk.CTkFont("Segoe UI", 12, "bold"), height=38, width=0,
                                  fg_color=C["card"], hover_color=C["card_border"],
                                  text_color=C["text_dim"], corner_radius=10, command=cmd)
 
         self.btn_nav_push  = _nav_btn("Repositórios", lambda: self.switch_main_view("push"))
         self.btn_nav_push.configure(fg_color=C["blue"], text_color="#ffffff")
-        self.btn_nav_push.pack(side="left", padx=(0, 10))
+        self.btn_nav_push.pack(side="left", padx=(0, 5), expand=True, fill="x")
 
         self.btn_nav_clone = _nav_btn("Clonagem", lambda: self.switch_main_view("clone"))
-        self.btn_nav_clone.pack(side="left", padx=(0, 10))
+        self.btn_nav_clone.pack(side="left", padx=(0, 5), expand=True, fill="x")
 
         self.btn_branch = _nav_btn("Branch: --", lambda: self.switch_main_view("branch"))
-        self.btn_branch.pack(side="left", padx=(0, 10))
+        self.btn_branch.pack(side="left", padx=(0, 5), expand=True, fill="x")
 
         self.btn_nav_pull  = _nav_btn("Sincronizar", lambda: self.switch_main_view("pull"))
-        self.btn_nav_pull.pack(side="left", padx=(0, 10))
+        self.btn_nav_pull.pack(side="left", padx=(0, 5), expand=True, fill="x")
 
         self.btn_nav_issues = _nav_btn("Tarefas", lambda: self.switch_main_view("issues"))
-        self.btn_nav_issues.pack(side="left", padx=(0, 10))
+        self.btn_nav_issues.pack(side="left", padx=(0, 5), expand=True, fill="x")
 
         self.btn_nav_security = _nav_btn("Limpeza", lambda: self.switch_main_view("security"))
-        self.btn_nav_security.pack(side="left", padx=(0, 10))
+        self.btn_nav_security.pack(side="left", padx=(0, 0), expand=True, fill="x")
 
         # Content container
         self.content_frame = ctk.CTkFrame(self.main_frame, fg_color="transparent")
