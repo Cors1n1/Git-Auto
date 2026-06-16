@@ -1042,7 +1042,7 @@ class App(ctk.CTk):
 
     def generate_specific_gitignore(self, template_names, silent=False, append_missing=False):
         base_ignores = ("# Ambiente / SO\n.env\n.env.*\n.flaskenv*\n.flasken\n!.env.example\n.DS_Store\n"
-                        "Thumbs.db\ndesktop.ini\n\n# Arquivos Sensíveis\n*_token.json\n*token*.json\nsecrets.json\ncredentials.json\n*.pem\n*.key\n\n# IDEs\n.vscode/\n.idea/\n\n")
+                        "Thumbs.db\ndesktop.ini\n*.lnk\n\n# Arquivos Sensíveis\n*_token.json\n*token*.json\nsecrets.json\ncredentials.json\n*.pem\n*.key\n\n# IDEs\n.vscode/\n.idea/\n\n")
         templates = {
             "Python":      "# Python\n__pycache__/\n*.py[cod]\n*$py.class\nvenv/\n.venv/\nenv/\n.env/\nbuild/\ndist/\n*.egg-info/\n*.log\n",
             "Node.js":     "# Node\nnode_modules/\nnpm-debug.log\nyarn-error.log\nbuild/\ndist/\ncoverage/\n",
