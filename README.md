@@ -103,8 +103,4 @@ Pillow
 - Implementado sistema de visualização expandível no histórico de projetos e refatorado o fluxo de commit para utilizar mensagens dinâmicas via IA.
 - Ajustada a persistência de mensagens através de `.git/AUTO_MSG`.
 - Implementada interface para gerenciamento de credenciais (.env) e configurações via UI.
-- Implementado sistema de temas (Dracula, Nord, Matrix, etc) com persistência via .env.
-- Implementado auto-instalador de dependências.
-- Implementada interface de "Central de Clonagem" e navegação por abas.
-- Implementado `BranchManagerView` para controle de branches e "Máquina do Tempo" para restauração de commits.
-- Atualização de ícones internos e aprimoramento de regras de exclusão (.gitignore).
+- Implementado sistema de temas (Dracula, Nord, Matrix, etc) com suporte a customização de cores via arquivo `theme.py`.

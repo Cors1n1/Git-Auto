@@ -25,6 +25,7 @@ class CollaboratorManagerDialog(ctk.CTkToplevel):
         self.grab_set()
         self.configure(fg_color=C["bg"])
         self.after(200, lambda: self.winfo_exists() and set_title_bar_color(self, C["bg"], C["text"]))
+                # Build history mapping
 
         # Build history mapping
         self.history_map = {}
